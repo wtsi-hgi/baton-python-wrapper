@@ -2,6 +2,8 @@ import json
 import os
 import subprocess
 
+from typing import List
+
 
 class Baton:
     """
@@ -12,15 +14,13 @@ class Baton:
         TODO
         :param baton_location:
         :param irods_query_zone:
-        :return:
         """
         self._baton_location = baton_location
         self._irods_query_zone = irods_query_zone
 
-
     def query_by_metadata_and_get_results_as_json(self, avu_tuple_list, operator='='):
         """
-        THis method is querying iRODS using BATON in order to get the metadata for the files (data objects) that match the search criteria.
+        This method is querying iRODS using BATON in order to get the metadata for the files (data objects) that match the search criteria.
         The information is returned as a dict of collection, data_object and avus. It can be filtered afterwards for leaving in only the info of interest.
         :param avu_tuple_list: key = attribute name, value = attribute_value
         :param zone:
@@ -34,24 +34,25 @@ class Baton:
         irods_avus_json = json.dumps(irods_avus)
         return self._get_baton_metaquery_result(irods_avus_json)
 
-    def get_file_metadata(self, fpath):
+    def get_file_metadata(self, file_path):
         """
-        :param fpath:
+        :param file_path:
         :return:
         """
-        fpath_as_dict = self._split_path_in_data_obj_and_coll(fpath)
+        fpath_as_dict = self._split_path_in_data_obj_and_coll(file_path)
         irods_fpath_dict_as_json = json.dumps(fpath_as_dict)
         return self._get_baton_list_metadata_result(irods_fpath_dict_as_json)
 
-    def get_all_files_metadata(self, fpaths):
+    def get_all_files_metadata(self, file_paths: List[str]):
         """
         TODO
-        :param fpaths:
+        :param file_paths:
         :return:
         """
+        # TODO: This probably has commonality with `get_file_metadata` yet it doesn't use it
         list_of_fpaths_as_json = []
-        for f in fpaths:
-            fpath_as_dict = self._split_path_in_data_obj_and_coll(f)
+        for file_path in file_paths:
+            fpath_as_dict = self._split_path_in_data_obj_and_coll(file_path)
             irods_fpath_dict_as_json = json.dumps(fpath_as_dict)
             list_of_fpaths_as_json.append(irods_fpath_dict_as_json)
         return self._get_baton_list_metadata_for_list_of_files_result(list_of_fpaths_as_json)
@@ -63,8 +64,8 @@ class Baton:
         :return:
         """
         irods_avu_list = []
-        for attr, val in avus_tuple_list:
-            irods_avu_list.append({ "attribute": attr, "value" : val, "o" : "="})
+        for attribute, value in avus_tuple_list:
+            irods_avu_list.append({ "attribute": attribute, "value" : value, "o" : "="})
         return {'avus' : irods_avu_list}
 
     def _split_path_in_data_obj_and_coll(self, fpath_irods):
