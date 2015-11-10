@@ -1,6 +1,7 @@
 import os
 import subprocess
 from typing import List, Tuple, Union
+import json
 
 from baton.json_converters import object_to_baton_json
 from baton.models import IrodsFileLocation, SearchCriteria
@@ -22,7 +23,7 @@ class Baton:
     def get_metadata_by_file_path(self, file_paths: Union[str, List[str]]) -> List[Tuple(str, str)]:
         """
         Gets the metadata in iRODS for the file with at the given path.
-        :param file_path: the path of the file in iRODS
+        :param file_paths: the path of the file in iRODS
         :return: the metadata associated with the file
         """
         if not isinstance(file_paths, list):
@@ -36,22 +37,22 @@ class Baton:
             irods_file_location = IrodsFileLocation(directory, file_name)
             baton_json.append(object_to_baton_json(irods_file_location))
 
-        return self._run_baton_query(baton_json)
+        return self._run_baton_attribute_value_query(baton_json)
 
     def get_metadata_by_attribute(self, search_criteria: SearchCriteria) -> List[Tuple(str, str)]:
         """
         Gets metadata in iRODS that matches one or more of the given attribute search criteria.
-        :param search_criteria_to_match: the search criteria to get metadata by
+        :param search_criteria: the search criteria to get metadata by
         :return: metadata that matches the given search critera
         """
         baton_json = object_to_baton_json(search_criteria)
-        return self._run_baton_query(baton_json)
+        return self._run_baton_attribute_value_query(baton_json)
 
-    def _run_baton_query(self, baton_json):
+    def _run_baton_attribute_value_query(self, baton_json: Union[dict, List[dict]]) -> dict:
         """
-        TODO
-        :param baton_json:
-        :return:
+        Run a baton attribute value query defined by the given JSON.
+        :param baton_json: the JSON that defines the query
+        :return: the return from baton
         """
         arguments = [self._baton_location, "--avu", "--acl", "--checksum"]
 
@@ -62,7 +63,7 @@ class Baton:
 
     @staticmethod
     # TODO: What is the difference between input_data and write to standard in?
-    def _run(arguments: List[str], input_data: dict=None, write_to_standard_in: List[str]=()):
+    def _run(arguments: List[str], input_data: dict=None, write_to_standard_in: List[str]=()) -> str:
         """
         TODO
         :param arguments:
@@ -80,4 +81,8 @@ class Baton:
 
         if error:
             raise IOError("iRODs error : " + str(error))
-        return out
+
+        returned_json = json.loads(out)
+        if isinstance(returned_json, dict):
+            raise ValueError("baton did not return a JSON object:\n%s" % returned_json)
+        return returned_json
