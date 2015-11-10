@@ -2,7 +2,7 @@ import json
 import os
 import subprocess
 
-from typing import List
+from typing import List, Tuple, Mapping
 
 
 class Baton:
@@ -30,7 +30,7 @@ class Baton:
             1. This assumes that the operator is always =
             2. This assumes that there is exactly 1 entry for each type of attribute - there can't be a query for 2 samples for exp.
         """
-        irods_avus = self._from_dict_to_irods_avus(avu_tuple_list)
+        irods_avus = self._convert_to_baton_avus(avu_tuple_list)
         irods_avus_json = json.dumps(irods_avus)
         return self._get_baton_metaquery_result(irods_avus_json)
 
@@ -39,7 +39,7 @@ class Baton:
         :param file_path:
         :return:
         """
-        fpath_as_dict = self._split_path_in_data_obj_and_coll(file_path)
+        fpath_as_dict = Baton._extract_data_object_and_collection(file_path)
         irods_fpath_dict_as_json = json.dumps(fpath_as_dict)
         return self._get_baton_list_metadata_result(irods_fpath_dict_as_json)
 
@@ -52,30 +52,9 @@ class Baton:
         # TODO: This probably has commonality with `get_file_metadata` yet it doesn't use it
         list_of_fpaths_as_json = []
         for file_path in file_paths:
-            fpath_as_dict = self._split_path_in_data_obj_and_coll(file_path)
-            irods_fpath_dict_as_json = json.dumps(fpath_as_dict)
+            irods_fpath_dict_as_json = self.get_file_metadata(file_path)
             list_of_fpaths_as_json.append(irods_fpath_dict_as_json)
         return self._get_baton_list_metadata_for_list_of_files_result(list_of_fpaths_as_json)
-
-    def _from_dict_to_irods_avus(self, avus_tuple_list):
-        """
-        TODO
-        :param avus_tuple_list:
-        :return:
-        """
-        irods_avu_list = []
-        for attribute, value in avus_tuple_list:
-            irods_avu_list.append({ "attribute": attribute, "value" : value, "o" : "="})
-        return {'avus' : irods_avu_list}
-
-    def _split_path_in_data_obj_and_coll(self, fpath_irods):
-        """
-        TODO
-        :param fpath_irods:
-        :return:
-        """
-        dir, fname = os.path.split(fpath_irods)
-        return {'data_object' : fname, 'collection' : dir}
 
     def _get_baton_metaquery_result(self, query_as_json):
         """
@@ -83,19 +62,8 @@ class Baton:
         :param query_as_json:
         :return: the path to a temp file where the results are
         """
-        # Open/create a tempfile:
-        #temp = tempfile.NamedTemporaryFile(mode='w')
-        p = subprocess.Popen([self._baton_location, '--zone', self._irods_query_zone, '--obj', '--checksum', '--avu', '--acl'],   # not necessary to add also '--checksum' if --replicate is there
-                             stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.PIPE) # ,stdout=temp, stderr=subprocess.STDERR
-        out, err = p.communicate(input=query_as_json)
-        if err:
-            #print "ERROR REPORT: " + str(err)
-            raise IOError("Some irods error : " + str(err))
-        # if err:
-        #     print "ERROR VIA stderr " + str(err)
-        #     #raise IOError
-        return out
-        #return temp
+        # Note: it is not necessary to add also '--checksum' if --replicate is there
+        return self.run_query([self._baton_location, '--zone', self._irods_query_zone, '--obj', '--checksum', '--avu', '--acl'])
 
     def _get_baton_list_metadata_result(self, data_obj_as_json):
         """
@@ -104,13 +72,8 @@ class Baton:
         :return:
         """
         #jq -n '[{data_object: "10080_8#64.bam", collection: "/seq/10080/"}]' | /software/gapi/pkg/baton/0.15.0/bin/baton-list -avu --acl
-        p = subprocess.Popen([self._baton_location, '--avu', '--acl', '--checksum'],     # not necessary to add also '--checksum' if --replicate is there
-                             stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.STDOUT)
-        out, err = p.communicate(input=data_obj_as_json)
-        #print "OUT: " + str(out) + "ERR " + str(err)
-        if err:
-            raise IOError("Some irods error : " + str(err))
-        return out
+        # Note: it is not necessary to add also '--checksum' if --replicate is there
+        return Baton.run_query([self._baton_location, '--avu', '--acl', '--checksum'], data_obj_as_json)
 
     def _get_baton_list_metadata_for_list_of_files_result(self, list_of_data_obj_as_json):
         """
@@ -118,12 +81,48 @@ class Baton:
         :param list_of_data_obj_as_json:
         :return:
         """
-        p = subprocess.Popen([self._baton_location, '--avu', '--acl', '--checksum'],     # not necessary to add also '--checksum' if --replicate is there
-                             stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.STDOUT)
-        for f in list_of_data_obj_as_json:
-            p.stdin.write(f)
-        out, err = p.communicate()
-        #print "OUT: " + str(out) + "ERR " + str(err)
-        if err:
-            raise IOError("Some irods error : " + str(err))
+        return Baton.run_query(
+            [self._baton_location, '--avu', '--acl', '--checksum'], write_to_standard_in=list_of_data_obj_as_json)
+
+    @staticmethod
+    def run_query(self, arguments: List[str], input_json: dict=None, write_to_standard_in: List[str]=None):
+        """
+        TODO
+        :param arguments:
+        :param input_json:
+        :param write_to_standard_in:
+        :return:
+        """
+        process = subprocess.Popen(arguments, stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.STDOUT)
+
+        if write_to_standard_in is not None:
+            for to_write in write_to_standard_in:
+                process.stdin.write(to_write)
+
+        out, error = process.communicate(input=input_json)  # TODO: timeout=
+
+        if error:
+            raise IOError("iRODs error : " + str(error))
         return out
+
+    @staticmethod
+    def _extract_data_object_and_collection(irods_file_path: str) -> Mapping[str, str]:
+        """
+        TODO
+        :param irods_file_path:
+        :return:
+        """
+        directory, file_name = os.path.split(irods_file_path)
+        return {'data_object' : file_name, 'collection' : directory}
+
+    @staticmethod
+    def _convert_to_baton_avus(list_of_avu_tuples: List[Tuple[str, str]]) -> Mapping[str, List[Mapping[str, str]]]:
+        """
+        TODO
+        :param list_of_avu_tuples:
+        :return:
+        """
+        irods_avu_list = []
+        for attribute, value in list_of_avu_tuples:
+            irods_avu_list.append({ "attribute": attribute, "value": value, "o": "="})
+        return {'avus' : irods_avu_list}
