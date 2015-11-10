@@ -9,7 +9,16 @@ class ComparisonOperator(Enum):
     GREATER_THAN = ">"
 
 
-class SearchMatch:
+class SearchCriteria(list):
+    def append(self, search_criterion: SearchCriterion):
+        for existing_search_criterion in self:
+            if existing_search_criterion.attribute == search_criterion.attribute:
+                raise ValueError("Search criterion based on the attribute `%s` already added")
+
+        super(SearchCriteria, self).append(search_criterion)
+
+
+class SearchCriterion:
     def __init__(self, attribute: str, value: str, comparison_operator: ComparisonOperator):
         self.attribute = attribute
         self.value = value
@@ -17,8 +26,8 @@ class SearchMatch:
 
 
 class AttributeSearch:
-    def __init__(self, search_match: List[SearchMatch]):
-        self.search_match = search_match
+    def __init__(self, search_criteria: List[SearchCriterion]):
+        self.search_criteria = search_criteria
 
 
 class IrodsFileLocation:
