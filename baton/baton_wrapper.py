@@ -9,13 +9,13 @@ from baton.models import IrodsFileLocation, SearchCriteria
 
 class Baton:
     """
-    TODO
+    Setup to run queries using baton.
     """
     def __init__(self, baton_location: str, irods_query_zone: str):
         """
-        TODO
-        :param baton_location:
-        :param irods_query_zone:
+        Constructor.
+        :param baton_location: the location of baton's binaries
+        :param irods_query_zone: the iRODS zone to query
         """
         self._baton_location = baton_location
         self._irods_query_zone = irods_query_zone
@@ -37,7 +37,7 @@ class Baton:
             irods_file_location = IrodsFileLocation(directory, file_name)
             baton_json.append(object_to_baton_json(irods_file_location))
 
-        return self._run_baton_attribute_value_query(baton_json)
+        return self._run_baton_attribute_query(baton_json)
 
     def get_metadata_by_attribute(self, search_criteria: SearchCriteria) -> List[Tuple(str, str)]:
         """
@@ -46,9 +46,9 @@ class Baton:
         :return: metadata that matches the given search critera
         """
         baton_json = object_to_baton_json(search_criteria)
-        return self._run_baton_attribute_value_query(baton_json)
+        return self._run_baton_attribute_query(baton_json)
 
-    def _run_baton_attribute_value_query(self, baton_json: Union[dict, List[dict]]) -> dict:
+    def _run_baton_attribute_query(self, baton_json: Union[dict, List[dict]]) -> dict:
         """
         Run a baton attribute value query defined by the given JSON.
         :param baton_json: the JSON that defines the query
@@ -57,19 +57,19 @@ class Baton:
         arguments = [self._baton_location, "--avu", "--acl", "--checksum"]
 
         if isinstance(baton_json, list):
-            return Baton._run(arguments, write_to_standard_in=baton_json)
+            return Baton._run_json_writing_command(arguments, write_to_standard_in=baton_json)
         else:
-            return Baton._run(arguments, input_data=baton_json)
+            return Baton._run_json_writing_command(arguments, input_data=baton_json)
 
-    @staticmethod
     # TODO: What is the difference between input_data and write to standard in?
-    def _run(arguments: List[str], input_data: dict=None, write_to_standard_in: List[str]=()) -> str:
+    @staticmethod
+    def _run_json_writing_command(arguments: List[str], input_data: dict=None, write_to_standard_in: List[str]=()) -> str:
         """
-        TODO
-        :param arguments:
-        :param input_data:
-        :param write_to_standard_in:
-        :return:
+        Run a command as a subprocess, which writes JSON to standard out.
+        :param arguments: the arguments to run
+        :param input_data: the input data to communicate to the subprocess
+        :param write_to_standard_in: the data to write into the subprocess through the process' standard in
+        :return: JSON representation of the process' standard out
         """
         process = subprocess.Popen(arguments, stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.STDOUT)
 

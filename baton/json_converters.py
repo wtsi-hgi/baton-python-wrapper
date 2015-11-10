@@ -1,4 +1,5 @@
-from baton.models import IrodsFileLocation, AttributeSearch, SearchCriterion, ComparisonOperator
+from baton.enums import ComparisonOperator
+from baton.models import IrodsFileLocation, SearchCriterion, SearchCriteria
 
 
 _BATON_FILE_NAME_PROPERTY = "data_object"
@@ -17,11 +18,11 @@ _BATON_COMPARISON_OPERATORS = {
 }
 
 
-def object_to_baton_json(obj: object):
+def object_to_baton_json(obj: object) -> dict:
     """
-    TODO
-    :param obj:
-    :return:
+    Creates a baton JSON representation of the given object.
+    :param obj: the object to convert to a baton representation
+    :return: the baton JSON representation of the given object
     """
     if obj.__class__ not in _MAPPINGS:
         raise ValueError("Cannot convert object of type `%s`" % obj.__class__)
@@ -29,41 +30,41 @@ def object_to_baton_json(obj: object):
     return _MAPPINGS[obj.__class__](obj)
 
 
-def _search_criterion_to_baton_json(search_criteria: SearchCriterion) -> dict:
+def _search_criterion_to_baton_json(search_criterion: SearchCriterion) -> dict:
     """
-    TODO
-    :param search_criteria:
-    :return:
+    Creates a baton JSON representation of the given search criterion.
+    :param search_criterion: the search criterion to convert to a baton representation
+    :return: the baton JSON representation of the given search criterion
     """
     return {
-        _BATON_ATTRIBUTE_PROPERTY: search_criteria.attribute,
-        _BATON_VALUE_PROPERTY: search_criteria.value,
-        _BATON_COMPARISON_OPERATOR_PROPERTY: _BATON_COMPARISON_OPERATORS[search_criteria.comparison_operator]
+        _BATON_ATTRIBUTE_PROPERTY: search_criterion.attribute,
+        _BATON_VALUE_PROPERTY: search_criterion.value,
+        _BATON_COMPARISON_OPERATOR_PROPERTY: _BATON_COMPARISON_OPERATORS[search_criterion.comparison_operator]
     }
 
 
-def _attribute_search_to_baton_json(attribute_search: AttributeSearch) -> dict:
+def _search_criteria_to_baton_json(search_criteria: SearchCriteria) -> dict:
     """
-    TODO
-    :param attribute_search:
-    :return:
+    Creates a baton JSON representation of the given search criteria.
+    :param search_criteria: the search criteria to convert to a baton representation
+    :return: the baton JSON representation of the given search criteria
     """
-    search_matches_as_baton_json_list = []
+    search_criteria_as_baton_json_list = []
 
-    for criterion in attribute_search.search_criteria:
+    for criterion in search_criteria:
         search_match_as_baton_json = _search_criterion_to_baton_json(criterion)
-        search_matches_as_baton_json_list.append(search_match_as_baton_json)
+        search_criteria_as_baton_json_list.append(search_match_as_baton_json)
 
     return {
-        _BATON_AVU_SEARCH_PROPERTY: search_matches_as_baton_json_list
+        _BATON_AVU_SEARCH_PROPERTY: search_criteria_as_baton_json_list
     }
 
 
 def _irods_file_location_to_baton_json(irods_file_location: IrodsFileLocation) -> dict:
     """
-    TODO
-    :param irods_file_location:
-    :return:
+     Creates a baton JSON representation of the given iRODS file location.
+    :param irods_file_location: the iRODS file location to convert to a baton representation
+    :return: the baton JSON representation of the given iRODS file location
     """
     return {
         _BATON_FILE_NAME_PROPERTY: irods_file_location.file_name,
@@ -71,8 +72,9 @@ def _irods_file_location_to_baton_json(irods_file_location: IrodsFileLocation) -
     }
 
 
+# Mappings between models and the methods that can create baton JSON representations of them
 _MAPPINGS = {
     SearchCriterion: _search_criterion_to_baton_json,
-    AttributeSearch: _attribute_search_to_baton_json,
+    SearchCriteria: _search_criteria_to_baton_json,
     IrodsFileLocation: _irods_file_location_to_baton_json
 }
