@@ -6,6 +6,7 @@ from baton.json_converters import _search_criterion_to_baton_json, _BATON_COMPAR
     _search_criteria_to_baton_json, _irods_file_location_to_baton_json, object_to_baton_json
 from baton.models import SearchCriterion, SearchCriteria, IrodsFileLocation
 
+
 _SEARCH_ATTRIBUTE_1 = "attribute1"
 _SEARCH_ATTRIBUTE_2 = "attribute2"
 _SEARCH_VALUE_1 = "value1"

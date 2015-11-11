@@ -1,7 +1,7 @@
 import os
 import subprocess
 from typing import List, Tuple, Union
-import json
+import json¶
 
 from baton.json_converters import object_to_baton_json
 from baton.models import IrodsFileLocation, SearchCriteria
@@ -57,19 +57,19 @@ class Baton:
         arguments = [self._baton_location, "--avu", "--acl", "--checksum"]
 
         if isinstance(baton_json, list):
-            return Baton._run_json_writing_command(arguments, write_to_standard_in=baton_json)
+            return Baton._parse_baton_output(Baton._run_command(arguments, write_to_standard_in=baton_json))
         else:
-            return Baton._run_json_writing_command(arguments, input_data=baton_json)
+            return Baton._parse_baton_output(Baton._run_command(arguments, input_data=baton_json))
 
     # TODO: What is the difference between input_data and write to standard in?
     @staticmethod
-    def _run_json_writing_command(arguments: List[str], input_data: dict=None, write_to_standard_in: List[str]=()) -> str:
+    def _run_command(arguments: List[str], input_data: dict=None, write_to_standard_in: List[str]=()) -> str:
         """
-        Run a command as a subprocess, which writes JSON to standard out.
+        Run a command as a subprocess.
         :param arguments: the arguments to run
         :param input_data: the input data to communicate to the subprocess
         :param write_to_standard_in: the data to write into the subprocess through the process' standard in
-        :return: JSON representation of the process' standard out
+        :return: the process' standard out
         """
         process = subprocess.Popen(arguments, stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.STDOUT)
 
@@ -80,8 +80,17 @@ class Baton:
         out, error = process.communicate(input=input_data)  # TODO: timeout=
 
         if error:
-            raise IOError("iRODs error : " + str(error))
+            raise IOError(error)
 
+        return out
+
+    @staticmethod
+    def _parse_baton_output(out: str) -> dict:
+        """
+        Parses baton's JSON output, converting it from a string to a dict.
+        :param out: the output as a string
+        :return: the output as a dict
+        """
         returned_json = json.loads(out)
         if isinstance(returned_json, dict):
             raise ValueError("baton did not return a JSON object:\n%s" % returned_json)
