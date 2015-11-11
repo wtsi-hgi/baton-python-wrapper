@@ -1,24 +1,26 @@
+import json
 import os
 import subprocess
+from abc import ABCMeta
 from enum import Enum
 from typing import List, Tuple, Union
-import json
 
-from baton.json_converters import object_to_baton_json
+from baton.json_converters import object_to_baton_json, baton_json_to_object
 from baton.models import IrodsFile, SearchCriteria, SearchCriterion
 
 
 class _BinaryNames(Enum):
     """
-    TODO
+    Names of the baton binaries that are required.
     """
     BATON = "baton",
     METAQUERY = "baton-metaquery"
 
 
-class BatonMapper:
+class BatonMapper(metaclass=ABCMeta):
     """
-    TODO
+    A data mapper as defined by Martin Fowler (see: http://martinfowler.com/eaaCatalog/dataMapper.html) that moves data
+    between objects and iRODS, while keeping them independent of each other and the mapper itself. Uses baton.
     """
     def __init__(self, baton_binaries_directory: str, irods_query_zone: str):
         """
@@ -38,9 +40,9 @@ class BatonMapper:
     @staticmethod
     def validate_baton_binaries_location(baton_binaries_directory: str) -> bool:
         """
-        TODO. "duck-checking"
-        :param baton_binaries_directory:
-        :return:
+        Validates that the given directory contains the baton binaries required to use the mapper.
+        :param baton_binaries_directory: the directory to check
+        :return: whether the directory has the required binaries
         """
         for binary_name in _BinaryNames:
             binary_location = os.path.join(baton_binaries_directory, binary_name)
@@ -48,21 +50,20 @@ class BatonMapper:
                 return False
         return True
 
-    # TODO: This can probably be tidied up
     @staticmethod
-    def _run_command(arguments: List[str], input_data: dict=None, write_to_standard_in: List[str]=()) -> str:
+    def _run_command(arguments: List[str], input_data: dict=None) -> str:
         """
         Run a command as a subprocess.
         :param arguments: the arguments to run
-        :param input_data: the input data to communicate to the subprocess
-        :param write_to_standard_in: the data to write into the subprocess through the process' standard in
+        :param input_data: the input data to pass to the subprocess
         :return: the process' standard out
         """
         process = subprocess.Popen(arguments, stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.STDOUT)
 
-        if write_to_standard_in is not None:
-            for to_write in write_to_standard_in:
+        if isinstance(input_data, list):
+            for to_write in input_data:
                 process.stdin.write(to_write)
+            input_data = None
 
         out, error = process.communicate(input=input_data)  # TODO: timeout=
         if error:
@@ -85,7 +86,7 @@ class BatonMapper:
 
 class BatonMetadataMapper(BatonMapper):
     """
-    TODO
+    Mapper for iRODS metadata.
     """
     def get_for_file(self, file_paths: Union[str, List[str]]) -> List[Tuple[str, str]]:
         """
@@ -125,38 +126,39 @@ class BatonMetadataMapper(BatonMapper):
         baton_binary_location = os.path.join(self._baton_binaries_directory, _BinaryNames.BATON)
         arguments = [baton_binary_location, "--avu", "--acl", "--checksum", "--zone", self._irods_query_zone]
 
-        # TODO: Look at a better way of doing this
-        if isinstance(baton_json, list):
-            return BatonMapper._parse_baton_output(BatonMapper._run_command(arguments, write_to_standard_in=baton_json))
-        else:
-            return BatonMapper._parse_baton_output(BatonMapper._run_command(arguments, input_data=baton_json))
+        baton_out = BatonMapper._run_command(arguments, input_data=baton_json)
+        return BatonMapper._parse_baton_output(baton_out)
 
 
 class BatonFileMapper(BatonMapper):
     """
-    TODO
+    Mapper for iRODS files.
     """
     def get_by_metadata_attribute(
             self, metadata_search_criteria: Union[SearchCriterion, SearchCriteria]) -> List[IrodsFile]:
         """
-        TODO
-        :param metadata_search_criteria:
-        :return:
+        Gets files from iRODS that have metadata that matches the given search criteria.
+        :param metadata_search_criteria: the metadata search criteria
+        :return: the matched files in iRODS
         """
         baton_json = object_to_baton_json(metadata_search_criteria)
         return self._run_baton_meta_query(baton_json)
 
-    def _run_baton_meta_query(self, baton_json: Union[dict, List[dict]]) -> dict:
+    def _run_baton_meta_query(self, baton_json: Union[dict, List[dict]]) -> List[IrodsFile]:
         """
-        TODO.
+        Runs a baton meta query.
         :param baton_json: the JSON that defines the query
         :return: the return from baton
         """
         baton_meta_query_binary_location = os.path.join(self._baton_binaries_directory, _BinaryNames.METAQUERY)
         arguments = [baton_meta_query_binary_location, "--obj", "--zone", self._irods_query_zone]
 
-        # TODO: Look at a better way of doing this
-        if isinstance(baton_json, list):
-            return BatonMapper._parse_baton_output(BatonMapper._run_command(arguments, write_to_standard_in=baton_json))
-        else:
-            return BatonMapper._parse_baton_output(BatonMapper._run_command(arguments, input_data=baton_json))
+        baton_out = BatonMapper._run_command(arguments, input_data=baton_json)
+        parsed_out = BatonMapper._parse_baton_output(baton_out)
+
+        irods_files = []
+        for irods_file_as_baton_json in parsed_out:
+            irods_file = baton_json_to_object(irods_file_as_baton_json, IrodsFile)
+            irods_files.append(irods_file)
+
+        return irods_files

@@ -19,10 +19,10 @@ git+https://github.com/wtsi-hgi/baton-python-wrapper.git@master#egg=baton
 
 ## API
 ```python
-from baton import setup_baton, SearchCriteria, ComparisonOperator, SearchCriterion, IrodsFile
+from baton import setup_baton, IrodsConnection, SearchCriteria, ComparisonOperator, SearchCriterion, IrodsFile
 
-# Setup baton
-irods = connect_to_irods_with_baton("/where/baton/binaries/are/installed/", "irods_query_zone")
+# Setup connection to iRODS using baton
+irods = connect_to_irods_with_baton("/where/baton/binaries/are/installed/", "irods_query_zone") # type: IrodsConnection
 
 # Get metadata corresponding to the given file(s)
 irods.metadata.get_by_file_path("collection/data_object")    # type: List[Tuple(str, str)]:

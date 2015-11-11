@@ -1,7 +1,7 @@
-from baton.baton_wrapper import BatonMetadataMapper, BatonFileMapper
+from baton.irods_mappers import BatonMetadataMapper, BatonFileMapper
 
 
-class BatonSetup:
+class IrodsConnection:
     """
     TODO
     """
@@ -22,4 +22,4 @@ def connect_to_irods_with_baton(baton_binaries_directory: str, irods_query_zone:
     :param irods_query_zone:
     :return:
     """
-    return BatonSetup(baton_binaries_directory, irods_query_zone)
+    return IrodsConnection(baton_binaries_directory, irods_query_zone)

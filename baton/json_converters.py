@@ -21,13 +21,30 @@ _BATON_COMPARISON_OPERATORS = {
 def object_to_baton_json(obj: object) -> dict:
     """
     Creates a baton JSON representation of the given object.
+
+    Raises a value error if conversion is not possible
     :param obj: the object to convert to a baton representation
     :return: the baton JSON representation of the given object
     """
-    if obj.__class__ not in _MAPPINGS:
+    if obj.__class__ not in _OBJECT_TO_JSON_BATON_CONVERTERS:
         raise ValueError("Cannot convert object of type `%s`" % obj.__class__)
 
-    return _MAPPINGS[obj.__class__](obj)
+    return _OBJECT_TO_JSON_BATON_CONVERTERS[obj.__class__](obj)
+
+
+def baton_json_to_object(baton_json: dict, target_model: type) -> object:
+    """
+    Converts a given baton JSON object to the given target model type.
+
+    Raises a value error if unsupported target type is given or if conversion is not possible
+    :param baton_json: the JSON representation of the object used by baton
+    :param target_model: the model to create from the given JSON
+    :return: model of the baton JSON of the type specified by `target_model`
+    """
+    if target_model not in _BATON_JSON_TO_OBJECT_CONVERTERS:
+        raise ValueError("Cannot convert object of type `%s`" % target_model)
+
+    return _BATON_JSON_TO_OBJECT_CONVERTERS[target_model](baton_json)
 
 
 def _search_criterion_to_baton_json(search_criterion: SearchCriterion) -> dict:
@@ -71,9 +88,56 @@ def _irods_file_to_baton_json(irods_file: IrodsFile) -> dict:
     }
 
 
+def _baton_json_to_search_criterion(baton_json: dict) -> SearchCriterion:
+    """
+    Converts a given baton JSON representation of a search criterion to the corresponding model.
+    :param baton_json: the JSON representation of the object used by baton
+    :return: the corresponding model
+    """
+    return SearchCriterion(
+        baton_json[_BATON_ATTRIBUTE_PROPERTY],
+        baton_json[_BATON_VALUE_PROPERTY],
+        _BATON_COMPARISON_OPERATORS[_BATON_COMPARISON_OPERATOR_PROPERTY]
+    )
+
+
+def _baton_json_to_search_criteria(baton_json: dict) -> SearchCriteria:
+    """
+    Converts a given baton JSON representation of a search criteria to the corresponding model.
+    :param baton_json: the JSON representation of the object used by baton
+    :return: the corresponding model
+    """
+    search_matches = []
+    for search_match_as_baton_json in baton_json[_BATON_AVU_SEARCH_PROPERTY]:
+        search_match = _baton_json_to_search_criterion(search_match_as_baton_json)
+        search_matches.append(search_match)
+
+    return SearchCriteria(search_matches)
+
+
+def _baton_json_to_irods_file(baton_json: dict) -> IrodsFile:
+    """
+    Converts a given baton JSON representation of a iRODS file to the corresponding model.
+    :param baton_json: the JSON representation of the object used by baton
+    :return: the corresponding model
+    """
+    return IrodsFile(
+        baton_json[_BATON_FILE_NAME_PROPERTY],
+        baton_json[_BATON_DIRECTORY_PROPERTY]
+    )
+
+
 # Mappings between models and the methods that can create baton JSON representations of them
-_MAPPINGS = {
+_OBJECT_TO_JSON_BATON_CONVERTERS = {
     SearchCriterion: _search_criterion_to_baton_json,
     SearchCriteria: _search_criteria_to_baton_json,
     IrodsFile: _irods_file_to_baton_json
+}
+
+
+# TODO
+_BATON_JSON_TO_OBJECT_CONVERTERS = {
+    SearchCriterion: _baton_json_to_search_criteria,
+    SearchCriteria: _baton_json_to_search_criteria,
+    IrodsFile: _baton_json_to_irods_file
 }
