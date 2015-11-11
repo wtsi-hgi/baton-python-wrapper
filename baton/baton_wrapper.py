@@ -87,7 +87,7 @@ class BatonMetadataMapper(BatonMapper):
     """
     TODO
     """
-    def get_for_file(self, file_paths: Union[str, List[str]]) -> List[Tuple(str, str)]:
+    def get_for_file(self, file_paths: Union[str, List[str]]) -> List[Tuple[str, str]]:
         """
         Gets the metadata in iRODS for the file with at the given path.
         :param file_paths: the path of the file in iRODS
@@ -107,7 +107,7 @@ class BatonMetadataMapper(BatonMapper):
         return self._run_baton_attribute_query(baton_json)
 
     # TODO: Allow use with just SearchCriterion
-    def get_by_attribute(self, search_criteria: SearchCriteria) -> List[Tuple(str, str)]:
+    def get_by_attribute(self, search_criteria: SearchCriteria) -> List[Tuple[str, str]]:
         """
         Gets metadata in iRODS that matches one or more of the given attribute search criteria.
         :param search_criteria: the search criteria to get metadata by
@@ -133,13 +133,22 @@ class BatonMetadataMapper(BatonMapper):
 
 
 class BatonFileMapper(BatonMapper):
-    def get_by_metadata_attribute(self, metadata_search_criteria: Union[SearchCriterion, SearchCriteria]) -> IrodsFile:
+    """
+    TODO
+    """
+    def get_by_metadata_attribute(
+            self, metadata_search_criteria: Union[SearchCriterion, SearchCriteria]) -> List[IrodsFile]:
+        """
+        TODO
+        :param metadata_search_criteria:
+        :return:
+        """
         baton_json = object_to_baton_json(metadata_search_criteria)
         return self._run_baton_meta_query(baton_json)
 
     def _run_baton_meta_query(self, baton_json: Union[dict, List[dict]]) -> dict:
         """
-        Run a baton attribute value query defined by the given JSON.
+        TODO.
         :param baton_json: the JSON that defines the query
         :return: the return from baton
         """
@@ -151,26 +160,3 @@ class BatonFileMapper(BatonMapper):
             return BatonMapper._parse_baton_output(BatonMapper._run_command(arguments, write_to_standard_in=baton_json))
         else:
             return BatonMapper._parse_baton_output(BatonMapper._run_command(arguments, input_data=baton_json))
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
