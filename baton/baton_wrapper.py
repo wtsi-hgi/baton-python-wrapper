@@ -1,7 +1,7 @@
 import os
 import subprocess
 from typing import List, Tuple, Union
-import json¶
+import json
 
 from baton.json_converters import object_to_baton_json
 from baton.models import IrodsFileLocation, SearchCriteria
