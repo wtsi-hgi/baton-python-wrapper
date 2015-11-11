@@ -19,7 +19,7 @@ git+https://github.com/wtsi-hgi/baton-python-wrapper.git@master#egg=baton
 
 ## API
 ```python
-from baton import Baton, SearchCriteria, SearchCriterion
+from baton import Baton, SearchCriteria, SearchCriterion, ComparisonOperator
 
 # Setup baton
 baton = Baton("/where/baton/binary/is/installed/baton", "irods_query_zone")
