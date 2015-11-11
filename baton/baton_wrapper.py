@@ -1,128 +1,97 @@
-import json
 import os
 import subprocess
+from typing import List, Tuple, Union
+import json
+
+from baton.json_converters import object_to_baton_json
+from baton.models import IrodsFileLocation, SearchCriteria
 
 
 class Baton:
     """
-    TODO
+    Setup to run queries using baton.
     """
     def __init__(self, baton_location: str, irods_query_zone: str):
         """
-        TODO
-        :param baton_location:
-        :param irods_query_zone:
-        :return:
+        Constructor.
+        :param baton_location: the location of baton's binaries
+        :param irods_query_zone: the iRODS zone to query
         """
         self._baton_location = baton_location
         self._irods_query_zone = irods_query_zone
 
+    def get_metadata_by_file_path(self, file_paths: Union[str, List[str]]) -> List[Tuple(str, str)]:
+        """
+        Gets the metadata in iRODS for the file with at the given path.
+        :param file_paths: the path of the file in iRODS
+        :return: the metadata associated with the file
+        """
+        if not isinstance(file_paths, list):
+            file_paths = [file_paths]
+        if len(file_paths) == 0:
+            return []
 
-    def query_by_metadata_and_get_results_as_json(self, avu_tuple_list, operator='='):
-        """
-        THis method is querying iRODS using BATON in order to get the metadata for the files (data objects) that match the search criteria.
-        The information is returned as a dict of collection, data_object and avus. It can be filtered afterwards for leaving in only the info of interest.
-        :param avu_tuple_list: key = attribute name, value = attribute_value
-        :param zone:
-        :param operator:
-        :return: a tempfile
-        WARNING:
-            1. This assumes that the operator is always =
-            2. This assumes that there is exactly 1 entry for each type of attribute - there can't be a query for 2 samples for exp.
-        """
-        irods_avus = self._from_dict_to_irods_avus(avu_tuple_list)
-        irods_avus_json = json.dumps(irods_avus)
-        return self._get_baton_metaquery_result(irods_avus_json)
+        baton_json = []
+        for file_path in file_paths:
+            directory, file_name = os.path.split(file_path)
+            irods_file_location = IrodsFileLocation(directory, file_name)
+            baton_json.append(object_to_baton_json(irods_file_location))
 
-    def get_file_metadata(self, fpath):
-        """
-        :param fpath:
-        :return:
-        """
-        fpath_as_dict = self._split_path_in_data_obj_and_coll(fpath)
-        irods_fpath_dict_as_json = json.dumps(fpath_as_dict)
-        return self._get_baton_list_metadata_result(irods_fpath_dict_as_json)
+        return self._run_baton_attribute_query(baton_json)
 
-    def get_all_files_metadata(self, fpaths):
+    def get_metadata_by_attribute(self, search_criteria: SearchCriteria) -> List[Tuple(str, str)]:
         """
-        TODO
-        :param fpaths:
-        :return:
+        Gets metadata in iRODS that matches one or more of the given attribute search criteria.
+        :param search_criteria: the search criteria to get metadata by
+        :return: metadata that matches the given search critera
         """
-        list_of_fpaths_as_json = []
-        for f in fpaths:
-            fpath_as_dict = self._split_path_in_data_obj_and_coll(f)
-            irods_fpath_dict_as_json = json.dumps(fpath_as_dict)
-            list_of_fpaths_as_json.append(irods_fpath_dict_as_json)
-        return self._get_baton_list_metadata_for_list_of_files_result(list_of_fpaths_as_json)
+        baton_json = object_to_baton_json(search_criteria)
+        return self._run_baton_attribute_query(baton_json)
 
-    def _from_dict_to_irods_avus(self, avus_tuple_list):
+    def _run_baton_attribute_query(self, baton_json: Union[dict, List[dict]]) -> dict:
         """
-        TODO
-        :param avus_tuple_list:
-        :return:
+        Run a baton attribute value query defined by the given JSON.
+        :param baton_json: the JSON that defines the query
+        :return: the return from baton
         """
-        irods_avu_list = []
-        for attr, val in avus_tuple_list:
-            irods_avu_list.append({ "attribute": attr, "value" : val, "o" : "="})
-        return {'avus' : irods_avu_list}
+        arguments = [self._baton_location, "--avu", "--acl", "--checksum"]
 
-    def _split_path_in_data_obj_and_coll(self, fpath_irods):
-        """
-        TODO
-        :param fpath_irods:
-        :return:
-        """
-        dir, fname = os.path.split(fpath_irods)
-        return {'data_object' : fname, 'collection' : dir}
+        if isinstance(baton_json, list):
+            return Baton._parse_baton_output(Baton._run_command(arguments, write_to_standard_in=baton_json))
+        else:
+            return Baton._parse_baton_output(Baton._run_command(arguments, input_data=baton_json))
 
-    def _get_baton_metaquery_result(self, query_as_json):
+    # TODO: What is the difference between input_data and write to standard in?
+    @staticmethod
+    def _run_command(arguments: List[str], input_data: dict=None, write_to_standard_in: List[str]=()) -> str:
         """
-        This method queries by metadata iRODS using BATON and returns the result as json writen to a temp file.
-        :param query_as_json:
-        :return: the path to a temp file where the results are
+        Run a command as a subprocess.
+        :param arguments: the arguments to run
+        :param input_data: the input data to communicate to the subprocess
+        :param write_to_standard_in: the data to write into the subprocess through the process' standard in
+        :return: the process' standard out
         """
-        # Open/create a tempfile:
-        #temp = tempfile.NamedTemporaryFile(mode='w')
-        p = subprocess.Popen([self._baton_location, '--zone', self._irods_query_zone, '--obj', '--checksum', '--avu', '--acl'],   # not necessary to add also '--checksum' if --replicate is there
-                             stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.PIPE) # ,stdout=temp, stderr=subprocess.STDERR
-        out, err = p.communicate(input=query_as_json)
-        if err:
-            #print "ERROR REPORT: " + str(err)
-            raise IOError("Some irods error : " + str(err))
-        # if err:
-        #     print "ERROR VIA stderr " + str(err)
-        #     #raise IOError
-        return out
-        #return temp
+        process = subprocess.Popen(arguments, stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.STDOUT)
 
-    def _get_baton_list_metadata_result(self, data_obj_as_json):
-        """
-        TODO
-        :param data_obj_as_json:
-        :return:
-        """
-        #jq -n '[{data_object: "10080_8#64.bam", collection: "/seq/10080/"}]' | /software/gapi/pkg/baton/0.15.0/bin/baton-list -avu --acl
-        p = subprocess.Popen([self._baton_location, '--avu', '--acl', '--checksum'],     # not necessary to add also '--checksum' if --replicate is there
-                             stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.STDOUT)
-        out, err = p.communicate(input=data_obj_as_json)
-        #print "OUT: " + str(out) + "ERR " + str(err)
-        if err:
-            raise IOError("Some irods error : " + str(err))
+        if write_to_standard_in is not None:
+            for to_write in write_to_standard_in:
+                process.stdin.write(to_write)
+
+        out, error = process.communicate(input=input_data)  # TODO: timeout=
+
+        if error:
+            raise IOError(error)
+
         return out
 
-    def _get_baton_list_metadata_for_list_of_files_result(self, list_of_data_obj_as_json):
+    @staticmethod
+    def _parse_baton_output(out: str) -> dict:
         """
-        TODO
-        :param list_of_data_obj_as_json:
-        :return:
+        Parses baton's JSON output, converting it from a string to a dict.
+        :param out: the output as a string
+        :return: the output as a dict
         """
-        p = subprocess.Popen([self._baton_location, '--avu', '--acl', '--checksum'],     # not necessary to add also '--checksum' if --replicate is there
-                             stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.STDOUT)
-        for f in list_of_data_obj_as_json:
-            p.stdin.write(f)
-        out, err = p.communicate()
-        #print "OUT: " + str(out) + "ERR " + str(err)
-        if err:
-            raise IOError("Some irods error : " + str(err))
-        return out
+        returned_json = json.loads(out)
+        if isinstance(returned_json, dict):
+            raise ValueError("baton did not return a JSON object:\n%s" % returned_json)
+        return returned_json
