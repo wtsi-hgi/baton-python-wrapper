@@ -125,6 +125,7 @@ class BatonMetadataMapper(BatonMapper):
         baton_binary_location = os.path.join(self._baton_binaries_directory, _BinaryNames.BATON)
         arguments = [baton_binary_location, "--avu", "--acl", "--checksum", "--zone", self._irods_query_zone]
 
+        # TODO: Look at a better way of doing this
         if isinstance(baton_json, list):
             return BatonMapper._parse_baton_output(BatonMapper._run_command(arguments, write_to_standard_in=baton_json))
         else:
@@ -134,9 +135,7 @@ class BatonMetadataMapper(BatonMapper):
 class BatonFileMapper(BatonMapper):
     def get_by_metadata_attribute(self, metadata_search_criteria: Union[SearchCriterion, SearchCriteria]) -> IrodsFile:
         baton_json = object_to_baton_json(metadata_search_criteria)
-        # jq -n '{avus: [{attribute: "sample", value: "SC_DDD5148906", o: "="}, {attribute: "study", value: "SEQCAP_DDD_MAIN", o: "="}]}' | /software/gapi/pkg/baton/0.9.1/bin/baton-metaquery --zone seq --obj
-
-
+        return self._run_baton_meta_query(baton_json)
 
     def _run_baton_meta_query(self, baton_json: Union[dict, List[dict]]) -> dict:
         """
@@ -147,6 +146,7 @@ class BatonFileMapper(BatonMapper):
         baton_meta_query_binary_location = os.path.join(self._baton_binaries_directory, _BinaryNames.METAQUERY)
         arguments = [baton_meta_query_binary_location, "--obj", "--zone", self._irods_query_zone]
 
+        # TODO: Look at a better way of doing this
         if isinstance(baton_json, list):
             return BatonMapper._parse_baton_output(BatonMapper._run_command(arguments, write_to_standard_in=baton_json))
         else:
