@@ -4,7 +4,7 @@
 ## Introduction
 Python 3 Wrapper for [baton](https://github.com/wtsi-npg/baton), based on [previous implementation in meta-datacheck](https://github.com/wtsi-hgi/metadata-check/blob/9cd5c41b0f2e254fc1d6249a14752bd428587bb7/irods_baton/baton_wrapper.py).
 
-The wrapper does not currently provide access to all baton's functionality.
+The wrapper does not currently provide access to all of baton's functionality.
 
 
 ## How to use in your project
@@ -23,6 +23,9 @@ from baton import Baton, SearchCriteria, SearchCriterion
 
 # Setup baton
 baton = Baton("/where/baton/binary/is/installed/baton", "irods_query_zone")
+
+# Change the query zone that baton uses
+baton.irods_query_zone = "other_irods_query_zone"
 
 # Get metadata corresponding to the given file(s)
 baton.get_metadata_by_file_path("collection/data_object")    # type: List[Tuple(str, str)]:

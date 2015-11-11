@@ -18,7 +18,7 @@ class Baton:
         :param irods_query_zone: the iRODS zone to query
         """
         self._baton_location = baton_location
-        self._irods_query_zone = irods_query_zone
+        self.irods_query_zone = irods_query_zone
 
     def get_metadata_by_file_path(self, file_paths: Union[str, List[str]]) -> List[Tuple(str, str)]:
         """
