@@ -1,5 +1,5 @@
 from baton.enums import ComparisonOperator
-from baton.models import IrodsFileLocation, SearchCriterion, SearchCriteria
+from baton.models import IrodsFile, SearchCriterion, SearchCriteria
 
 
 _BATON_FILE_NAME_PROPERTY = "data_object"
@@ -59,15 +59,15 @@ def _search_criteria_to_baton_json(search_criteria: SearchCriteria) -> dict:
     }
 
 
-def _irods_file_location_to_baton_json(irods_file_location: IrodsFileLocation) -> dict:
+def _irods_file_to_baton_json(irods_file: IrodsFile) -> dict:
     """
-     Creates a baton JSON representation of the given iRODS file location.
-    :param irods_file_location: the iRODS file location to convert to a baton representation
-    :return: the baton JSON representation of the given iRODS file location
+     Creates a baton JSON representation of the given iRODS file.
+    :param irods_file: the iRODS file to convert to a baton representation
+    :return: the baton JSON representation of the given iRODS file
     """
     return {
-        _BATON_FILE_NAME_PROPERTY: irods_file_location.file_name,
-        _BATON_DIRECTORY_PROPERTY: irods_file_location.directory
+        _BATON_FILE_NAME_PROPERTY: irods_file.file_name,
+        _BATON_DIRECTORY_PROPERTY: irods_file.directory
     }
 
 
@@ -75,5 +75,5 @@ def _irods_file_location_to_baton_json(irods_file_location: IrodsFileLocation) -
 _MAPPINGS = {
     SearchCriterion: _search_criterion_to_baton_json,
     SearchCriteria: _search_criteria_to_baton_json,
-    IrodsFileLocation: _irods_file_location_to_baton_json
+    IrodsFile: _irods_file_to_baton_json
 }
