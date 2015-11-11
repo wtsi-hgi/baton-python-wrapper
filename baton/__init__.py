@@ -1,3 +1,3 @@
-from baton.models import Model, IrodsFileLocation, SearchCriteria, SearchCriterion
+from baton.models import Model, IrodsFile, SearchCriteria, SearchCriterion
 from baton.enums import ComparisonOperator
-from baton.baton_wrapper import Baton
+from baton.baton_wrapper import BatonFileMapper, BatonMetadataMapper

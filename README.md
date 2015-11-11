@@ -19,25 +19,25 @@ git+https://github.com/wtsi-hgi/baton-python-wrapper.git@master#egg=baton
 
 ## API
 ```python
-from baton import Baton, SearchCriteria, SearchCriterion, ComparisonOperator
+from baton import setup_baton, SearchCriteria, ComparisonOperator, SearchCriterion, IrodsFile
 
 # Setup baton
-baton = Baton("/where/baton/binary/is/installed/baton", "irods_query_zone")
-
-# Change the query zone that baton uses
-baton.irods_query_zone = "other_irods_query_zone"
+irods = connect_to_irods_with_baton("/where/baton/binaries/are/installed/", "irods_query_zone")
 
 # Get metadata corresponding to the given file(s)
-baton.get_metadata_by_file_path("collection/data_object")    # type: List[Tuple(str, str)]:
-baton.get_metadata_by_file_path(["collection/data_object", "collection/other_data_object_"])    # type: List[Tuple(str, str)]:
+irods.metadata.get_by_file_path("collection/data_object")    # type: List[Tuple(str, str)]:
+irods.metadata.get_by_file_path(["collection/data_object", "collection/other_data_object_"])    # type: List[Tuple(str, str)]:
 
-# Search for metadata
 # Setup metadata search
-search_criteria = SearchCriteria()  # Collection of SearchCriteria (subclass of `list`)
-search_criteria.append(SearchCriterion("attribute", "match_value", ComparisonOperator.EQUALS))
-search_criteria.append(SearchCriterion("other_attribute", "other_match_value", ComparisonOperator.LESS_THAN))
-# Do metadata search
-baton.get_metadata_by_attribute(search_criteria)    # type: List[Tuple(str, str)]:
+search_criterion_1 = SearchCriterion("attribute", "match_value", ComparisonOperator.EQUALS)
+search_criterion_2 = SearchCriterion("other_attribute", "other_match_value", ComparisonOperator.LESS_THAN)
+search_criteria = SearchCriteria([search_criterion_1, search_criterion_2])  # Collection of SearchCriteria (subclass of `list`)
+
+# Do metadata search based on metadata attribute values
+irods.metadata.get_by_attribute(search_criteria)    # type: List[Tuple(str, str)]:
+
+# Do file search based on metadata attribute values
+irods.file.get_by_metadata_attribute(search_criteria)   # type: List[IrodsFile]
 ```
 
 

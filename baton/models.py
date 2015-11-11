@@ -37,12 +37,12 @@ class SearchCriterion(Model):
         self.comparison_operator = comparison_operator
 
 
-class IrodsFileLocation(Model):
+class IrodsFile(Model):
     """
-    Model of an iRODS file location.
+    Model of an iRODS file.
     """
     def __init__(self, directory: str, file_name: str):
-        super(IrodsFileLocation, self).__init__()
+        super(IrodsFile, self).__init__()
         self.directory = directory
         self.file_name = file_name
 
