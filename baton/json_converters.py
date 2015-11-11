@@ -54,7 +54,6 @@ def _search_criteria_to_baton_json(search_criteria: SearchCriteria) -> dict:
     for criterion in search_criteria:
         search_match_as_baton_json = _search_criterion_to_baton_json(criterion)
         search_criteria_as_baton_json_list.append(search_match_as_baton_json)
-
     return {
         _BATON_AVU_SEARCH_PROPERTY: search_criteria_as_baton_json_list
     }
