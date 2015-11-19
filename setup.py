@@ -18,6 +18,7 @@ setup(
     long_description=open("README.md").read(),
 
     install_requires=open("requirements.txt").read().splitlines(),
+    tests_requires=open("test_requirements.txt").read().splitlines(),
 
     test_suite="baton.tests"
 )

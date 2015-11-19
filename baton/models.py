@@ -1,6 +1,5 @@
 from abc import ABCMeta
-from typing import List
-
+from typing import List, Any
 from baton.enums import ComparisonOperator
 
 
@@ -8,9 +7,6 @@ class Model(metaclass=ABCMeta):
     """
     Superclass that all POPOs (Plain Old Python Objects) must implement.
     """
-    def __init__(self, *args, **kwargs):
-        pass
-
     def __eq__(self, other):
         if not isinstance(other, self.__class__):
             return False
@@ -25,26 +21,36 @@ class Model(metaclass=ABCMeta):
             string_builder.append("%s: %s" % (property, value))
         return "{ %s }" % ', '.join(string_builder)
 
+    def __repr__(self) -> str:
+        return "%s %s" % (self.__class__, str(self))
+
 
 class SearchCriterion(Model):
     """
     Model of an attribute search criterion.
     """
     def __init__(self, attribute: str, value: str, comparison_operator: ComparisonOperator):
-        super(SearchCriterion, self).__init__()
         self.attribute = attribute
         self.value = value
         self.comparison_operator = comparison_operator
 
 
-class IrodsFileLocation(Model):
+class IrodsFile(Model):
     """
-    Model of an iRODS file location.
+    Model of an iRODS file.
     """
     def __init__(self, directory: str, file_name: str):
-        super(IrodsFileLocation, self).__init__()
         self.directory = directory
         self.file_name = file_name
+
+
+class Metadata(Model):
+    """
+    Model of a unit of metadata
+    """
+    def __init__(self, attribute: str, value: Any):
+        self.attribute = attribute
+        self.value = value
 
 
 class SearchCriteria(list):
