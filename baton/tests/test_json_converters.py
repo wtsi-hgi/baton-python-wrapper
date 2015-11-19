@@ -2,8 +2,9 @@ import json
 import unittest
 
 from baton.enums import ComparisonOperator
-from baton.json_converters import _search_criterion_to_baton_json, _BATON_COMPARISON_OPERATORS, \
-    _search_criteria_to_baton_json, _irods_file_to_baton_json, object_to_baton_json
+from baton._json_converters import _search_criterion_to_baton_json, _BATON_COMPARISON_OPERATORS, \
+    _search_criteria_to_baton_json, _irods_file_to_baton_json, object_to_baton_json, _baton_json_to_search_criterion, \
+    _baton_json_to_irods_file, _baton_json_to_search_criteria, baton_json_to_object
 from baton.models import SearchCriterion, SearchCriteria, IrodsFile
 
 
@@ -22,12 +23,12 @@ class TestConversions(unittest.TestCase):
         self._search_criterion1 = SearchCriterion(_SEARCH_ATTRIBUTE_1, _SEARCH_VALUE_1, _SEARCH_COMPARISON_OPERATOR_1)
         self._search_criterion2 = SearchCriterion(_SEARCH_ATTRIBUTE_2, _SEARCH_VALUE_2, _SEARCH_COMPARISON_OPERATOR_2)
         self._search_criteria = SearchCriteria([self._search_criterion1, self._search_criterion2])
-        self._irods_file_location = IrodsFile(_DIRECTORY, _FILE_NAME)
+        self._irods_file = IrodsFile(_DIRECTORY, _FILE_NAME)
 
     def test_object_to_baton_json(self):
         self.assertIsInstance(object_to_baton_json(self._search_criterion1), dict)
         self.assertIsInstance(object_to_baton_json(self._search_criteria), dict)
-        self.assertIsInstance(object_to_baton_json(self._irods_file_location), dict)
+        self.assertIsInstance(object_to_baton_json(self._irods_file), dict)
 
     def test__search_criterion_to_baton_json(self):
         baton_json = _search_criterion_to_baton_json(self._search_criterion1)
@@ -44,10 +45,28 @@ class TestConversions(unittest.TestCase):
             self.assertIn(expected, json.dumps(baton_json))
 
     def test__irods_file_location_to_baton_json(self):
-        baton_json = _irods_file_to_baton_json(self._irods_file_location)
+        baton_json = _irods_file_to_baton_json(self._irods_file)
 
         self.assertIn(_DIRECTORY, baton_json.values())
         self.assertIn(_FILE_NAME, baton_json.values())
+
+    def test_baton_json_to_object(self):
+        self.assertIsInstance(baton_json_to_object(object_to_baton_json(self._search_criterion1), SearchCriterion), SearchCriterion)
+        self.assertIsInstance(baton_json_to_object(object_to_baton_json(self._search_criteria), SearchCriteria), SearchCriteria)
+        self.assertIsInstance(baton_json_to_object(object_to_baton_json(self._irods_file), IrodsFile), IrodsFile)
+
+    def test__baton_json_to_search_criterion(self):
+        baton_json = object_to_baton_json(self._search_criterion1)
+        self.assertEquals(_baton_json_to_search_criterion(baton_json), self._search_criterion1)
+
+    def test__baton_json_to_search_criteria(self):
+        baton_json = object_to_baton_json(self._search_criteria)
+        self.assertEquals(_baton_json_to_search_criteria(baton_json), self._search_criteria)
+
+    def test__baton_json_to_irods_file(self):
+        baton_json = object_to_baton_json(self._irods_file)
+        self.assertEquals(_baton_json_to_irods_file(baton_json), self._irods_file)
+
 
 if __name__ == '__main__':
     unittest.main()

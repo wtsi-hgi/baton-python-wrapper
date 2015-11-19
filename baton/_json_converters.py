@@ -94,11 +94,14 @@ def _baton_json_to_search_criterion(baton_json: dict) -> SearchCriterion:
     :param baton_json: the JSON representation of the object used by baton
     :return: the corresponding model
     """
-    return SearchCriterion(
-        baton_json[_BATON_ATTRIBUTE_PROPERTY],
-        baton_json[_BATON_VALUE_PROPERTY],
-        _BATON_COMPARISON_OPERATORS[_BATON_COMPARISON_OPERATOR_PROPERTY]
-    )
+    for operator_enum, operator_symbol in _BATON_COMPARISON_OPERATORS.items():
+        if operator_symbol == baton_json[_BATON_COMPARISON_OPERATOR_PROPERTY]:
+            return SearchCriterion(
+                baton_json[_BATON_ATTRIBUTE_PROPERTY],
+                baton_json[_BATON_VALUE_PROPERTY],
+                operator_enum
+            )
+    raise ValueError("Could not convert baton JSON to a `SearchCriterion` model:\n%s" % baton_json)
 
 
 def _baton_json_to_search_criteria(baton_json: dict) -> SearchCriteria:
@@ -122,8 +125,8 @@ def _baton_json_to_irods_file(baton_json: dict) -> IrodsFile:
     :return: the corresponding model
     """
     return IrodsFile(
-        baton_json[_BATON_FILE_NAME_PROPERTY],
-        baton_json[_BATON_DIRECTORY_PROPERTY]
+        baton_json[_BATON_DIRECTORY_PROPERTY],
+        baton_json[_BATON_FILE_NAME_PROPERTY]
     )
 
 
@@ -135,9 +138,9 @@ _OBJECT_TO_JSON_BATON_CONVERTERS = {
 }
 
 
-# TODO
+# Mappings between required models and the mapping method that convert JSON representations to the models
 _BATON_JSON_TO_OBJECT_CONVERTERS = {
-    SearchCriterion: _baton_json_to_search_criteria,
+    SearchCriterion: _baton_json_to_search_criterion,
     SearchCriteria: _baton_json_to_search_criteria,
     IrodsFile: _baton_json_to_irods_file
 }
