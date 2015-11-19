@@ -20,14 +20,14 @@ git+https://github.com/wtsi-hgi/baton-python-wrapper.git@master#egg=baton
 
 ## API
 ```python
-from baton import setup_baton, IrodsConnection, SearchCriteria, ComparisonOperator, SearchCriterion, IrodsFile
+from baton import setup_baton, Connection, SearchCriteria, ComparisonOperator, SearchCriterion, IrodsFile, Metadata
 
 # Setup connection to iRODS using baton
-irods = connect_to_irods_with_baton("/where/baton/binaries/are/installed/", "irods_query_zone") # type: IrodsConnection
+irods = connect_to_irods_with_baton("/where/baton/binaries/are/installed/", "irods_query_zone") # type: Connection
 
 # Get metadata corresponding to the given file(s)
-irods.metadata.get_by_file_path("collection/data_object")    # type: List[Tuple(str, str)]:
-irods.metadata.get_by_file_path(["collection/data_object", "collection/other_data_object_"])    # type: List[Tuple(str, str)]:
+irods.metadata.get_by_file_path("collection/data_object")    # type: List[Metadata]:
+irods.metadata.get_by_file_path(["collection/data_object", "collection/other_data_object_"])    # type: List[Metadata]:
 
 # Setup metadata search
 search_criterion_1 = SearchCriterion("attribute", "match_value", ComparisonOperator.EQUALS)
@@ -35,9 +35,10 @@ search_criterion_2 = SearchCriterion("other_attribute", "other_match_value", Com
 search_criteria = SearchCriteria([search_criterion_1, search_criterion_2])  # Collection of SearchCriteria (subclass of `list`)
 
 # Do metadata search based on metadata attribute values
-irods.metadata.get_by_attribute(search_criteria)    # type: List[Tuple(str, str)]:
+irods.metadata.get_by_attribute(search_criteria)    # type: List[Metadata]:
 
 # Do file search based on metadata attribute values
+# Note: IrodsFile objects are not populated with the contents of the file on iRODS
 irods.file.get_by_metadata_attribute(search_criteria)   # type: List[IrodsFile]
 ```
 

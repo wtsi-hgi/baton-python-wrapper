@@ -1,6 +1,5 @@
 from baton.enums import ComparisonOperator
-from baton.models import IrodsFile, SearchCriterion, SearchCriteria
-
+from baton.models import IrodsFile, SearchCriterion, SearchCriteria, Metadata
 
 _BATON_FILE_NAME_PROPERTY = "data_object"
 _BATON_DIRECTORY_PROPERTY = "collection"
@@ -78,13 +77,25 @@ def _search_criteria_to_baton_json(search_criteria: SearchCriteria) -> dict:
 
 def _irods_file_to_baton_json(irods_file: IrodsFile) -> dict:
     """
-     Creates a baton JSON representation of the given iRODS file.
+    Creates a baton JSON representation of the given iRODS file.
     :param irods_file: the iRODS file to convert to a baton representation
     :return: the baton JSON representation of the given iRODS file
     """
     return {
         _BATON_FILE_NAME_PROPERTY: irods_file.file_name,
         _BATON_DIRECTORY_PROPERTY: irods_file.directory
+    }
+
+
+def _metadata_to_baton_json(metadata: Metadata) -> dict:
+    """
+    Creates a baton JSON representation of the given piece of metadata.
+    :param metadata: the piece of metadata to convert to a baton representation
+    :return: the baton JSON representation of the given metadata
+    """
+    return {
+        _BATON_ATTRIBUTE_PROPERTY: metadata.attribute,
+        _BATON_VALUE_PROPERTY: metadata.value
     }
 
 
@@ -130,11 +141,24 @@ def _baton_json_to_irods_file(baton_json: dict) -> IrodsFile:
     )
 
 
+def _baton_json_to_metadata(baton_json: dict) -> Metadata:
+    """
+    Converts a given baton JSON representation of piece of metadata to the corresponding model.
+    :param baton_json: the JSON representation of the object used by baton
+    :return: the corresponding model
+    """
+    return Metadata(
+        baton_json[_BATON_ATTRIBUTE_PROPERTY],
+        baton_json[_BATON_VALUE_PROPERTY]
+    )
+
+
 # Mappings between models and the methods that can create baton JSON representations of them
 _OBJECT_TO_JSON_BATON_CONVERTERS = {
     SearchCriterion: _search_criterion_to_baton_json,
     SearchCriteria: _search_criteria_to_baton_json,
-    IrodsFile: _irods_file_to_baton_json
+    IrodsFile: _irods_file_to_baton_json,
+    Metadata: _metadata_to_baton_json
 }
 
 
@@ -142,5 +166,6 @@ _OBJECT_TO_JSON_BATON_CONVERTERS = {
 _BATON_JSON_TO_OBJECT_CONVERTERS = {
     SearchCriterion: _baton_json_to_search_criterion,
     SearchCriteria: _baton_json_to_search_criteria,
-    IrodsFile: _baton_json_to_irods_file
+    IrodsFile: _baton_json_to_irods_file,
+    Metadata: _baton_json_to_metadata
 }
