@@ -1,5 +1,6 @@
-# baton Python Wrapper
 [![Build Status](https://travis-ci.org/wtsi-hgi/baton-python-wrapper.svg)](https://travis-ci.org/wtsi-hgi/baton-python-wrapper)
+# baton Python Wrapper
+
 
 ## Introduction
 Python 3 Wrapper for [baton](https://github.com/wtsi-npg/baton), based on [previous implementation in meta-datacheck](https://github.com/wtsi-hgi/metadata-check/blob/9cd5c41b0f2e254fc1d6249a14752bd428587bb7/irods_baton/baton_wrapper.py).
