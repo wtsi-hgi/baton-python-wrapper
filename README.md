@@ -18,7 +18,7 @@ git+https://github.com/wtsi-hgi/baton-python-wrapper.git@master#egg=baton
 [pip documentation](https://pip.readthedocs.org/en/1.1/requirements.html#git).*
 
 
-## API
+### API
 ```python
 from baton import setup_baton, Connection, SearchCriteria, ComparisonOperator, SearchCriterion, IrodsFile, Metadata
 

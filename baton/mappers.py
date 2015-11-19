@@ -21,15 +21,6 @@ class IrodsMetadataMapper(IrodsMapper, metaclass=ABCMeta):
     iRODS metadata mapper.
     """
     @abstractmethod
-    def _run_baton_metadata_query(self, baton_json):
-        """
-        Run a baton attribute value query defined by the given JSON.
-        :param baton_json: the JSON that defines the query
-        :return: the return from baton
-        """
-        pass
-
-    @abstractmethod
     def get_for_file(self, file_paths: Union[str, List[str]]) -> List[Metadata]:
         """
         Gets the metadata in iRODS for the file with at the given path.
