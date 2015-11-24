@@ -2,8 +2,12 @@ from hgicommon.collections import SearchCriteria
 from hgicommon.enums import ComparisonOperator
 from hgicommon.models import SearchCriterion, Metadata, File
 
+from baton.models import IrodsFile
+
 _BATON_FILE_NAME_PROPERTY = "data_object"
 _BATON_DIRECTORY_PROPERTY = "collection"
+_BATON_FILE_CHECKSUM_PROPERTY = "checksum"
+_BATON_FILE_REPLICATE_PROPERTY = "replicate"
 
 _BATON_ATTRIBUTE_PROPERTY = "attribute"
 _BATON_VALUE_PROPERTY = "value"
@@ -130,15 +134,22 @@ def _baton_json_to_search_criteria(baton_json: dict) -> SearchCriteria:
     return SearchCriteria(search_matches)
 
 
-def _baton_json_to_file(baton_json: dict) -> File:
+def _baton_json_to_irods_file(baton_json: dict) -> IrodsFile:
     """
     Converts a given baton JSON representation of a iRODS file to the corresponding model.
     :param baton_json: the JSON representation of the object used by baton
     :return: the corresponding model
     """
-    return File(
+    if _BATON_FILE_REPLICATE_PROPERTY in baton_json:
+        replica_checksums = [replica.checksum for replica in baton_json[_BATON_FILE_REPLICATE_PROPERTY]]
+    else:
+        replica_checksums = []
+
+    return IrodsFile(
         baton_json[_BATON_DIRECTORY_PROPERTY],
-        baton_json[_BATON_FILE_NAME_PROPERTY]
+        baton_json[_BATON_FILE_NAME_PROPERTY],
+        baton_json[_BATON_FILE_CHECKSUM_PROPERTY],
+        replica_checksums
     )
 
 
@@ -160,6 +171,7 @@ _OBJECT_TO_JSON_BATON_CONVERTERS = {
     SearchCriterion: _search_criterion_to_baton_json,
     SearchCriteria: _search_criteria_to_baton_json,
     File: _file_to_baton_json,
+    IrodsFile: _file_to_baton_json,
     Metadata: _metadata_to_baton_json
 }
 
@@ -168,6 +180,7 @@ _OBJECT_TO_JSON_BATON_CONVERTERS = {
 _BATON_JSON_TO_OBJECT_CONVERTERS = {
     SearchCriterion: _baton_json_to_search_criterion,
     SearchCriteria: _baton_json_to_search_criteria,
-    File: _baton_json_to_file,
+    File: _baton_json_to_irods_file,
+    IrodsFile: _baton_json_to_irods_file,
     Metadata: _baton_json_to_metadata
 }

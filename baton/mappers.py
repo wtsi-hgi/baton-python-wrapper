@@ -7,13 +7,15 @@ from hgicommon.collections import SearchCriteria
 from hgicommon.models import Metadata, File
 from hgicommon.models import SearchCriterion
 
+from baton.models import IrodsFile
+
 
 class IrodsMapper(metaclass=ABCMeta):
     """
     Superclass that all iRODS mappers should extend.
 
-    A data metadata_mapper as defined by Martin Fowler (see: http://martinfowler.com/eaaCatalog/dataMapper.html) that moves data
-    between objects and iRODS, while keeping them independent of each other and the metadata_mapper itself.
+    A data metadata_mapper as defined by Martin Fowler (see: http://martinfowler.com/eaaCatalog/dataMapper.html) that
+    moves data between objects and iRODS, while keeping them independent of each other and the metadata_mapper itself.
     """
     pass
 
@@ -38,7 +40,7 @@ class IrodsFileMapper(IrodsMapper, metaclass=ABCMeta):
     """
     @abstractmethod
     def get_by_metadata_attribute(
-            self, metadata_search_criteria: Union[SearchCriterion, SearchCriteria]) -> List[File]:
+            self, metadata_search_criteria: Union[SearchCriterion, SearchCriteria]) -> List[IrodsFile]:
         """
         Gets files from iRODS that have metadata that matches the given search criteria.
         :param metadata_search_criteria: the metadata search criteria
