@@ -3,7 +3,9 @@ from typing import Union
 
 from typing import List
 
-from baton.models import Metadata, SearchCriteria, SearchCriterion, IrodsFile
+from hgicommon.collections import SearchCriteria
+from hgicommon.models import Metadata, File
+from hgicommon.models import SearchCriterion
 
 
 class IrodsMapper(metaclass=ABCMeta):
@@ -45,7 +47,7 @@ class IrodsFileMapper(IrodsMapper, metaclass=ABCMeta):
     """
     @abstractmethod
     def get_by_metadata_attribute(
-            self, metadata_search_criteria: Union[SearchCriterion, SearchCriteria]) -> List[IrodsFile]:
+            self, metadata_search_criteria: Union[SearchCriterion, SearchCriteria]) -> List[File]:
         """
         Gets files from iRODS that have metadata that matches the given search criteria.
         :param metadata_search_criteria: the metadata search criteria
