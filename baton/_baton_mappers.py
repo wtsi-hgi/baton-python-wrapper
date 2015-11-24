@@ -12,7 +12,7 @@ from hgicommon.models import SearchCriterion, Metadata, Model, File
 
 from baton._json_converters import object_to_baton_json, baton_json_to_object
 from baton.mappers import IrodsMapper, IrodsMetadataMapper, IrodsFileMapper
-
+from baton.models import IrodsFile
 
 _BATON_ERROR = "error"
 _BATON_AVUS = "avus"
@@ -187,19 +187,20 @@ class BatonIrodsFileMapper(BatonIrodsMapper, IrodsFileMapper):
     """
     Mapper for iRODS files.
     """
-    def get_by_metadata_attribute(self, search_criteria: Union[SearchCriterion, SearchCriteria]) -> List[File]:
+    def get_by_metadata_attribute(self, search_criteria: Union[SearchCriterion, SearchCriteria]) -> List[IrodsFile]:
         if isinstance(search_criteria, SearchCriterion):
             search_criteria = SearchCriteria([search_criteria])
 
         baton_json = object_to_baton_json(search_criteria)
         return self._run_baton_irods_file_query(baton_json)
 
-    def _run_baton_irods_file_query(self, baton_json: Union[dict, List[dict]]) -> List[File]:
+    def _run_baton_irods_file_query(self, baton_json: Union[dict, List[dict]]) -> List[IrodsFile]:
         """
         Runs a baton meta query.
         :param baton_json: the JSON that defines the query
         :return: the return from baton
         """
         baton_out_as_json = self.run_baton_query(
-            BatonBinary.BATON_METAQUERY, ["--obj", "--zone", self._irods_query_zone], input_data_as_json=baton_json)
-        return BatonIrodsMapper._baton_out_as_json_to_model(baton_out_as_json, File, True)
+            BatonBinary.BATON_METAQUERY,
+            ["--obj", "--checksum", "--replicate" "--zone", self._irods_query_zone], input_data_as_json=baton_json)
+        return BatonIrodsMapper._baton_out_as_json_to_model(baton_out_as_json, IrodsFile, True)

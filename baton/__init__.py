@@ -1,1 +1,2 @@
-from baton._baton_mappers import IrodsFileMapper, IrodsMetadataMapper
+from baton.models import IrodsFile
+from baton.api import Connection, connect_to_irods_with_baton
