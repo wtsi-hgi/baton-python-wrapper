@@ -18,18 +18,18 @@ _BATON_COMPARISON_OPERATORS = {
 }
 
 
-def object_to_baton_json(obj: object) -> dict:
+def object_to_baton_json(objects: object) -> dict:
     """
     Creates a baton JSON representation of the given object.
 
     Raises a value error if conversion is not possible
-    :param obj: the object to convert to a baton representation
+    :param objects: the object to convert to a baton representation
     :return: the baton JSON representation of the given object
     """
-    if obj.__class__ not in _OBJECT_TO_JSON_BATON_CONVERTERS:
-        raise ValueError("Cannot convert object of type `%s`" % obj.__class__)
+    if objects.__class__ not in _OBJECT_TO_JSON_BATON_CONVERTERS:
+        raise ValueError("Cannot convert object of type `%s`" % objects.__class__)
 
-    return _OBJECT_TO_JSON_BATON_CONVERTERS[obj.__class__](obj)
+    return _OBJECT_TO_JSON_BATON_CONVERTERS[objects.__class__](objects)
 
 
 def baton_json_to_object(baton_json: dict, target_model: type) -> object:

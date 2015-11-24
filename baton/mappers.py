@@ -12,15 +12,15 @@ class IrodsMapper(metaclass=ABCMeta):
     """
     Superclass that all iRODS mappers should extend.
 
-    A data mapper as defined by Martin Fowler (see: http://martinfowler.com/eaaCatalog/dataMapper.html) that moves data
-    between objects and iRODS, while keeping them independent of each other and the mapper itself.
+    A data metadata_mapper as defined by Martin Fowler (see: http://martinfowler.com/eaaCatalog/dataMapper.html) that moves data
+    between objects and iRODS, while keeping them independent of each other and the metadata_mapper itself.
     """
     pass
 
 
 class IrodsMetadataMapper(IrodsMapper, metaclass=ABCMeta):
     """
-    iRODS metadata mapper.
+    iRODS metadata metadata_mapper.
     """
     @abstractmethod
     def get_for_file(self, file_paths: Union[str, List[str]]) -> List[Metadata]:
@@ -31,19 +31,10 @@ class IrodsMetadataMapper(IrodsMapper, metaclass=ABCMeta):
         """
         pass
 
-    @abstractmethod
-    def get_by_attribute(self, search_criteria: Union[SearchCriterion, SearchCriteria]) -> List[Metadata]:
-        """
-        Gets metadata in iRODS that matches one or more of the given attribute search criteria.
-        :param search_criteria: the search criteria to get metadata by
-        :return: metadata that matches the given search criteria
-        """
-        pass
-
 
 class IrodsFileMapper(IrodsMapper, metaclass=ABCMeta):
     """
-    iRODS file mapper.
+    iRODS file metadata_mapper.
     """
     @abstractmethod
     def get_by_metadata_attribute(
