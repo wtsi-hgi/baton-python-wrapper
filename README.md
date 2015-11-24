@@ -1,4 +1,3 @@
-[![Build Status](https://travis-ci.org/wtsi-hgi/baton-python-wrapper.svg)](https://travis-ci.org/wtsi-hgi/baton-python-wrapper)
 # baton Python Wrapper
 
 
@@ -12,7 +11,7 @@ The wrapper does not currently provide access to all of baton's functionality.
 ### Including the `baton` library
 In ``/requirements.txt`` or in your ``/setup.py`` script:
 ```
-git+https://github.com/wtsi-hgi/baton-python-wrapper.git@master#egg=baton
+-e git+https://github.com/wtsi-hgi/baton-python-wrapper.git@master#egg=baton
 ```
 *See more about using libraries for git repositories in the 
 [pip documentation](https://pip.readthedocs.org/en/1.1/requirements.html#git).*
@@ -20,7 +19,7 @@ git+https://github.com/wtsi-hgi/baton-python-wrapper.git@master#egg=baton
 
 ### API
 ```python
-from baton import setup_baton, Connection, SearchCriteria, ComparisonOperator, SearchCriterion, IrodsFile, Metadata
+from baton import setup_baton, Connection, SearchCriteria, ComparisonOperator, SearchCriterion, File, Metadata
 
 # Setup connection to iRODS using baton
 irods = connect_to_irods_with_baton("/where/baton/binaries/are/installed/", "irods_query_zone") # type: Connection
@@ -38,8 +37,8 @@ search_criteria = SearchCriteria([search_criterion_1, search_criterion_2])  # Co
 irods.metadata.get_by_attribute(search_criteria)    # type: List[Metadata]:
 
 # Do file search based on metadata attribute values
-# Note: IrodsFile objects are not populated with the contents of the file on iRODS
-irods.file.get_by_metadata_attribute(search_criteria)   # type: List[IrodsFile]
+# Note: File objects are not populated with the contents of the file on iRODS
+irods.file.get_by_metadata_attribute(search_criteria)   # type: List[File]
 ```
 
 

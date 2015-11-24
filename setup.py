@@ -5,10 +5,10 @@ setup(
 
     version="0.1.0",
 
-    author="HGI Sanger",
+    author="Colin Nolan",
     author_email="hgi@sanger.ac.uk",
 
-    packages=find_packages(exclude=["testing"]),
+    packages=find_packages(exclude=["test"]),
 
     url="https://github.com/wtsi-hgi/baton-python-wrapper",
 

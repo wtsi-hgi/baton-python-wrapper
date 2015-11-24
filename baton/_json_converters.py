@@ -1,5 +1,6 @@
-from baton.enums import ComparisonOperator
-from baton.models import IrodsFile, SearchCriterion, SearchCriteria, Metadata
+from hgicommon.collections import SearchCriteria
+from hgicommon.enums import ComparisonOperator
+from hgicommon.models import SearchCriterion, Metadata, File
 
 _BATON_FILE_NAME_PROPERTY = "data_object"
 _BATON_DIRECTORY_PROPERTY = "collection"
@@ -17,18 +18,18 @@ _BATON_COMPARISON_OPERATORS = {
 }
 
 
-def object_to_baton_json(obj: object) -> dict:
+def object_to_baton_json(objects: object) -> dict:
     """
     Creates a baton JSON representation of the given object.
 
     Raises a value error if conversion is not possible
-    :param obj: the object to convert to a baton representation
+    :param objects: the object to convert to a baton representation
     :return: the baton JSON representation of the given object
     """
-    if obj.__class__ not in _OBJECT_TO_JSON_BATON_CONVERTERS:
-        raise ValueError("Cannot convert object of type `%s`" % obj.__class__)
+    if objects.__class__ not in _OBJECT_TO_JSON_BATON_CONVERTERS:
+        raise ValueError("Cannot convert object of type `%s`" % objects.__class__)
 
-    return _OBJECT_TO_JSON_BATON_CONVERTERS[obj.__class__](obj)
+    return _OBJECT_TO_JSON_BATON_CONVERTERS[objects.__class__](objects)
 
 
 def baton_json_to_object(baton_json: dict, target_model: type) -> object:
@@ -75,7 +76,7 @@ def _search_criteria_to_baton_json(search_criteria: SearchCriteria) -> dict:
     }
 
 
-def _irods_file_to_baton_json(irods_file: IrodsFile) -> dict:
+def _file_to_baton_json(irods_file: File) -> dict:
     """
     Creates a baton JSON representation of the given iRODS file.
     :param irods_file: the iRODS file to convert to a baton representation
@@ -129,13 +130,13 @@ def _baton_json_to_search_criteria(baton_json: dict) -> SearchCriteria:
     return SearchCriteria(search_matches)
 
 
-def _baton_json_to_irods_file(baton_json: dict) -> IrodsFile:
+def _baton_json_to_file(baton_json: dict) -> File:
     """
     Converts a given baton JSON representation of a iRODS file to the corresponding model.
     :param baton_json: the JSON representation of the object used by baton
     :return: the corresponding model
     """
-    return IrodsFile(
+    return File(
         baton_json[_BATON_DIRECTORY_PROPERTY],
         baton_json[_BATON_FILE_NAME_PROPERTY]
     )
@@ -147,6 +148,7 @@ def _baton_json_to_metadata(baton_json: dict) -> Metadata:
     :param baton_json: the JSON representation of the object used by baton
     :return: the corresponding model
     """
+    assert not isinstance(baton_json, list)
     return Metadata(
         baton_json[_BATON_ATTRIBUTE_PROPERTY],
         baton_json[_BATON_VALUE_PROPERTY]
@@ -157,7 +159,7 @@ def _baton_json_to_metadata(baton_json: dict) -> Metadata:
 _OBJECT_TO_JSON_BATON_CONVERTERS = {
     SearchCriterion: _search_criterion_to_baton_json,
     SearchCriteria: _search_criteria_to_baton_json,
-    IrodsFile: _irods_file_to_baton_json,
+    File: _file_to_baton_json,
     Metadata: _metadata_to_baton_json
 }
 
@@ -166,6 +168,6 @@ _OBJECT_TO_JSON_BATON_CONVERTERS = {
 _BATON_JSON_TO_OBJECT_CONVERTERS = {
     SearchCriterion: _baton_json_to_search_criterion,
     SearchCriteria: _baton_json_to_search_criteria,
-    IrodsFile: _baton_json_to_irods_file,
+    File: _baton_json_to_file,
     Metadata: _baton_json_to_metadata
 }
