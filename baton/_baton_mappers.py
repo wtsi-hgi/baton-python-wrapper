@@ -85,17 +85,15 @@ class BatonIrodsMapper(IrodsMapper, metaclass=ABCMeta):
         return out.decode(output_encoding).rstrip()
 
     @staticmethod
-    def _parse_baton_output(baton_output_as_str: str, expect_type: type, expect_list: bool) -> Union[Model, List[Model]]:
+    def _baton_out_as_json_to_model(
+            baton_output_as_json: dict, expect_type: type, expect_list: bool) -> Union[Model, List[Model]]:
         """
         TODO
-        :param baton_output_as_str:
+        :param baton_output_as_json:
         :param expect_type:
         :param expect_list:
         :return:
         """
-        print(baton_output_as_str)
-        baton_output_as_json = json.loads(baton_output_as_str)
-
         if expect_list:
             models = []
             for array_element in baton_output_as_json:
@@ -136,7 +134,8 @@ class BatonIrodsMetadataMapper(BatonIrodsMapper, IrodsMetadataMapper):
         arguments = [baton_binary_location, "--avu", "--acl", "--checksum"]
 
         baton_out = BatonIrodsMapper._run_command(arguments, input_data=baton_json)
-        return BatonIrodsMapper._parse_baton_output(baton_out, File, True)
+        baton_out_as_json = json.loads(baton_out)["avus"]
+        return BatonIrodsMapper._baton_out_as_json_to_model(baton_out_as_json, Metadata, True)
 
 
 class BatonIrodsFileMapper(BatonIrodsMapper, IrodsFileMapper):
@@ -158,4 +157,5 @@ class BatonIrodsFileMapper(BatonIrodsMapper, IrodsFileMapper):
         arguments = [baton_meta_query_binary_location, "--obj", "--zone", self._irods_query_zone]
 
         baton_out = BatonIrodsMapper._run_command(arguments, input_data=baton_json)
-        return BatonIrodsMapper._parse_baton_output(baton_out, File, True)
+        baton_out_as_json = json.loads(baton_out)
+        return BatonIrodsMapper._baton_out_as_json_to_model(baton_out_as_json, File, True)

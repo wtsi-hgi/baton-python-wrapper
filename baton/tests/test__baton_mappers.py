@@ -16,8 +16,8 @@ class TestBatonIrodsMapper(unittest.TestCase):
         pass
 
     def setUp(self):
-        print(get_irods_server_from_environment_if_defined())
-        logging.root.setLevel("DEBUG")
+        # print(get_irods_server_from_environment_if_defined())
+        # logging.root.setLevel("DEBUG")
         self.test_with_baton = TestWithBatonSetup(get_irods_server_from_environment_if_defined())
 
     def test_validate_baton_binaries_location_with_invalid_location(self):
@@ -56,8 +56,7 @@ class TestBatonIrodsMetadataMapper(unittest.TestCase):
     Tests for `BatonIrodsMetadataMapper`.
     """
     def setUp(self):
-        # self.test_with_baton = TestWithBatonSetup(get_irods_server_from_environment_if_defined())
-        self.test_with_baton = TestWithBatonSetup()
+        self.test_with_baton = TestWithBatonSetup(get_irods_server_from_environment_if_defined())
         self.test_with_baton.setup()
         self.mapper = BatonIrodsMetadataMapper(
             self.test_with_baton.baton_location, self.test_with_baton.irods_test_server.users[0].zone)
@@ -72,11 +71,9 @@ class TestBatonIrodsMetadataMapper(unittest.TestCase):
         metadata_2 = Metadata("attribute_2", "value_2")
         self.setup_helper.add_irods_metadata_to_file(file, metadata_2)
 
-        print(self.mapper.get_for_file(file))
-
-        self.setup_helper.run_icommand("irm", [file_name])
-        self.assertTrue(False)
-
+        metadata_collection = self.mapper.get_for_file(file)
+        self.assertIn(metadata_1, metadata_collection)
+        self.assertIn(metadata_2, metadata_collection)
 
     def tearDown(self):
         self.test_with_baton.tear_down()
