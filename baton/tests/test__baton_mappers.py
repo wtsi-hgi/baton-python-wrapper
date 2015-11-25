@@ -1,9 +1,9 @@
 import logging
 import unittest
 
-from hgicommon.collections import SearchCriteria
+from hgicommon.collections import SearchCriteria, Metadata
 from hgicommon.enums import ComparisonOperator
-from hgicommon.models import Metadata, File, SearchCriterion
+from hgicommon.models import File, SearchCriterion
 from testwithbaton import TestWithBatonSetup, get_irods_server_from_environment_if_defined
 from testwithbaton.helpers import SetupHelper
 from typing import List
@@ -70,6 +70,9 @@ class TestBatonIrodsMetadataMapper(unittest.TestCase):
             self.test_with_baton.baton_location, self.test_with_baton.irods_test_server.users[0].zone)
         self.setup_helper = SetupHelper(self.test_with_baton.icommands_location)
 
+        self.metadata_1 = Metadata({_ATTRIBUTE_1: ["something_else", _VALUE_1]})
+        self.metadata_2 = Metadata({_ATTRIBUTE_2: _VALUE_2})
+
     def test_get_for_file_that_does_not_exist(self):
         self.assertRaises(FileNotFoundError, self.metadata_mapper.get_for_file, File("/", "invalid"))
 
@@ -82,14 +85,13 @@ class TestBatonIrodsMetadataMapper(unittest.TestCase):
     def test_get_for_file_with_metadata(self):
         file = self.setup_helper.create_irods_file(_FILE_NAME_1)
 
-        metadata_1 = Metadata(_ATTRIBUTE_1, _VALUE_1)
-        self.setup_helper.add_irods_metadata_to_file(file, metadata_1)
-        metadata_2 = Metadata(_ATTRIBUTE_2, _VALUE_2)
-        self.setup_helper.add_irods_metadata_to_file(file, metadata_2)
+        self.setup_helper.add_irods_metadata_to_file(file, self.metadata_1)
+        self.setup_helper.add_irods_metadata_to_file(file, self.metadata_2)
 
-        metadata_collection = self.metadata_mapper.get_for_file(file)
-        self.assertIn(metadata_1, metadata_collection)
-        self.assertIn(metadata_2, metadata_collection)
+        metadata = self.metadata_mapper.get_for_file(file)
+        self.assertEquals(len(metadata), 2)
+        for key, values in metadata.items():
+            self.assertIn(Metadata({key: values}), [self.metadata_1, self.metadata_2])
 
     def tearDown(self):
         self.test_with_baton.tear_down()
@@ -106,76 +108,62 @@ class TestBatonIrodsFileMapper(unittest.TestCase):
             self.test_with_baton.baton_location, self.test_with_baton.irods_test_server.users[0].zone)
         self.setup_helper = SetupHelper(self.test_with_baton.icommands_location)
 
-        self.metadata_1 = Metadata(_ATTRIBUTE_1, _VALUE_1)
-        self.metadata_2 = Metadata(_ATTRIBUTE_2, _VALUE_2)
-
+        self.metadata_1 = Metadata({_ATTRIBUTE_1: ["something_else", _VALUE_1]})
+        self.metadata_2 = Metadata({_ATTRIBUTE_2: _VALUE_2})
         self.search_criterion_1 = SearchCriterion(_ATTRIBUTE_1, _VALUE_1, ComparisonOperator.EQUALS)
         self.search_criterion_2 = SearchCriterion(_ATTRIBUTE_2, _VALUE_2, ComparisonOperator.EQUALS)
-
-    def test_get_by_metadata_attribute_when_no_files(self):
-        retrieved_files = self.file_mapper.get_by_metadata_attribute(self.search_criterion_1)
-        self.assertEquals(len(retrieved_files), 0)
+        self.file_1 = self.setup_helper.create_irods_file(_FILE_NAME_1)
+        self.file_2 = self.setup_helper.create_irods_file(_FILE_NAME_2)
 
     def test_get_by_metadata_attribute_when_no_metadata(self):
-        self.setup_helper.create_irods_file(_FILE_NAME_1)
-
         retrieved_irods_files = self.file_mapper.get_by_metadata_attribute(
             SearchCriterion(_ATTRIBUTE_1, _VALUE_1, ComparisonOperator.EQUALS))
         self.assertEquals(len(retrieved_irods_files), 0)
 
     def test_get_by_metadata_attribute_when_single_criterion_match_single_file(self):
-        file_1 = self.setup_helper.create_irods_file(_FILE_NAME_1)
-        self.setup_helper.add_irods_metadata_to_file(file_1, self.metadata_1)
-        self.setup_helper.create_irods_file(_FILE_NAME_2)
+        self.setup_helper.add_irods_metadata_to_file(self.file_1, self.metadata_1)
 
         retrieved_irods_files = self.file_mapper.get_by_metadata_attribute(self.search_criterion_1)
         self.assertCountEqual(
-            TestBatonIrodsFileMapper._cast_irods_files_to_files(retrieved_irods_files), [file_1])
+            TestBatonIrodsFileMapper._cast_irods_files_to_files(retrieved_irods_files), [self.file_1])
 
     def test_get_by_metadata_attribute_when_multiple_criterions_match_single_file(self):
         search_criteria = SearchCriteria([self.search_criterion_1, self.search_criterion_2])
 
-        file_1 = self.setup_helper.create_irods_file(_FILE_NAME_1)
-        self.setup_helper.add_irods_metadata_to_file(file_1, self.metadata_1)
-        self.setup_helper.add_irods_metadata_to_file(file_1, self.metadata_2)
-        file_2 = self.setup_helper.create_irods_file(_FILE_NAME_2)
-        self.setup_helper.add_irods_metadata_to_file(file_2, self.metadata_1)
+        self.setup_helper.add_irods_metadata_to_file(self.file_1, self.metadata_1)
+        self.setup_helper.add_irods_metadata_to_file(self.file_1, self.metadata_2)
+        self.setup_helper.add_irods_metadata_to_file(self.file_2, self.metadata_1)
 
         retrieved_irods_files = self.file_mapper.get_by_metadata_attribute(search_criteria)
         self.assertCountEqual(
-            TestBatonIrodsFileMapper._cast_irods_files_to_files(retrieved_irods_files), [file_1])
+            TestBatonIrodsFileMapper._cast_irods_files_to_files(retrieved_irods_files), [self.file_1])
 
     def test_get_by_metadata_attribute_when_single_criterion_match_multiple_files(self):
-        file_1 = self.setup_helper.create_irods_file(_FILE_NAME_1)
-        self.setup_helper.add_irods_metadata_to_file(file_1, self.metadata_1)
-        self.setup_helper.add_irods_metadata_to_file(file_1, self.metadata_2)
-        file_2 = self.setup_helper.create_irods_file(_FILE_NAME_2)
-        self.setup_helper.add_irods_metadata_to_file(file_2, self.metadata_1)
+        self.setup_helper.add_irods_metadata_to_file(self.file_1, self.metadata_1)
+        self.setup_helper.add_irods_metadata_to_file(self.file_1, self.metadata_2)
+        self.setup_helper.add_irods_metadata_to_file(self.file_2, self.metadata_1)
         self.setup_helper.create_irods_file(_FILE_NAME_3)
 
         retrieved_irods_files = self.file_mapper.get_by_metadata_attribute(self.search_criterion_1)
         self.assertCountEqual(
-            TestBatonIrodsFileMapper._cast_irods_files_to_files(retrieved_irods_files), [file_1, file_2])
+            TestBatonIrodsFileMapper._cast_irods_files_to_files(retrieved_irods_files), [self.file_1, self.file_2])
 
     def test_get_by_metadata_attribute_when_multiple_criterions_match_multiple_files(self):
         search_criteria = SearchCriteria([self.search_criterion_1, self.search_criterion_2])
 
-        file_1 = self.setup_helper.create_irods_file(_FILE_NAME_1)
-        self.setup_helper.add_irods_metadata_to_file(file_1, self.metadata_1)
-        self.setup_helper.add_irods_metadata_to_file(file_1, self.metadata_2)
-        file_2 = self.setup_helper.create_irods_file(_FILE_NAME_2)
-        self.setup_helper.add_irods_metadata_to_file(file_2, self.metadata_1)
-        self.setup_helper.add_irods_metadata_to_file(file_2, self.metadata_2)
+        self.setup_helper.add_irods_metadata_to_file(self.file_1, self.metadata_1)
+        self.setup_helper.add_irods_metadata_to_file(self.file_1, self.metadata_2)
+        self.setup_helper.add_irods_metadata_to_file(self.file_2, self.metadata_1)
+        self.setup_helper.add_irods_metadata_to_file(self.file_2, self.metadata_2)
         self.setup_helper.create_irods_file(_FILE_NAME_3)
 
         retrieved_irods_files = self.file_mapper.get_by_metadata_attribute(search_criteria)
         self.assertCountEqual(
-            TestBatonIrodsFileMapper._cast_irods_files_to_files(retrieved_irods_files), [file_1, file_2])
+            TestBatonIrodsFileMapper._cast_irods_files_to_files(retrieved_irods_files), [self.file_1, self.file_2])
 
     def test_get_by_metadata_attribute_retrieves_checksums(self):
-        file_1 = self.setup_helper.create_irods_file(_FILE_NAME_1)
-        self.setup_helper.add_irods_metadata_to_file(file_1, self.metadata_1)
-        ichksum_out = self.setup_helper.run_icommand("ichksum", [file_1.file_name])
+        self.setup_helper.add_irods_metadata_to_file(self.file_1, self.metadata_1)
+        ichksum_out = self.setup_helper.run_icommand("ichksum", [self.file_1.file_name])
         checksum = ichksum_out.split('\n')[0].split(' ')[-1]
 
         retrieved_irods_files = self.file_mapper.get_by_metadata_attribute(self.search_criterion_1)

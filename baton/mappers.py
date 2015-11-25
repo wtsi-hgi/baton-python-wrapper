@@ -1,10 +1,8 @@
 from abc import ABCMeta, abstractmethod
+from typing import List
 from typing import Union
 
-from typing import List
-
-from hgicommon.collections import SearchCriteria
-from hgicommon.models import Metadata, File
+from hgicommon.collections import SearchCriteria, Metadata
 from hgicommon.models import SearchCriterion
 
 from baton.models import IrodsFile
@@ -25,7 +23,7 @@ class IrodsMetadataMapper(IrodsMapper, metaclass=ABCMeta):
     iRODS metadata metadata_mapper.
     """
     @abstractmethod
-    def get_for_file(self, file_paths: Union[str, List[str]]) -> List[Metadata]:
+    def get_for_file(self, file_paths: Union[str, List[str]]) -> Metadata:
         """
         Gets the metadata in iRODS for the file with at the given path.
         :param file_paths: the path of the file in iRODS

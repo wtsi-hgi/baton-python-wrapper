@@ -7,8 +7,8 @@ from enum import Enum
 from typing import List, Union
 
 from datetime import timedelta
-from hgicommon.collections import SearchCriteria
-from hgicommon.models import SearchCriterion, Metadata, Model, File
+from hgicommon.collections import SearchCriteria, Metadata
+from hgicommon.models import SearchCriterion, Model, File
 
 from baton._json_converters import object_to_baton_json, baton_json_to_object
 from baton.mappers import IrodsMapper, IrodsMetadataMapper, IrodsFileMapper
@@ -160,7 +160,7 @@ class BatonIrodsMetadataMapper(BatonIrodsMapper, IrodsMetadataMapper):
     """
     Mapper for iRODS metadata.
     """
-    def get_for_file(self, files: Union[File, List[File]]) -> List[Metadata]:
+    def get_for_file(self, files: Union[File, List[File]]) -> Metadata:
         if not isinstance(files, list):
             files = [files]
         if len(files) == 0:
@@ -180,7 +180,7 @@ class BatonIrodsMetadataMapper(BatonIrodsMapper, IrodsMetadataMapper):
         """
         baton_out_as_json = self.run_baton_query(
             BatonBinary.BATON_LIST, ["--avu", "--acl", "--checksum"], input_data_as_json=baton_json)
-        return BatonIrodsMapper._baton_out_as_json_to_model(baton_out_as_json[_BATON_AVUS], Metadata, True)
+        return BatonIrodsMapper._baton_out_as_json_to_model(baton_out_as_json, Metadata, False)
 
 
 class BatonIrodsFileMapper(BatonIrodsMapper, IrodsFileMapper):
