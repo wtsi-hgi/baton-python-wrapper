@@ -7,12 +7,12 @@ from enum import Enum
 from typing import List, Union
 
 from datetime import timedelta
-from hgicommon.collections import SearchCriteria, Metadata
+from hgicommon.collections import SearchCriteria
 from hgicommon.models import SearchCriterion, Model, File
 
 from baton._json_converters import object_to_baton_json, baton_json_to_object
 from baton.mappers import IrodsMapper, IrodsMetadataMapper, IrodsFileMapper
-from baton.models import IrodsFile
+from baton.models import IrodsFile, IrodsMetadata
 
 _BATON_ERROR = "error"
 _BATON_AVUS = "avus"
@@ -160,7 +160,7 @@ class BatonIrodsMetadataMapper(BatonIrodsMapper, IrodsMetadataMapper):
     """
     Mapper for iRODS metadata.
     """
-    def get_for_file(self, files: Union[File, List[File]]) -> Metadata:
+    def get_for_file(self, files: Union[File, List[File]]) -> IrodsMetadata:
         if not isinstance(files, list):
             files = [files]
         if len(files) == 0:
@@ -172,7 +172,7 @@ class BatonIrodsMetadataMapper(BatonIrodsMapper, IrodsMetadataMapper):
 
         return self._run_file_metadata_query(baton_json)
 
-    def _run_file_metadata_query(self, baton_json: Union[dict, List[dict]]) -> Metadata:
+    def _run_file_metadata_query(self, baton_json: Union[dict, List[dict]]) -> IrodsMetadata:
         """
         Run a baton attribute value query defined by the given JSON.
         :param baton_json: the JSON that defines the query
@@ -180,7 +180,7 @@ class BatonIrodsMetadataMapper(BatonIrodsMapper, IrodsMetadataMapper):
         """
         baton_out_as_json = self.run_baton_query(
             BatonBinary.BATON_LIST, ["--avu", "--acl", "--checksum"], input_data_as_json=baton_json)
-        return BatonIrodsMapper._baton_out_as_json_to_model(baton_out_as_json, Metadata, False)
+        return BatonIrodsMapper._baton_out_as_json_to_model(baton_out_as_json, IrodsMetadata, False)
 
 
 class BatonIrodsFileMapper(BatonIrodsMapper, IrodsFileMapper):

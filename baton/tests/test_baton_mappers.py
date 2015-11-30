@@ -1,15 +1,14 @@
-import logging
 import unittest
+from typing import List
 
-from hgicommon.collections import SearchCriteria, Metadata
+from hgicommon.collections import SearchCriteria
 from hgicommon.enums import ComparisonOperator
 from hgicommon.models import File, SearchCriterion
 from testwithbaton import TestWithBatonSetup, get_irods_server_from_environment_if_defined
 from testwithbaton.helpers import SetupHelper
-from typing import List
 
 from baton._baton_mappers import BatonIrodsMapper, BatonIrodsMetadataMapper, BatonBinary, BatonIrodsFileMapper
-from baton.models import IrodsFile
+from baton.models import IrodsFile, IrodsMetadata
 
 _FILE_NAME_1 = "file_name_1"
 _FILE_NAME_2 = "file_name_2"
@@ -70,8 +69,8 @@ class TestBatonIrodsMetadataMapper(unittest.TestCase):
             self.test_with_baton.baton_location, self.test_with_baton.irods_test_server.users[0].zone)
         self.setup_helper = SetupHelper(self.test_with_baton.icommands_location)
 
-        self.metadata_1 = Metadata({_ATTRIBUTE_1: ["something_else", _VALUE_1]})
-        self.metadata_2 = Metadata({_ATTRIBUTE_2: _VALUE_2})
+        self.metadata_1 = IrodsMetadata({_ATTRIBUTE_1: ["something_else", _VALUE_1]})
+        self.metadata_2 = IrodsMetadata({_ATTRIBUTE_2: _VALUE_2})
 
     def test_get_for_file_that_does_not_exist(self):
         self.assertRaises(FileNotFoundError, self.metadata_mapper.get_for_file, File("/", "invalid"))
@@ -79,8 +78,8 @@ class TestBatonIrodsMetadataMapper(unittest.TestCase):
     def test_get_for_file_with_no_metadata(self):
         file = self.setup_helper.create_irods_file(_FILE_NAME_1)
 
-        metadata_collection = self.metadata_mapper.get_for_file(file)
-        self.assertEqual(len(metadata_collection), 0)
+        metadata = self.metadata_mapper.get_for_file(file)
+        self.assertEqual(len(metadata), 0)
 
     def test_get_for_file_with_metadata(self):
         file = self.setup_helper.create_irods_file(_FILE_NAME_1)
@@ -91,7 +90,7 @@ class TestBatonIrodsMetadataMapper(unittest.TestCase):
         metadata = self.metadata_mapper.get_for_file(file)
         self.assertEquals(len(metadata), 2)
         for key, values in metadata.items():
-            self.assertIn(Metadata({key: values}), [self.metadata_1, self.metadata_2])
+            self.assertIn(IrodsMetadata({key: values}), [self.metadata_1, self.metadata_2])
 
     def tearDown(self):
         self.test_with_baton.tear_down()
@@ -108,8 +107,8 @@ class TestBatonIrodsFileMapper(unittest.TestCase):
             self.test_with_baton.baton_location, self.test_with_baton.irods_test_server.users[0].zone)
         self.setup_helper = SetupHelper(self.test_with_baton.icommands_location)
 
-        self.metadata_1 = Metadata({_ATTRIBUTE_1: ["something_else", _VALUE_1]})
-        self.metadata_2 = Metadata({_ATTRIBUTE_2: _VALUE_2})
+        self.metadata_1 = IrodsMetadata({_ATTRIBUTE_1: ["something_else", _VALUE_1]})
+        self.metadata_2 = IrodsMetadata({_ATTRIBUTE_2: _VALUE_2})
         self.search_criterion_1 = SearchCriterion(_ATTRIBUTE_1, _VALUE_1, ComparisonOperator.EQUALS)
         self.search_criterion_2 = SearchCriterion(_ATTRIBUTE_2, _VALUE_2, ComparisonOperator.EQUALS)
         self.file_1 = self.setup_helper.create_irods_file(_FILE_NAME_1)

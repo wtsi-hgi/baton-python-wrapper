@@ -1,8 +1,8 @@
-from hgicommon.collections import SearchCriteria, Metadata
+from hgicommon.collections import SearchCriteria
 from hgicommon.enums import ComparisonOperator
 from hgicommon.models import SearchCriterion, File
 
-from baton.models import IrodsFile
+from baton.models import IrodsFile, IrodsMetadata
 
 _BATON_FILE_NAME_PROPERTY = "data_object"
 _BATON_DIRECTORY_PROPERTY = "collection"
@@ -93,7 +93,7 @@ def _file_to_baton_json(irods_file: File) -> dict:
     }
 
 
-def _metadata_to_baton_json(metadata: Metadata) -> dict:
+def _irods_metadata_to_baton_json(metadata: IrodsMetadata) -> dict:
     """
     Creates a baton JSON representation of the given collection of metadata.
     :param metadata: the collection of metadata to convert to a baton representation
@@ -160,14 +160,14 @@ def _baton_json_to_irods_file(baton_json: dict) -> IrodsFile:
     )
 
 
-def _baton_json_to_metadata(baton_json: dict) -> Metadata:
+def _baton_json_to_irods_metadata(baton_json: dict) -> IrodsMetadata:
     """
     Converts a given baton JSON representation of collection of metadata to the corresponding model.
     :param baton_json: the JSON representation of the object used by baton
     :return: the corresponding model
     """
     metadata_items_as_json = baton_json[_BATON_METADATA_PROPERTY]
-    metadata = Metadata()
+    metadata = IrodsMetadata()
     for metadatum in metadata_items_as_json:
         assert len(list(metadatum.keys())) == 2
         key = metadatum[_BATON_ATTRIBUTE_PROPERTY]
@@ -185,7 +185,7 @@ _OBJECT_TO_JSON_BATON_CONVERTERS = {
     SearchCriteria: _search_criteria_to_baton_json,
     File: _file_to_baton_json,
     IrodsFile: _file_to_baton_json,
-    Metadata: _metadata_to_baton_json
+    IrodsMetadata: _irods_metadata_to_baton_json
 }
 
 
@@ -195,5 +195,5 @@ _BATON_JSON_TO_OBJECT_CONVERTERS = {
     SearchCriteria: _baton_json_to_search_criteria,
     File: _baton_json_to_irods_file,
     IrodsFile: _baton_json_to_irods_file,
-    Metadata: _baton_json_to_metadata
+    IrodsMetadata: _baton_json_to_irods_metadata
 }
