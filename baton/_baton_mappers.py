@@ -10,7 +10,8 @@ from datetime import timedelta
 from hgicommon.collections import SearchCriteria
 from hgicommon.models import SearchCriterion, Model, File
 
-from baton._json_converters import object_to_baton_json, baton_json_to_object
+from baton._json_to_model import baton_json_to_model
+from baton._model_to_json import model_to_baton_json
 from baton.mappers import IrodsMapper, IrodsMetadataMapper, IrodsFileMapper
 from baton.models import IrodsFile, IrodsMetadata
 
@@ -135,26 +136,6 @@ class BatonIrodsMapper(IrodsMapper, metaclass=ABCMeta):
             else:
                 raise RuntimeError(error_message)
 
-    # TODO: Move to JSON converts
-    @staticmethod
-    def _baton_out_as_json_to_model(
-            baton_output_as_json: dict, expect_type: type, expect_list: bool) -> Union[Model, List[Model]]:
-        """
-        Converts baton output to a model or collection of models.
-        :param baton_output_as_json:
-        :param expect_type:
-        :param expect_list:
-        :return:
-        """
-        if expect_list:
-            models = []
-            for array_element in baton_output_as_json:
-                model = baton_json_to_object(array_element, expect_type)
-                models.append(model)
-            return models
-        else:
-            return baton_json_to_object(baton_output_as_json, expect_type)
-
 
 class BatonIrodsMetadataMapper(BatonIrodsMapper, IrodsMetadataMapper):
     """
@@ -168,7 +149,7 @@ class BatonIrodsMetadataMapper(BatonIrodsMapper, IrodsMetadataMapper):
 
         baton_json = []
         for file in files:
-            baton_json.append(object_to_baton_json(file))
+            baton_json.append(model_to_baton_json(file))
 
         return self._run_file_metadata_query(baton_json)
 
@@ -179,7 +160,7 @@ class BatonIrodsMetadataMapper(BatonIrodsMapper, IrodsMetadataMapper):
         :return: the return from baton
         """
         baton_out_as_json = self.run_baton_query(BatonBinary.BATON_LIST, ["--avu"], input_data_as_json=baton_json)
-        return BatonIrodsMapper._baton_out_as_json_to_model(baton_out_as_json, IrodsMetadata, False)
+        return baton_json_to_model(baton_out_as_json, IrodsMetadata)
 
 
 class BatonIrodsFileMapper(BatonIrodsMapper, IrodsFileMapper):
@@ -191,7 +172,7 @@ class BatonIrodsFileMapper(BatonIrodsMapper, IrodsFileMapper):
         if isinstance(search_criteria, SearchCriterion):
             search_criteria = SearchCriteria([search_criteria])
 
-        baton_json = object_to_baton_json(search_criteria)
+        baton_json = model_to_baton_json(search_criteria)
         return self._run_baton_irods_file_query(baton_json)
 
     def _run_baton_irods_file_query(self, baton_json: Union[dict, List[dict]], load_metadata: bool=False) \
@@ -207,4 +188,4 @@ class BatonIrodsFileMapper(BatonIrodsMapper, IrodsFileMapper):
             arguments.append("--avu")
 
         baton_out_as_json = self.run_baton_query(BatonBinary.BATON_METAQUERY, arguments, input_data_as_json=baton_json)
-        return BatonIrodsMapper._baton_out_as_json_to_model(baton_out_as_json, IrodsFile, True)
+        return baton_json_to_model(baton_out_as_json, List[IrodsFile])

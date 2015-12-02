@@ -173,7 +173,7 @@ class TestBatonIrodsFileMapper(unittest.TestCase):
 
     @staticmethod
     def _cast_irods_files_to_files(irods_files: List[IrodsFile]) -> List[File]:
-        return [File(irods_file.directory, irods_file.file_name) for irods_file in irods_files]
+        return [irods_file.cast_to_file() for irods_file in irods_files]
 
 
 if __name__ == '__main__':
