@@ -37,11 +37,12 @@ class IrodsFileMapper(IrodsMapper, metaclass=ABCMeta):
     iRODS file metadata_mapper.
     """
     @abstractmethod
-    def get_by_metadata_attribute(
-            self, metadata_search_criteria: Union[SearchCriterion, SearchCriteria]) -> List[IrodsFile]:
+    def get_by_metadata_attribute(self, metadata_search_criteria: Union[SearchCriterion, SearchCriteria],
+                                  load_metadata: bool=False) -> List[IrodsFile]:
         """
         Gets files from iRODS that have metadata that matches the given search criteria.
         :param metadata_search_criteria: the metadata search criteria
+        :param load_metadata: whether the file's associated metadata should also be loaded
         :return: the matched files in iRODS
         """
         pass

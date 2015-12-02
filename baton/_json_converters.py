@@ -2,12 +2,13 @@ from hgicommon.collections import SearchCriteria
 from hgicommon.enums import ComparisonOperator
 from hgicommon.models import SearchCriterion, File
 
-from baton.models import IrodsFile, IrodsMetadata
+from baton.models import IrodsFile, IrodsMetadata, IrodsFileReplica
 
 _BATON_FILE_NAME_PROPERTY = "data_object"
 _BATON_DIRECTORY_PROPERTY = "collection"
 _BATON_FILE_CHECKSUM_PROPERTY = "checksum"
 _BATON_FILE_REPLICATE_PROPERTY = "replicate"
+_BATON_FILE_REPLICATE_ID_PROPERTY = "number"
 _BATON_METADATA_PROPERTY = "avus"
 
 _BATON_ATTRIBUTE_PROPERTY = "attribute"
@@ -147,16 +148,19 @@ def _baton_json_to_irods_file(baton_json: dict) -> IrodsFile:
     :param baton_json: the JSON representation of the object used by baton
     :return: the corresponding model
     """
+    replicas = []
+
     if _BATON_FILE_REPLICATE_PROPERTY in baton_json:
-        replica_checksums = [replica.checksum for replica in baton_json[_BATON_FILE_REPLICATE_PROPERTY]]
-    else:
-        replica_checksums = []
+        for replica_baton_json in baton_json[_BATON_FILE_REPLICATE_PROPERTY]:
+            replica = IrodsFileReplica(replica_baton_json[_BATON_FILE_REPLICATE_ID_PROPERTY],
+                             replica_baton_json[_BATON_FILE_CHECKSUM_PROPERTY])
+            replicas.append(replica)
 
     return IrodsFile(
         baton_json[_BATON_DIRECTORY_PROPERTY],
         baton_json[_BATON_FILE_NAME_PROPERTY],
         baton_json[_BATON_FILE_CHECKSUM_PROPERTY],
-        replica_checksums
+        replicas
     )
 
 

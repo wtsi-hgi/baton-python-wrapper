@@ -9,7 +9,7 @@ from baton._json_converters import _search_criterion_to_baton_json, _BATON_COMPA
     _search_criteria_to_baton_json, _file_to_baton_json, object_to_baton_json, _baton_json_to_search_criterion, \
     _baton_json_to_search_criteria, baton_json_to_object, _irods_metadata_to_baton_json, \
     _baton_json_to_irods_metadata
-from baton.models import IrodsFile, IrodsMetadata
+from baton.models import IrodsFile, IrodsMetadata, IrodsFileReplica
 
 _ATTRIBUTE_1 = "attribute1"
 _ATTRIBUTE_2 = "attribute2"
@@ -21,7 +21,7 @@ _COMPARISON_OPERATOR_2 = ComparisonOperator.GREATER_THAN
 _DIRECTORY = "collection"
 _FILE_NAME = "file"
 _CHECKSUM = "2c558824f250de9d55c07600291f4272"
-_REPLICA_CHECKSUMS = ["1c558824f250de9d55c07600291f4222", "4c558824f250de9d55c07600291f4272"]
+_REPLICAs = [(1, "1c558824f250de9d55c07600291f4222"), (2, "4c558824f250de9d55c07600291f4272")]
 
 
 class TestConversions(unittest.TestCase):
@@ -29,7 +29,8 @@ class TestConversions(unittest.TestCase):
         self._search_criterion1 = SearchCriterion(_ATTRIBUTE_1, _VALUE_1, _COMPARISON_OPERATOR_1)
         self._search_criterion2 = SearchCriterion(_ATTRIBUTE_2, _VALUE_2, _COMPARISON_OPERATOR_2)
         self._search_criteria = SearchCriteria([self._search_criterion1, self._search_criterion2])
-        self._irods_file = IrodsFile(_DIRECTORY, _FILE_NAME, _CHECKSUM, _REPLICA_CHECKSUMS)
+        self._replica = [IrodsFileReplica(id, checksum) for (id, checksum) in _REPLICAs]
+        self._irods_file = IrodsFile(_DIRECTORY, _FILE_NAME, _CHECKSUM, self._replica)
         self._metadata = IrodsMetadata({_ATTRIBUTE_1: [_VALUE_1, _VALUE_2], _ATTRIBUTE_2: [_VALUE_3]})
 
     def test_object_to_baton_json(self):

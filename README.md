@@ -35,7 +35,6 @@ irods.metadata.get_by_file_path(["collection/data_object", "collection/other_dat
 search_criterion_1 = SearchCriterion("attribute", "match_value", ComparisonOperator.EQUALS)
 search_criterion_2 = SearchCriterion("other_attribute", "other_match_value", ComparisonOperator.LESS_THAN)
 search_criteria = SearchCriteria([search_criterion_1, search_criterion_2])  # Collection of SearchCriterion
-
 # Do file search based on metadata attribute values
 # Note: File objects are not populated with the contents of the file on iRODS
 irods.file.get_by_metadata_attribute(search_criteria)   # type: List[IrodsFile]
@@ -47,10 +46,3 @@ irods.file.get_by_metadata_attribute(search_criteria)   # type: List[IrodsFile]
 #### Locally
 To run the tests, use ``./scripts/run-tests.sh`` from the project's root directory. This script will use ``pip`` to 
 install all requirements for running the tests (use `virtualenv` if necessary).
-
-#### Using Docker
-From the project's root directory:
-```
-$ docker build -t wtsi-hgi/baton-python-wrapper/test -f docker/tests/Dockerfile .
-$ docker run wtsi-hgi/baton-python-wrapper/test
-```
