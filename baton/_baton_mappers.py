@@ -3,22 +3,19 @@ import logging
 import os
 import subprocess
 from abc import ABCMeta
-from enum import Enum
-from typing import List, Union
-
 from datetime import timedelta
+from enum import Enum
+from typing import List, Union, Any
+
 from hgicommon.collections import SearchCriteria
-from hgicommon.models import SearchCriterion, Metadata, Model, File
+from hgicommon.models import SearchCriterion, File
 
-from baton._json_converters import object_to_baton_json, baton_json_to_object
-from baton.mappers import IrodsMapper, IrodsMetadataMapper, IrodsFileMapper
+from baton._baton_constants import BATON_ERROR_MESSAGE_KEY, BATON_FILE_DOES_NOT_EXIST_ERROR_CODE
+from baton._baton_constants import BATON_ERROR_PROPERTY, BATON_ERROR_CODE_KEY
+from baton._json_to_model import baton_json_to_irods_file
+from baton._model_to_json import file_to_baton_json, search_criteria_to_baton_json
+from baton.mappers import IrodsMapper, IrodsFileMapper
 from baton.models import IrodsFile
-
-_BATON_ERROR = "error"
-_BATON_AVUS = "avus"
-_BATON_ERROR_MESSAGE_KEY = "message"
-_BATON_ERROR_CODE_KEY = "code"
-_BATON_FILE_DOES_NOT_EXIST_ERROR_CODE = -310000
 
 
 class BatonBinary(Enum):
@@ -53,26 +50,13 @@ class BatonIrodsMapper(IrodsMapper, metaclass=ABCMeta):
         self._irods_query_zone = irods_query_zone
         self.timeout_queries_after = timeout_queries_after
 
-    @staticmethod
-    def validate_baton_binaries_location(baton_binaries_directory: str) -> bool:
-        """
-        Validates that the given directory contains the baton binaries required to use the metadata_mapper.
-        :param baton_binaries_directory: the directory to check
-        :return: whether the directory has the required binaries
-        """
-        for baton_binary in BatonBinary:
-            binary_location = os.path.join(baton_binaries_directory, baton_binary.value)
-            if not (os.path.isfile(binary_location) and os.access(binary_location, os.X_OK)):
-                return False
-        return True
-
-    def run_baton_query(
-            self, baton_binary: BatonBinary, program_arguments: List[str]=None, input_data_as_json: dict=None) -> dict:
+    def run_baton_query(self, baton_binary: BatonBinary, program_arguments: List[str]=None, input_data: Any=None) \
+            -> List[dict]:
         """
         Runs a baton query.
         :param baton_binary: the baton binary to use
         :param program_arguments: arguments to give to the baton binary
-        :param input_data_as_json: input data to the baton binary
+        :param input_data: input data to the baton binary
         :return: parsed json returned by baton
         """
         if program_arguments is None:
@@ -81,16 +65,21 @@ class BatonIrodsMapper(IrodsMapper, metaclass=ABCMeta):
         baton_binary_location = os.path.join(self._baton_binaries_directory, baton_binary.value)
         program_arguments = [baton_binary_location] + program_arguments
 
-        logging.debug("Running baton command: '%s' with data '%s'" % (program_arguments, input_data_as_json))
-        baton_out = self._run_command(program_arguments, input_data=input_data_as_json)
+        logging.debug("Running baton command: '%s' with data '%s'" % (program_arguments, input_data))
+        baton_out = self._run_command(program_arguments, input_data=input_data)
         logging.debug("baton output: %s" % baton_out)
+
+        if baton_out[0] != '[':
+            # If information about multiple files is returned, baton does not return valid JSON - it returns a line
+            # separated list of JSON, where each line corresponds to a different file
+            baton_out = "[%s]" % baton_out.replace('\n', ',')
 
         baton_out_as_json = json.loads(baton_out)
         BatonIrodsMapper._raise_any_errors_given_in_baton_out(baton_out_as_json)
 
         return baton_out_as_json
 
-    def _run_command(self, arguments: List[str], input_data: dict=None, output_encoding: str="utf-8") -> str:
+    def _run_command(self, arguments: List[str], input_data: Any=None, output_encoding: str="utf-8") -> str:
         """
         Run a command as a subprocess.
 
@@ -120,47 +109,55 @@ class BatonIrodsMapper(IrodsMapper, metaclass=ABCMeta):
         return out.decode(output_encoding).rstrip()
 
     @staticmethod
-    def _raise_any_errors_given_in_baton_out(baton_out_as_json: dict):
+    def validate_baton_binaries_location(baton_binaries_directory: str) -> bool:
+        """
+        Validates that the given directory contains the baton binaries required to use the metadata_mapper.
+        :param baton_binaries_directory: the directory to check
+        :return: whether the directory has the required binaries
+        """
+        for baton_binary in BatonBinary:
+            binary_location = os.path.join(baton_binaries_directory, baton_binary.value)
+            if not (os.path.isfile(binary_location) and os.access(binary_location, os.X_OK)):
+                return False
+        return True
+
+    @staticmethod
+    def _raise_any_errors_given_in_baton_out(baton_out_as_json: List[dict]):
         """
         Raises any errors that baton has expressed in its output.
         :param baton_out_as_json: the output baton gave as parsed json
         """
-        if _BATON_ERROR in baton_out_as_json:
-            error = baton_out_as_json[_BATON_ERROR]
-            error_message = error[_BATON_ERROR_MESSAGE_KEY]
-            error_code = error[_BATON_ERROR_CODE_KEY]
+        if not isinstance(baton_out_as_json, list):
+            baton_out_as_json = [baton_out_as_json]
 
-            if error_code == _BATON_FILE_DOES_NOT_EXIST_ERROR_CODE:
-                raise FileNotFoundError(error_message)
-            else:
-                raise RuntimeError(error_message)
+        for baton_item_as_json in baton_out_as_json:
+            if BATON_ERROR_PROPERTY in baton_item_as_json:
+                error = baton_item_as_json[BATON_ERROR_PROPERTY]
+                error_message = error[BATON_ERROR_MESSAGE_KEY]
+                error_code = error[BATON_ERROR_CODE_KEY]
 
-    # TODO: Move to JSON converts
-    @staticmethod
-    def _baton_out_as_json_to_model(
-            baton_output_as_json: dict, expect_type: type, expect_list: bool) -> Union[Model, List[Model]]:
-        """
-        Converts baton output to a model or collection of models.
-        :param baton_output_as_json:
-        :param expect_type:
-        :param expect_list:
-        :return:
-        """
-        if expect_list:
-            models = []
-            for array_element in baton_output_as_json:
-                model = baton_json_to_object(array_element, expect_type)
-                models.append(model)
-            return models
-        else:
-            return baton_json_to_object(baton_output_as_json, expect_type)
+                if error_code == BATON_FILE_DOES_NOT_EXIST_ERROR_CODE:
+                    raise FileNotFoundError(error_message)
+                else:
+                    raise RuntimeError(error_message)
 
 
-class BatonIrodsMetadataMapper(BatonIrodsMapper, IrodsMetadataMapper):
+class BatonIrodsFileMapper(BatonIrodsMapper, IrodsFileMapper):
     """
-    Mapper for iRODS metadata.
+    Mapper for iRODS files.
     """
-    def get_for_file(self, files: Union[File, List[File]]) -> List[Metadata]:
+    def get_by_metadata(self, search_criteria: Union[SearchCriterion, SearchCriteria],
+                        load_metadata: bool=True) -> List[IrodsFile]:
+        if isinstance(search_criteria, SearchCriterion):
+            search_criteria = SearchCriteria([search_criteria])
+
+        baton_json = search_criteria_to_baton_json(search_criteria)
+        arguments = self._create_baton_arguments(load_metadata)
+
+        baton_out_as_json = self.run_baton_query(BatonBinary.BATON_METAQUERY, arguments, input_data=baton_json)
+        return BatonIrodsFileMapper._baton_json_to_irods_files(baton_out_as_json)
+
+    def get_by_path(self, files: Union[File, List[File]], load_metadata: bool=True) -> List[IrodsFile]:
         if not isinstance(files, list):
             files = [files]
         if len(files) == 0:
@@ -168,39 +165,35 @@ class BatonIrodsMetadataMapper(BatonIrodsMapper, IrodsMetadataMapper):
 
         baton_json = []
         for file in files:
-            baton_json.append(object_to_baton_json(file))
+            baton_json.append(file_to_baton_json(file))
+        arguments = self._create_baton_arguments(load_metadata)
 
-        return self._run_file_metadata_query(baton_json)
+        baton_out_as_json = self.run_baton_query(BatonBinary.BATON_LIST, arguments, input_data=baton_json)
 
-    def _run_file_metadata_query(self, baton_json: Union[dict, List[dict]]) -> Metadata:
+        return BatonIrodsFileMapper._baton_json_to_irods_files(baton_out_as_json)
+
+    def _create_baton_arguments(self, load_metadata: bool=True) -> List[str]:
         """
-        Run a baton attribute value query defined by the given JSON.
-        :param baton_json: the JSON that defines the query
-        :return: the return from baton
+        Create arguments to use with baton.
+        :param load_metadata: whether baton should load metadata
+        :return: the arguments to use with baton
         """
-        baton_out_as_json = self.run_baton_query(
-            BatonBinary.BATON_LIST, ["--avu", "--acl", "--checksum"], input_data_as_json=baton_json)
-        return BatonIrodsMapper._baton_out_as_json_to_model(baton_out_as_json[_BATON_AVUS], Metadata, True)
+        arguments = ["--obj", "--acl", "--checksum", "--replicate", "--zone", self._irods_query_zone]
+        if load_metadata:
+            arguments.append("--avu")
+        return arguments
 
-
-class BatonIrodsFileMapper(BatonIrodsMapper, IrodsFileMapper):
-    """
-    Mapper for iRODS files.
-    """
-    def get_by_metadata_attribute(self, search_criteria: Union[SearchCriterion, SearchCriteria]) -> List[IrodsFile]:
-        if isinstance(search_criteria, SearchCriterion):
-            search_criteria = SearchCriteria([search_criteria])
-
-        baton_json = object_to_baton_json(search_criteria)
-        return self._run_baton_irods_file_query(baton_json)
-
-    def _run_baton_irods_file_query(self, baton_json: Union[dict, List[dict]]) -> List[IrodsFile]:
+    @staticmethod
+    def _baton_json_to_irods_files(files_as_baton_json: List[dict]) -> List[IrodsFile]:
         """
-        Runs a baton meta query.
-        :param baton_json: the JSON that defines the query
-        :return: the return from baton
+        Converts the baton representation of multiple iRODS files to a list of `IrodsFile` models.
+        :param files_as_baton_json: the baton json representation of the files
+        :return: the equivalent models of the json represented files
         """
-        baton_out_as_json = self.run_baton_query(
-            BatonBinary.BATON_METAQUERY,
-            ["--obj", "--checksum", "--replicate" "--zone", self._irods_query_zone], input_data_as_json=baton_json)
-        return BatonIrodsMapper._baton_out_as_json_to_model(baton_out_as_json, IrodsFile, True)
+        assert(isinstance(files_as_baton_json, list))
+
+        files = []
+        for file_as_baton_json in files_as_baton_json:
+            files.append(baton_json_to_irods_file(file_as_baton_json))
+
+        return files

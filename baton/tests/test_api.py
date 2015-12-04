@@ -2,7 +2,7 @@ import unittest
 
 from testwithbaton import TestWithBatonSetup
 
-from baton._baton_mappers import BatonIrodsMetadataMapper, BatonIrodsFileMapper
+from baton._baton_mappers import BatonIrodsFileMapper
 from baton.api import Connection
 
 
@@ -17,7 +17,6 @@ class TestConnection(unittest.TestCase):
         self.test_with_baton.setup()
         connection = Connection(self.test_with_baton.baton_location, "")
 
-        self.assertIsInstance(connection.metadata, BatonIrodsMetadataMapper)
         self.assertIsInstance(connection.file, BatonIrodsFileMapper)
 
     def tearDown(self):
