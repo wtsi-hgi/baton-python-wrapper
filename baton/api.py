@@ -1,4 +1,4 @@
-from baton._baton_mappers import BatonIrodsMetadataMapper, BatonIrodsFileMapper, BatonIrodsMapper
+from baton._baton_mappers import BatonIrodsFileMapper, BatonIrodsMapper
 
 
 class Connection:
@@ -11,7 +11,6 @@ class Connection:
         :param baton_binaries_directory:
         :param irods_query_zone:
         """
-        self.metadata = BatonIrodsMetadataMapper(baton_binaries_directory, irods_query_zone)
         self.file = BatonIrodsFileMapper(baton_binaries_directory, irods_query_zone)
 
 
