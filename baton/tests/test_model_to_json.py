@@ -42,6 +42,11 @@ class TestConversions(unittest.TestCase):
         for expected in expect_in_json:
             self.assertIn(expected, json.dumps(baton_json))
 
+    def test_collection_file_to_baton_json(self):
+        baton_json = file_to_baton_json(File(_DIRECTORY))
+
+        self.assertIn(_DIRECTORY, baton_json.values())
+
     def test_file_to_baton_json(self):
         baton_json = file_to_baton_json(self._file)
 

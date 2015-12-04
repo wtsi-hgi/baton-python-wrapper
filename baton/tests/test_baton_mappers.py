@@ -71,37 +71,6 @@ class TestBatonIrodsFileMapper(unittest.TestCase):
         self.search_criterion_1 = SearchCriterion(_ATTRIBUTES[0], _VALUES[0], ComparisonOperator.EQUALS)
         self.search_criterion_2 = SearchCriterion(_ATTRIBUTES[1], _VALUES[1], ComparisonOperator.EQUALS)
 
-    def test_get_by_path_when_file_does_not_exist(self):
-        self.assertRaises(FileNotFoundError, self.mapper.get_by_path, File("/invalid", "name"))
-
-    def test_get_by_path_with_single_file(self):
-        file_1 = create_irods_file(self.test_with_baton, _FILE_NAMES[0], self.metadata_1)
-
-        retrieved_files = self.mapper.get_by_path(file_1)
-        self.assertCountEqual(retrieved_files, [file_1])
-
-    def test_get_by_path_with_multiple_files(self):
-        files = [
-            create_irods_file(self.test_with_baton, _FILE_NAMES[i], self.metadata_1) for i in range(len(_FILE_NAMES))]
-
-        retrieved_files = self.mapper.get_by_path(files)
-        self.assertCountEqual(retrieved_files, files)
-
-    def test_get_by_path_with_multiple_files_when_some_do_not_exist(self):
-        retrieved_files = [
-            create_irods_file(self.test_with_baton, _FILE_NAMES[i], self.metadata_1) for i in range(len(_FILE_NAMES))]
-
-        self.assertRaises(FileNotFoundError, self.mapper.get_by_path, retrieved_files + [File("/invalid", "name")])
-
-    def test_get_by_path_when_metadata_not_required(self):
-        file_1 = create_irods_file(self.test_with_baton, _FILE_NAMES[0], self.metadata_1)
-
-        retrieved_files = self.mapper.get_by_path(file_1, load_metadata=False)
-
-        self.assertIsNone(retrieved_files[0].metadata)
-        file_1.metadata = None
-        self.assertEquals(retrieved_files[0], file_1)
-
     def test_get_by_metadata_when_no_metadata(self):
         retrieved_files = self.mapper.get_by_metadata(
             SearchCriterion(_ATTRIBUTES[0], _UNUSED_VALUE, ComparisonOperator.EQUALS))
@@ -145,6 +114,81 @@ class TestBatonIrodsFileMapper(unittest.TestCase):
         file_1 = create_irods_file(self.test_with_baton, _FILE_NAMES[0], self.metadata_1)
 
         retrieved_files = self.mapper.get_by_metadata(self.search_criterion_1, load_metadata=False)
+
+        self.assertIsNone(retrieved_files[0].metadata)
+        file_1.metadata = None
+        self.assertEquals(retrieved_files[0], file_1)
+
+    def test_get_by_path_when_file_does_not_exist(self):
+        self.assertRaises(FileNotFoundError, self.mapper.get_by_path, File("/invalid", "name"))
+
+    def test_get_by_path_with_single_file(self):
+        file_1 = create_irods_file(self.test_with_baton, _FILE_NAMES[0], self.metadata_1)
+
+        retrieved_files = self.mapper.get_by_path(file_1)
+        self.assertCountEqual(retrieved_files, [file_1])
+
+    def test_get_by_path_with_multiple_files(self):
+        files = [
+            create_irods_file(self.test_with_baton, _FILE_NAMES[i], self.metadata_1) for i in range(len(_FILE_NAMES))]
+
+        retrieved_files = self.mapper.get_by_path(files)
+        self.assertCountEqual(retrieved_files, files)
+
+    def test_get_by_path_with_multiple_files_when_some_do_not_exist(self):
+        files = [
+            create_irods_file(self.test_with_baton, _FILE_NAMES[i], self.metadata_1) for i in range(len(_FILE_NAMES))]
+
+        self.assertRaises(FileNotFoundError, self.mapper.get_by_path, files + [File("/invalid", "name")])
+
+    def test_get_by_path_when_metadata_not_required(self):
+        file_1 = create_irods_file(self.test_with_baton, _FILE_NAMES[0], self.metadata_1)
+
+        retrieved_files = self.mapper.get_by_path(file_1, load_metadata=False)
+
+        self.assertIsNone(retrieved_files[0].metadata)
+        file_1.metadata = None
+        self.assertEquals(retrieved_files[0], file_1)
+
+    def get_in_collection_when_file_instead_of_collection(self):
+        self.assertRaises(ValueError, self.mapper.get_in_collection, File("/", ""))
+
+    def get_in_collection_when_single_file_instead_of_collection(self):
+        collections = [File(""), File(""), File("", "")]
+        self.assertRaises(ValueError, self.mapper.get_in_collection, collections)
+
+    def get_in_collection_when_collection_does_not_exist(self):
+        self.assertRaises(FileNotFoundError, self.mapper.get_in_collection, File("/invalid"))
+
+    def get_in_collection_with_single_collection(self):
+        file_1 = create_irods_file(self.test_with_baton, _FILE_NAMES[0], self.metadata_1)
+
+        retrieved_files = self.mapper.get_in_collection(file_1.directory)
+        self.assertCountEqual(retrieved_files, [file_1])
+
+    def get_in_collection_with_multiple_collections(self):
+        files = [
+            create_irods_file(self.test_with_baton, _FILE_NAMES[i], self.metadata_1) for i in range(len(_FILE_NAMES))]
+        for i in range(len(files) - 1):
+            assert files[i].directory == files[i + 1]
+
+        # FIXME: Make multiple collections
+
+        retrieved_files = self.mapper.get_in_collection(files[0].directory)
+        self.assertCountEqual(retrieved_files, files)
+
+    def get_in_collection_with_multiple_collections_when_some_do_not_exist(self):
+        files = [
+            create_irods_file(self.test_with_baton, _FILE_NAMES[i], self.metadata_1) for i in range(len(_FILE_NAMES))]
+        for i in range(len(files) - 1):
+            assert files[i].directory == files[i + 1]
+
+        self.assertRaises(FileNotFoundError, self.mapper.get_in_collection, files[0].directory + [File("/invalid")])
+
+    def get_in_collection_when_metadata_not_required(self):
+        file_1 = create_irods_file(self.test_with_baton, _FILE_NAMES[0], self.metadata_1)
+
+        retrieved_files = self.mapper.get_in_collection(file_1.directory, load_metadata=False)
 
         self.assertIsNone(retrieved_files[0].metadata)
         file_1.metadata = None

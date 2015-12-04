@@ -29,8 +29,8 @@ from hgicommon import SearchCriteria, SearchCriterion, ComparisonOperator
 irods = connect_to_irods_with_baton("/where/baton/binaries/are/installed/", "irods_query_zone") # type: Connection
 
 # Get information about the file(s) at the given path(s) in iRODS
-irods.file.get_by_path("collection/data_object")    # type: List[IrodsFile]:
-irods.file.get_by_path(["collection/data_object", "collection/other_data_object"])    # type: List[IrodsFile]:
+irods.file.get_by_path(File("/collection", "data_object"))    # type: List[IrodsFile]:
+irods.file.get_by_path([File("/collection", "data_object"), File("/collection", "other_data_object")])   # type: List[IrodsFile]:
 
 # Setup search for files based on their metadata 
 search_criterion_1 = SearchCriterion("attribute", "match_value", ComparisonOperator.EQUALS)
@@ -39,6 +39,10 @@ search_criteria = SearchCriteria([search_criterion_1, search_criterion_2])  # Co
 # Do file search based on metadata attribute values
 # Note: File objects are not populated with the contents of the file on iRODS
 irods.file.get_by_metadata(search_criteria)   # type: List[IrodsFile]
+
+# Get files in a collection(s)
+irods.file.get_in_collection(File("/collection"))    # type: List[IrodsFile]:
+irods.file.get_in_collection([File("/collection"), File("/other_collection")])   # type: List[IrodsFile]:
 ```
 
 

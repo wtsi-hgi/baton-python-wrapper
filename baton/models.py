@@ -51,9 +51,9 @@ class IrodsFile(File):
     """
     Model of a file in iRODS.
     """
-    def __init__(self, directory: str, file_name: str, checksum: str, access_control_list: Iterable[IrodsAccessControl],
+    def __init__(self, collection: str, name: str, checksum: str, access_control_list: Iterable[IrodsAccessControl],
                  replicas: Iterable[IrodsFileReplica]=(), metadata: Iterable[IrodsMetadata]=None):
-        super(IrodsFile, self).__init__(directory, file_name)
+        super(IrodsFile, self).__init__(collection, name)
         self.checksum = checksum
         self.acl = access_control_list
         self.replicas = replicas

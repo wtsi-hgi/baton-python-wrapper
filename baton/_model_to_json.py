@@ -34,10 +34,14 @@ def file_to_baton_json(irods_file: File) -> dict:
     :param irods_file: the iRODS file to convert to a baton representation
     :return: the baton JSON representation of the given iRODS file
     """
-    return {
-        BATON_FILE_NAME_PROPERTY: irods_file.file_name,
+    baton_json = {
         BATON_DIRECTORY_PROPERTY: irods_file.directory
     }
+
+    if irods_file.file_name is not None:
+        baton_json[BATON_FILE_NAME_PROPERTY] = irods_file.file_name
+
+    return baton_json
 
 
 def irods_metadata_to_baton_json(metadata: IrodsMetadata) -> dict:

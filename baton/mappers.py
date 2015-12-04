@@ -39,7 +39,20 @@ class IrodsFileMapper(IrodsMapper, metaclass=ABCMeta):
         Gets information about the given files from iRODS.
 
         If one or more of the files does not exist, a `FileNotFound` exception will be raised.
-        :param files: the files to get_by_path from iRODS
+        :param files: the files to get from iRODS
+        :param load_metadata: whether metadata associated to the files should be loaded
+        :return: the file information loaded from iRODS
+        """
+        pass
+
+    @abstractmethod
+    def get_in_collection(self, collections: Union[str, List[str]], load_metadata: bool=True) -> List[IrodsFile]:
+        """
+        Gets information about files in the given iRODS collections.
+
+        TODO: Is the below true?
+        If one or more of the collections does not exist, a `FileNotFound` exception will be raised.
+        :param collections: the collections to get the files from
         :param load_metadata: whether metadata associated to the files should be loaded
         :return: the file information loaded from iRODS
         """

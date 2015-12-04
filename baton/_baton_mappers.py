@@ -31,6 +31,8 @@ class BatonIrodsMapper(IrodsMapper, metaclass=ABCMeta):
     """
     Superclass for all baton mappers.
     """
+    # _multiprocess_can_split_ = True
+
     def __init__(self, baton_binaries_directory: str, irods_query_zone: str,
                  skip_baton_binaries_validation: bool=False, timeout_queries_after: timedelta=None):
         """
@@ -169,6 +171,29 @@ class BatonIrodsFileMapper(BatonIrodsMapper, IrodsFileMapper):
         arguments = self._create_baton_arguments(load_metadata)
 
         baton_out_as_json = self.run_baton_query(BatonBinary.BATON_LIST, arguments, input_data=baton_json)
+        return BatonIrodsFileMapper._baton_json_to_irods_files(baton_out_as_json)
+
+    def get_in_collection(self, collections: Union[str, List[str]], load_metadata: bool=True) -> List[IrodsFile]:
+        if not isinstance(collections, list):
+            collections = [collections]
+        if len(collections) == 0:
+            return []
+
+        for collection in collections:
+            if collection.file_name is not None:
+                raise ValueError("Collection path expected; file found: %s" % collection)
+
+        baton_json = []
+        for collections in collections:
+            baton_json.append(file_to_baton_json(collections))
+        arguments = self._create_baton_arguments(load_metadata)
+        arguments.append("--contents")
+
+        baton_out_as_json = self.run_baton_query(BatonBinary.BATON_LIST, arguments, input_data=baton_json)
+
+        files_as_baton_json = []
+        for baton_item_as_json in baton_out_as_json:
+            files_as_baton_json += baton_item_as_json["contents"]
 
         return BatonIrodsFileMapper._baton_json_to_irods_files(baton_out_as_json)
 
