@@ -7,7 +7,7 @@ from baton._baton_constants import BATON_ATTRIBUTE_PROPERTY, BATON_COMPARISON_OP
     BATON_METADATA_PROPERTY
 from baton._baton_constants import BATON_VALUE_PROPERTY
 from baton.models import CollectionPath
-from baton.models import EntityPath, DataObjectPath
+from baton.models import Path, DataObjectPath
 
 
 def search_criteria_to_baton_json(search_criteria: SearchCriteria) -> dict:
@@ -30,7 +30,7 @@ def search_criteria_to_baton_json(search_criteria: SearchCriteria) -> dict:
     }
 
 
-def path_to_baton_json(path: EntityPath) -> dict:
+def path_to_baton_json(path: Path) -> dict:
     """
     Creates a baton JSON representation of the given iRODS data object location.
     :param path: the iRODS location to convert to a baton representation

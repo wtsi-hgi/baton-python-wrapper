@@ -6,7 +6,7 @@ from hgicommon.collections import Metadata
 from hgicommon.models import File, Model
 
 
-class EntityPath(Model, metaclass=ABCMeta):
+class Path(Model, metaclass=ABCMeta):
     """
     Model of a location of an entity in iRODS.
     """
@@ -14,7 +14,7 @@ class EntityPath(Model, metaclass=ABCMeta):
         self.location = location
 
 
-class DataObjectPath(EntityPath):
+class DataObjectPath(Path):
     """
     Model of a location to a data object in iRODS.
     """
@@ -33,7 +33,7 @@ class DataObjectPath(EntityPath):
         return self.location.rsplit('/', 1)[-1]
 
 
-class CollectionPath(EntityPath):
+class CollectionPath(Path):
     """
     Model of a location to a collection in iRODS.
     """
@@ -90,7 +90,7 @@ class IrodsEntity(Model):
     """
     Model of an entity in iRODS.
     """
-    def __init__(self, path: EntityPath, access_control_list: Iterable[AccessControl],
+    def __init__(self, path: Path, access_control_list: Iterable[AccessControl],
                  metadata: Iterable[IrodsMetadata]=None):
         self.path = path
         self.acl = access_control_list
