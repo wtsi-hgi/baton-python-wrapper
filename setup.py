@@ -17,8 +17,8 @@ setup(
     description="Python wrapper for baton.",
     long_description=open("README.md").read(),
 
-    install_requires=open("requirements.txt").read().splitlines(),
-    tests_requires=open("test_requirements.txt").read().splitlines(),
+    install_requires=[x for x in open("requirements.txt").read().splitlines() if "://" not in x],
+    dependency_links=[x for x in open("requirements.txt").read().splitlines() if "://" in x],
 
     test_suite="baton.tests"
 )

@@ -4,18 +4,18 @@ from testwithbaton.api import TestWithBatonSetup
 from testwithbaton.helpers import SetupHelper
 
 from baton._baton_mappers import BatonBinary
-from baton._json_to_model import baton_json_to_irods_file
-from baton._model_to_json import file_to_baton_json
-from baton.models import IrodsFile, IrodsMetadata, IrodsFileReplica, IrodsAccessControl
-from baton.tests._helpers import create_irods_file
-from baton.tests._stubs import StubBatonIrodsMapper
+from baton._json_to_model import baton_json_to_data_object, baton_json_to_collection
+from baton._model_to_json import path_to_baton_json
+from baton.models import IrodsMetadata
+from baton.tests._helpers import create_data_object, create_collection
+from baton.tests._stubs import StubBatonRunner
 
 _ATTRIBUTE_1 = "attribute1"
 _ATTRIBUTE_2 = "attribute2"
 _VALUE_1 = "value1"
 _VALUE_2 = "value2"
 _VALUE_3 = "value3"
-_FILE_NAME = "file"
+_NAME = "name"
 
 
 class TestConversions(unittest.TestCase):
@@ -23,19 +23,31 @@ class TestConversions(unittest.TestCase):
         self.test_with_baton = TestWithBatonSetup()
         self.test_with_baton.setup()
         self.setup_helper = SetupHelper(self.test_with_baton.icommands_location)
-        self.baton_irods_mapper = StubBatonIrodsMapper(
+
+        self.baton_irods_mapper = StubBatonRunner(
             self.test_with_baton.baton_location, self.test_with_baton.irods_test_server.users[0].zone)
 
-        metadata = IrodsMetadata({_ATTRIBUTE_1: {_VALUE_1, _VALUE_2}, _ATTRIBUTE_2: {_VALUE_3}})
-        self.irods_file = create_irods_file(self.test_with_baton, _FILE_NAME, metadata)
+        self.metadata = IrodsMetadata({_ATTRIBUTE_1: {_VALUE_1, _VALUE_2}, _ATTRIBUTE_2: {_VALUE_3}})
 
-    def test_baton_json_to_irods_file(self):
+    def test_baton_json_to_data_object(self):
+        data_object = create_data_object(self.test_with_baton, _NAME, self.metadata)
+
         arguments = ["--obj", "--checksum", "--replicate", "--avu", "--acl"]
         baton_out_as_json = self.baton_irods_mapper.run_baton_query(
-            BatonBinary.BATON_LIST, arguments, input_data=file_to_baton_json(self.irods_file.cast_to_file()))
+            BatonBinary.BATON_LIST, arguments, input_data=path_to_baton_json(data_object.path))
 
         self.assertEquals(len(baton_out_as_json), 1)
-        self.assertEquals(baton_json_to_irods_file(baton_out_as_json[0]), self.irods_file)
+        self.assertEquals(baton_json_to_data_object(baton_out_as_json[0]), data_object)
+
+    def test_baton_json_to_collection(self):
+        collection = create_collection(self.test_with_baton, _NAME, self.metadata)
+
+        arguments = ["--obj", "--checksum", "--avu", "--acl"]
+        baton_out_as_json = self.baton_irods_mapper.run_baton_query(
+            BatonBinary.BATON_LIST, arguments, input_data=path_to_baton_json(collection.path))
+
+        self.assertEquals(len(baton_out_as_json), 1)
+        self.assertEquals(baton_json_to_collection(baton_out_as_json[0]), collection)
 
     def tearDown(self):
         self.test_with_baton.tear_down()

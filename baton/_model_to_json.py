@@ -1,11 +1,13 @@
 from hgicommon.collections import SearchCriteria
 from hgicommon.models import SearchCriterion, File
 
-from baton import IrodsMetadata, IrodsFile
+from baton import IrodsMetadata, IrodsEntity
 from baton._baton_constants import BATON_ATTRIBUTE_PROPERTY, BATON_COMPARISON_OPERATOR_PROPERTY, \
-    BATON_COMPARISON_OPERATORS, BATON_AVU_SEARCH_PROPERTY, BATON_FILE_NAME_PROPERTY, BATON_DIRECTORY_PROPERTY, \
+    BATON_COMPARISON_OPERATORS, BATON_AVU_SEARCH_PROPERTY, BATON_DATA_OBJECT_PROPERTY, BATON_COLLECTION_PROPERTY, \
     BATON_METADATA_PROPERTY
 from baton._baton_constants import BATON_VALUE_PROPERTY
+from baton.models import CollectionPath
+from baton.models import EntityPath, DataObjectPath
 
 
 def search_criteria_to_baton_json(search_criteria: SearchCriteria) -> dict:
@@ -28,20 +30,23 @@ def search_criteria_to_baton_json(search_criteria: SearchCriteria) -> dict:
     }
 
 
-def file_to_baton_json(irods_file: File) -> dict:
+def path_to_baton_json(path: EntityPath) -> dict:
     """
-    Creates a baton JSON representation of the given iRODS file.
-    :param irods_file: the iRODS file to convert to a baton representation
+    Creates a baton JSON representation of the given iRODS data object location.
+    :param path: the iRODS location to convert to a baton representation
     :return: the baton JSON representation of the given iRODS file
     """
-    baton_json = {
-        BATON_DIRECTORY_PROPERTY: irods_file.directory
-    }
-
-    if irods_file.file_name is not None:
-        baton_json[BATON_FILE_NAME_PROPERTY] = irods_file.file_name
-
-    return baton_json
+    if type(path) == DataObjectPath:
+        data_object_path = path # type: DataObjectPath
+        return {
+            BATON_COLLECTION_PROPERTY: data_object_path.get_collection_path(),
+            BATON_DATA_OBJECT_PROPERTY: data_object_path.get_name()
+        }
+    else:
+        collection_path = path  # type: CollectionPath
+        return {
+            BATON_COLLECTION_PROPERTY: collection_path.location
+        }
 
 
 def irods_metadata_to_baton_json(metadata: IrodsMetadata) -> dict:

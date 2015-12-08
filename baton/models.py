@@ -1,11 +1,49 @@
+from abc import ABC, ABCMeta
 from enum import Enum, unique
-from typing import Sequence, Iterable, Set
+from typing import Sequence, Iterable, Set, TypeVar, Generic
 
 from hgicommon.collections import Metadata
 from hgicommon.models import File, Model
 
 
-class IrodsFileReplica(Model):
+class EntityPath(Model, metaclass=ABCMeta):
+    """
+    Model of a location of an entity in iRODS.
+    """
+    def __init__(self, location: str):
+        self.location = location
+
+
+class DataObjectPath(EntityPath):
+    """
+    Model of a location to a data object in iRODS.
+    """
+    def get_collection_path(self) -> str:
+        """
+        Gets the iRODS collection that the data object belongs to.
+        :return: the collection the object belongs to
+        """
+        return self.location.rsplit('/', 1)[0]
+
+    def get_name(self) -> str:
+        """
+        Gets the name of the data object.
+        :return: the name of the data object
+        """
+        return self.location.rsplit('/', 1)[-1]
+
+
+class CollectionPath(EntityPath):
+    """
+    Model of a location to a collection in iRODS.
+    """
+    pass
+
+
+EntityPathType = TypeVar('S', DataObjectPath, CollectionPath)
+
+
+class DataObjectReplica(Model):
     """
     Model of a file replicate in iRODS.
     """
@@ -31,7 +69,7 @@ class IrodsMetadata(Metadata):
         return value
 
 
-class IrodsAccessControl(Model):
+class AccessControl(Model):
     """
     Model of an iRODS Access Control item (from an ACL).
     """
@@ -47,19 +85,29 @@ class IrodsAccessControl(Model):
         self.level = level
 
 
-class IrodsFile(File):
+# XXX: Not using generics here for path type as their current level of support is terrible.
+class IrodsEntity(Model):
     """
-    Model of a file in iRODS.
+    Model of an entity in iRODS.
     """
-    def __init__(self, collection: str, name: str, checksum: str, access_control_list: Iterable[IrodsAccessControl],
-                 replicas: Iterable[IrodsFileReplica]=(), metadata: Iterable[IrodsMetadata]=None):
-        super(IrodsFile, self).__init__(collection, name)
-        self.checksum = checksum
+    def __init__(self, path: EntityPath, access_control_list: Iterable[AccessControl],
+                 metadata: Iterable[IrodsMetadata]=None):
+        self.path = path
         self.acl = access_control_list
-        self.replicas = replicas
         self.metadata = metadata
 
-    def get_invalid_replicas(self) -> Sequence[IrodsFileReplica]:
+
+class DataObject(IrodsEntity):
+    """
+    Model of a data object in iRODS.
+    """
+    def __init__(self, path: DataObjectPath, checksum: str, access_control_list: Iterable[AccessControl],
+                 metadata: Iterable[IrodsMetadata] = None, replicas: Iterable[DataObjectReplica] = ()):
+        super().__init__(path, access_control_list, metadata)
+        self.checksum = checksum
+        self.replicas = replicas
+
+    def get_invalid_replicas(self) -> Sequence[DataObjectReplica]:
         """
         Gets the replicates that have checksums that do not match that of the "original" file and which should
         subsequently be regarded as invalid.
@@ -71,9 +119,14 @@ class IrodsFile(File):
                 invalid_replicas.append(replica)
         return invalid_replicas
 
-    def cast_to_file(self) -> File:
-        """
-        Casts this model of an iRODS file to a `File` model.
-        :return: `File` representation of this model
-        """
-        return File(self.directory, self.file_name)
+
+class Collection(IrodsEntity):
+    """
+    Model of a collection in iRODS.
+    """
+    def __init__(self, path: CollectionPath, access_control_list: Iterable[AccessControl],
+                 metadata: Iterable[IrodsMetadata] = None):
+        super().__init__(path, access_control_list, metadata)
+
+
+EntityType = TypeVar('T', DataObject, Collection)

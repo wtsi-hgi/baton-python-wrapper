@@ -1,30 +1,20 @@
 from abc import ABCMeta, abstractmethod
-from typing import List
+from typing import List, TypeVar, Generic
 from typing import Union
 
 from hgicommon.collections import SearchCriteria
-from hgicommon.models import SearchCriterion, File
+from hgicommon.models import SearchCriterion
 
-from baton.models import IrodsFile
+from baton.models import CollectionPath, DataObject, Collection, DataObjectPath, EntityType, EntityPathType
 
 
-class IrodsMapper(metaclass=ABCMeta):
+class IrodsEntityMapper(Generic[EntityType, EntityPathType]):
     """
-    Superclass that all iRODS mappers should extend.
-
-    A data metadata_mapper as defined by Martin Fowler (see: http://martinfowler.com/eaaCatalog/dataMapper.html) that
-    moves data between objects and iRODS, while keeping them independent of each other and the metadata_mapper itself.
-    """
-    pass
-
-
-class IrodsFileMapper(IrodsMapper, metaclass=ABCMeta):
-    """
-    iRODS file mapper.
+    iRODS entity mapper.
     """
     @abstractmethod
     def get_by_metadata(self, metadata_search_criteria: Union[SearchCriterion, SearchCriteria],
-                        load_metadata: bool=False) -> List[IrodsFile]:
+                        load_metadata: bool=False) -> List[EntityType]:
         """
         Gets files from iRODS that have metadata that matches the given search criteria.
         :param metadata_search_criteria: the metadata search criteria
@@ -34,26 +24,40 @@ class IrodsFileMapper(IrodsMapper, metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def get_by_path(self, files: Union[File, List[File]], load_metadata: bool=True) -> List[IrodsFile]:
+    def get_by_path(self, paths: Union[EntityPathType, List[EntityPathType]], load_metadata: bool=True) \
+            -> List[EntityType]:
         """
-        Gets information about the given files from iRODS.
+        Gets information about the given paths from iRODS.
 
-        If one or more of the files does not exist, a `FileNotFound` exception will be raised.
-        :param files: the files to get from iRODS
-        :param load_metadata: whether metadata associated to the files should be loaded
+        If one or more of the paths does not exist, a `FileNotFound` exception will be raised.
+        :param paths: the paths to get from iRODS
+        :param load_metadata: whether metadata associated to the paths should be loaded
         :return: the file information loaded from iRODS
         """
         pass
 
+
+class DataObjectMapper(IrodsEntityMapper[DataObject, DataObjectPath], metaclass=ABCMeta):
+    """
+    TODO
+    """
     @abstractmethod
-    def get_in_collection(self, collections: Union[str, List[str]], load_metadata: bool=True) -> List[IrodsFile]:
+    def get_all_in_collection(self, collection_paths: Union[CollectionPath, List[CollectionPath]],
+                              load_metadata: bool=True) -> List[DataObject]:
         """
-        Gets information about files in the given iRODS collections.
+        Gets information about files in the given iRODS collection_paths.
 
         TODO: Is the below true?
-        If one or more of the collections does not exist, a `FileNotFound` exception will be raised.
-        :param collections: the collections to get the files from
+        If one or more of the collection_paths does not exist, a `FileNotFound` exception will be raised.
+        :param collection_paths: the collection_paths to get the files from
         :param load_metadata: whether metadata associated to the files should be loaded
         :return: the file information loaded from iRODS
         """
         pass
+
+
+class CollectionMapper(IrodsEntityMapper[Collection, CollectionPath], metaclass=ABCMeta):
+    """
+    TODO
+    """
+    pass

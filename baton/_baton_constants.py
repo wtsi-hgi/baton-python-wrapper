@@ -1,12 +1,12 @@
 from hgicommon.enums import ComparisonOperator
 
-from baton.models import IrodsAccessControl
+from baton.models import AccessControl
 
-BATON_FILE_NAME_PROPERTY = "data_object"
-BATON_DIRECTORY_PROPERTY = "collection"
+BATON_DATA_OBJECT_PROPERTY = "data_object"
+BATON_COLLECTION_PROPERTY = "collection"
 
 BATON_METADATA_PROPERTY = "avus"
-BATON_FILE_CHECKSUM_PROPERTY = "checksum"
+BATON_CHECKSUM_PROPERTY = "checksum"
 
 BATON_FILE_REPLICATE_PROPERTY = "replicates"
 BATON_FILE_REPLICATE_ID_PROPERTY = "number"
@@ -16,8 +16,8 @@ BATON_ACL_OWNER_PROPERTY = "owner"
 BATON_ACL_ZONE_PROPERTY = "zone"
 BATON_ACL_LEVEL_PROPERTY = "level"
 BATON_ACL_LEVELS = {
-    IrodsAccessControl.Level.OWN: "own",
-    IrodsAccessControl.Level.READ: "read",
+    AccessControl.Level.OWN: "own",
+    AccessControl.Level.READ: "read",
 }
 
 BATON_AVU_SEARCH_PROPERTY = "avus"
