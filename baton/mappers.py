@@ -8,13 +8,14 @@ from hgicommon.models import SearchCriterion
 from baton.models import CollectionPath, DataObject, Collection, DataObjectPath, EntityType, EntityPathType
 
 
+# XXX: For some reason, generics and abstract don't get along...
 class IrodsEntityMapper(Generic[EntityType, EntityPathType]):
     """
     iRODS entity mapper.
     """
     @abstractmethod
     def get_by_metadata(self, metadata_search_criteria: Union[SearchCriterion, SearchCriteria],
-                        load_metadata: bool=False) -> List[EntityType]:
+                        load_metadata: bool=True) -> List[EntityType]:
         """
         Gets files from iRODS that have metadata that matches the given search criteria.
         :param metadata_search_criteria: the metadata search criteria
@@ -39,7 +40,7 @@ class IrodsEntityMapper(Generic[EntityType, EntityPathType]):
 
 class DataObjectMapper(IrodsEntityMapper[DataObject, DataObjectPath], metaclass=ABCMeta):
     """
-    TODO
+    iRODS data object mapper.
     """
     @abstractmethod
     def get_all_in_collection(self, collection_paths: Union[CollectionPath, List[CollectionPath]],

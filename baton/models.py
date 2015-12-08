@@ -6,7 +6,7 @@ from hgicommon.collections import Metadata
 from hgicommon.models import File, Model
 
 
-class Path(Model, metaclass=ABCMeta):
+class Path(Model):
     """
     Model of a location of an entity in iRODS.
     """
@@ -65,7 +65,7 @@ class IrodsMetadata(Metadata):
 
     def get(self, attribute: str, default=None) -> Set[str]:
         value = super().get(attribute, default)
-        assert isinstance(value, set) or value == default
+        assert isinstance(value, set)
         return value
 
 

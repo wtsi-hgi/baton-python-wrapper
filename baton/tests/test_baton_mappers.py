@@ -8,7 +8,7 @@ from testwithbaton import TestWithBatonSetup
 from testwithbaton.helpers import SetupHelper
 
 from baton._baton_mappers import BatonDataObjectMapper, BatonCollectionMapper, _BatonIrodsEntityMapper
-from baton.models import IrodsMetadata, IrodsEntity, DataObject, Collection
+from baton.models import IrodsMetadata, IrodsEntity, DataObject, Collection, Path, CollectionPath, DataObjectPath
 from baton.tests._helpers import combine_metadata, create_data_object, create_collection
 
 _NAMES = ["name_1", "name_2", "name_3"]
@@ -69,14 +69,16 @@ class _TestBatonIrodsEntityMapper(unittest.TestCase, metaclass=ABCMeta):
         self.create_irods_entity(_NAMES[1], self.metadata_1)
 
         retrieved_entities = self.create_mapper().get_by_metadata(search_criteria)
+        self.maxDiff = None
         self.assertCountEqual(retrieved_entities, [irods_entity_1])
 
     def test_get_by_metadata_when_single_criterion_match_multiple_entities(self):
         irods_entity_1 = self.create_irods_entity(_NAMES[0], self.metadata_1_2)
         irods_entity_2 = self.create_irods_entity(_NAMES[1], self.metadata_1)
-        self.create_irods_entity(_NAMES[2])
+        self.create_irods_entity(_NAMES[2], IrodsMetadata())
 
         retrieved_entities = self.create_mapper().get_by_metadata(self.search_criterion_1)
+        self.maxDiff = None
         self.assertCountEqual(retrieved_entities, [irods_entity_1, irods_entity_2])
 
     def test_get_by_metadata_when_multiple_criterions_match_multiple_entities(self):
@@ -87,6 +89,7 @@ class _TestBatonIrodsEntityMapper(unittest.TestCase, metaclass=ABCMeta):
         self.create_irods_entity(_NAMES[2], IrodsMetadata())
 
         retrieved_entities = self.create_mapper().get_by_metadata(search_criteria)
+        self.maxDiff = None
         self.assertCountEqual(retrieved_entities, [irods_entity_1, irods_entity_2])
 
     def test_get_by_metadata_when_metadata_not_required_for_entities(self):
@@ -99,34 +102,34 @@ class _TestBatonIrodsEntityMapper(unittest.TestCase, metaclass=ABCMeta):
         self.assertEquals(retrieved_entities[0], irods_entity_1)
 
     def test_get_by_path_when_entity_does_not_exist(self):
-        self.assertRaises(FileNotFoundError, self.create_mapper().get_by_path, File("/invalid", "name"))
+        self.assertRaises(FileNotFoundError, self.create_mapper().get_by_path, Path("/invalid/name"))
 
     def test_get_by_path_with_single_entity(self):
         irods_entity_1 = self.create_irods_entity(_NAMES[0], self.metadata_1)
 
-        retrieved_entities = self.create_mapper().get_by_path(irods_entity_1)
+        retrieved_entities = self.create_mapper().get_by_path(irods_entity_1.path)
         self.assertCountEqual(retrieved_entities, [irods_entity_1])
 
     def test_get_by_path_with_multiple_entities(self):
         irods_entities = [
             self.create_irods_entity(_NAMES[i], self.metadata_1) for i in range(len(_NAMES))]
+        paths = [irods_entity.path for irods_entity in irods_entities]
 
-        retrieved_entities = self.create_mapper().get_by_path(irods_entities)
+        retrieved_entities = self.create_mapper().get_by_path(paths)
         self.assertCountEqual(retrieved_entities, irods_entities)
 
     def test_get_by_path_with_multiple_files_when_some_do_not_exist(self):
         irods_entities = [
             self.create_irods_entity(_NAMES[i], self.metadata_1) for i in range(len(_NAMES))]
+        paths = [irods_entity.path for irods_entity in irods_entities]
 
         self.assertRaises(
-            FileNotFoundError, self.create_mapper().get_by_path, irods_entities + [File("/invalid", "name")])
+            FileNotFoundError, self.create_mapper().get_by_path, paths + [Path("/invalid/name")])
 
     def test_get_by_path_when_metadata_not_required(self):
         irods_entity_1 = self.create_irods_entity(_NAMES[0], self.metadata_1)
 
-        print(self.create_mapper())
-
-        retrieved_entities = self.create_mapper().get_by_path(irods_entity_1, load_metadata=False)
+        retrieved_entities = self.create_mapper().get_by_path(irods_entity_1.path, load_metadata=False)
 
         self.assertIsNone(retrieved_entities[0].metadata)
         irods_entity_1.metadata = None
@@ -147,36 +150,35 @@ class TestBatonDataObjectMapper(_TestBatonIrodsEntityMapper):
     def create_irods_entity(self, file_name: str, metadata: IrodsMetadata()) -> DataObject:
         return create_data_object(self.test_with_baton, file_name, metadata)
 
-    def get_all_in_collection_when_data_object_instead_of_collection(self):
-        self.assertRaises(ValueError, self.create_mapper().get_all_in_collection, File("/", ""))
-
-    def get_all_in_collection_when_single_data_object_instead_of_collection(self):
-        collections = [File(""), File(""), File("", "")]
-        self.assertRaises(ValueError, self.create_mapper().get_all_in_collection, collections)
-
-    def get_all_in_collection_when_collection_does_not_exist(self):
-        self.assertRaises(FileNotFoundError, self.create_mapper().get_all_in_collection, File("/invalid"))
-
     def get_all_in_collection_with_single_collection(self):
         data_object_1 = self.create_irods_entity(_NAMES[0], self.metadata_1)
+        data_object_2 = self.create_irods_entity(_NAMES[1], self.metadata_2)
+        assert data_object_1.path == data_object_2.path
 
         retrieved_entities = self.create_mapper().get_all_in_collection(data_object_1.path)
-        self.assertCountEqual(retrieved_entities, [data_object_1])
+        self.assertCountEqual(retrieved_entities, [data_object_1, data_object_2])
 
-    # def get_all_in_collection_with_multiple_collections(self):
-    #     files = [
-    #         self.create_irods_entity(_NAMES[i], self.metadata_1) for i in range(len(_NAMES))]
-    #     for i in range(len(files) - 1):
-    #         assert files[i].directory == files[i + 1]
-    #
-    #     self.setup_helper.create_irods_collection("other_collection")
-    #     self.
-    #
-    #
-    #     # FIXME: Make multiple collections
-    #
-    #     retrieved_entities = self.mapper.get_all_in_collection(files[0].directory)
-    #     self.assertCountEqual(retrieved_entities, files)
+    def get_all_in_collection_when_collection_does_not_exist(self):
+        self.assertRaises(FileNotFoundError, self.create_mapper().get_all_in_collection, CollectionPath("/invalid"))
+
+    def get_all_in_collection_with_multiple_collections(self):
+        files = [
+            self.create_irods_entity(_NAMES[i], self.metadata_1) for i in range(len(_NAMES))]
+        for i in range(len(files) - 1):
+            assert files[i].path == files[i + 1].path
+
+        other_collection_path = CollectionPath(self.setup_helper.create_collection("other_collection"))
+        moved_path = DataObjectPath("%s/%s" % (other_collection_path, files[0].path.get_name()))
+        self.setup_helper.run_icommand("imv", [files[0].path.location, moved_path.location])
+        files[0].path = moved_path
+
+        retrieved_entities = self.create_mapper().get_all_in_collection(files[0].path, files[1].path)
+        self.assertCountEqual(retrieved_entities, files)
+
+    def get_all_in_collection_when_one_of_multiple_collections_does_not_exist(self):
+        collection_paths = [
+            CollectionPath(self.setup_helper.create_collection("collection")), CollectionPath("/invalid")]
+        self.assertRaises(FileNotFoundError, self.create_mapper().get_all_in_collection, collection_paths)
 
     def get_all_in_collection_with_multiple_collections_when_some_do_not_exist(self):
         data_objects = [self.create_irods_entity(_NAMES[i], self.metadata_1) for i in range(len(_NAMES))]
@@ -208,18 +210,8 @@ class TestBatonCollectionMapper(_TestBatonIrodsEntityMapper):
         return create_collection(self.test_with_baton, name, metadata)
 
 
-
-test_cases = (TestBatonDataObjectMapper, TestBatonCollectionMapper)
-# test_cases = (TestBatonDataObjectMapper, )
+# Trick required to stop Python's unittest from running the abstract base class as a test
 del(_TestBatonIrodsEntityMapper)
-
-def load_tests(loader, tests, pattern):
-    suite = unittest.TestSuite()
-    for test_class in test_cases:
-        tests = loader.loadTestsFromTestCase(test_class)
-        suite.addTests(tests)
-    return suite
-
 
 
 if __name__ == "__main__":

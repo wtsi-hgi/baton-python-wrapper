@@ -3,8 +3,8 @@ from typing import Iterable
 from testwithbaton.api import TestWithBatonSetup
 from testwithbaton.helpers import SetupHelper
 
-from baton.models import DataObjectReplica, AccessControl, IrodsMetadata, DataObjectPath, DataObject, \
-    CollectionPath, Collection
+from baton.models import DataObjectReplica, AccessControl, IrodsMetadata, DataObjectPath, DataObject, CollectionPath,\
+    Collection
 
 
 def create_data_object(test_with_baton: TestWithBatonSetup, name: str, metadata: IrodsMetadata()) -> DataObject:
@@ -24,7 +24,7 @@ def create_data_object(test_with_baton: TestWithBatonSetup, name: str, metadata:
     setup_helper.run_icommand("icd", [path.get_collection_path()])
     setup_helper.run_icommand("irepl", [path.get_name()])
     setup_helper.add_metadata_to(path.location, metadata)
-    checksum = setup_helper.get_checksum(path.location)
+    checksum = setup_helper.get_checksum(location)
 
     replicas = [DataObjectReplica(0, checksum)]
     acl = [AccessControl(user.username, user.zone, AccessControl.Level.OWN)]
@@ -46,7 +46,7 @@ def create_collection(test_with_baton: TestWithBatonSetup, name: str, metadata: 
     location = setup_helper.create_collection(name)
     path = CollectionPath(location)
 
-    setup_helper.add_metadata_to(path.location, metadata)
+    setup_helper.add_metadata_to(location, metadata)
 
     acl = [AccessControl(user.username, user.zone, AccessControl.Level.OWN)]
 

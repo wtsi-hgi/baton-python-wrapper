@@ -12,9 +12,9 @@ class TestConnection(unittest.TestCase):
     """
     def setUp(self):
         self.test_with_baton = TestWithBatonSetup()
+        self.test_with_baton.setup()
 
     def test_correct_mapper_properties(self):
-        self.test_with_baton.setup()
         connection = Connection(self.test_with_baton.baton_location, "")
 
         self.assertIsInstance(connection.data_object, BatonDataObjectMapper)
