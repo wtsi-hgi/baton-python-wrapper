@@ -1,7 +1,5 @@
-import logging
 from abc import ABCMeta, abstractmethod
 from typing import List, Union
-import time
 
 from hgicommon.collections import SearchCriteria
 from hgicommon.models import SearchCriterion
@@ -11,7 +9,7 @@ from baton._baton_runner import BatonRunner
 from baton._json_to_model import baton_json_to_collection
 from baton._json_to_model import baton_json_to_data_object
 from baton._model_to_json import search_criteria_to_baton_json, path_to_baton_json
-from baton.mappers import DataObjectMapper, CollectionMapper, IrodsEntityMapper, EntityType, EntityPathType
+from baton.mappers import DataObjectMapper, CollectionMapper, IrodsEntityMapper, EntityType
 from baton.models import CollectionPath, DataObject, Collection, DataObjectPath
 
 

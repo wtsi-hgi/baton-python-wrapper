@@ -1,7 +1,6 @@
 from hgicommon.collections import SearchCriteria
-from hgicommon.models import SearchCriterion, File
 
-from baton import IrodsMetadata, IrodsEntity
+from baton import IrodsMetadata
 from baton._baton_constants import BATON_ATTRIBUTE_PROPERTY, BATON_COMPARISON_OPERATOR_PROPERTY, \
     BATON_COMPARISON_OPERATORS, BATON_AVU_SEARCH_PROPERTY, BATON_DATA_OBJECT_PROPERTY, BATON_COLLECTION_PROPERTY, \
     BATON_METADATA_PROPERTY
@@ -43,7 +42,6 @@ def path_to_baton_json(path: Path) -> dict:
             BATON_DATA_OBJECT_PROPERTY: data_object_path.get_name()
         }
     elif type(path) == CollectionPath:
-        print(path.__class__)
         collection_path = path  # type: CollectionPath
         return {
             BATON_COLLECTION_PROPERTY: collection_path.location

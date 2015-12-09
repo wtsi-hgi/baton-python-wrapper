@@ -1,5 +1,5 @@
 from abc import ABCMeta, abstractmethod
-from typing import List, TypeVar, Generic
+from typing import List, Generic
 from typing import Union
 
 from hgicommon.collections import SearchCriteria
@@ -58,6 +58,6 @@ class DataObjectMapper(IrodsEntityMapper[DataObject, DataObjectPath], metaclass=
 
 class CollectionMapper(IrodsEntityMapper[Collection, CollectionPath], metaclass=ABCMeta):
     """
-    TODO
+    iRODS collection mapper.
     """
     pass
