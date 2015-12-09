@@ -1,8 +1,8 @@
-from baton._baton_mappers import BatonIrodsMapper
+from baton._baton_mappers import BatonRunner
 
 
-class StubBatonIrodsMapper(BatonIrodsMapper):
+class StubBatonRunner(BatonRunner):
     """
-    Stub `BatonIrodsMapper`.
+    Stub `_BatonRunner`.
     """
     pass

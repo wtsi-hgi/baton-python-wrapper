@@ -22,23 +22,27 @@ git+https://github.com/wtsi-hgi/common-python.git@master#egg=hgicommon
 
 ### API
 ```python
-from baton import connect_to_irods_with_baton, Connection, IrodsFile, IrodsMetadata
+from baton import connect_to_irods_with_baton, Connection, IrodsEntity, IrodsMetadata, Path, DataObject, Collection
 from hgicommon import SearchCriteria, SearchCriterion, ComparisonOperator
 
 # Setup connection to iRODS using baton
 irods = connect_to_irods_with_baton("/where/baton/binaries/are/installed/", "irods_query_zone") # type: Connection
 
-# Get information about the file(s) at the given path(s) in iRODS
-irods.file.get_by_path("collection/data_object")    # type: List[IrodsFile]:
-irods.file.get_by_path(["collection/data_object", "collection/other_data_object"])    # type: List[IrodsFile]:
+# Get information about the data objects or collections at the given path(s) in iRODS
+irods.data_object.get_by_path("/collection/data_object")    # type: List[DataObject]:
+irods.collection.get_by_path(["/collection", "/other_collection"])   # type: List[Collection]:
 
-# Setup search for files based on their metadata 
+# Setup search for data objects or collections based on their metadata
 search_criterion_1 = SearchCriterion("attribute", "match_value", ComparisonOperator.EQUALS)
 search_criterion_2 = SearchCriterion("other_attribute", "other_match_value", ComparisonOperator.LESS_THAN)
-search_criteria = SearchCriteria([search_criterion_1, search_criterion_2])  # Collection of SearchCriterion
-# Do file search based on metadata attribute values
-# Note: File objects are not populated with the contents of the file on iRODS
-irods.file.get_by_metadata(search_criteria)   # type: List[IrodsFile]
+search_criteria = SearchCriteria([search_criterion_1, search_criterion_2])  # Bag of SearchCriterion
+# Do search
+irods.data_object.get_by_metadata(search_criteria)   # type: List[DataObject]
+irods.collection.get_by_metadata(search_criteria)   # type: List[Collection]
+
+# Get data objects in a collection(s)
+irods.data_object.get_in_collection("/collection")    # type: List[DataObject]:
+irods.data_object.get_in_collection(["/collection", "/other_collection"])   # type: List[DataObject]:
 ```
 
 
