@@ -42,11 +42,14 @@ def path_to_baton_json(path: Path) -> dict:
             BATON_COLLECTION_PROPERTY: data_object_path.get_collection_path(),
             BATON_DATA_OBJECT_PROPERTY: data_object_path.get_name()
         }
-    else:
+    elif type(path) == CollectionPath:
+        print(path.__class__)
         collection_path = path  # type: CollectionPath
         return {
             BATON_COLLECTION_PROPERTY: collection_path.location
         }
+    else:
+        raise ValueError("Unsupported path type: %s" % type(path))
 
 
 def irods_metadata_to_baton_json(metadata: IrodsMetadata) -> dict:

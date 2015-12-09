@@ -4,8 +4,7 @@ from baton._baton_constants import BATON_ATTRIBUTE_PROPERTY, BATON_COLLECTION_PR
     BATON_METADATA_PROPERTY, BATON_FILE_REPLICATE_PROPERTY, BATON_FILE_REPLICATE_ID_PROPERTY, \
     BATON_ACL_LEVEL_PROPERTY, BATON_ACL_OWNER_PROPERTY, BATON_ACL_ZONE_PROPERTY, BATON_ACL_PROPERTY, BATON_ACL_LEVELS
 from baton._baton_constants import BATON_VALUE_PROPERTY
-from baton.models import IrodsMetadata, DataObjectReplica, AccessControl, DataObject, Collection, \
-    DataObjectPath, CollectionPath
+from baton.models import IrodsMetadata, DataObjectReplica, AccessControl, DataObject, Collection
 
 
 def baton_json_to_data_object(baton_json: dict) -> DataObject:
@@ -15,7 +14,7 @@ def baton_json_to_data_object(baton_json: dict) -> DataObject:
     :return: the corresponding model
     """
     return DataObject(
-        DataObjectPath("%s/%s" % (baton_json[BATON_COLLECTION_PROPERTY], baton_json[BATON_DATA_OBJECT_PROPERTY])),
+        "%s/%s" % (baton_json[BATON_COLLECTION_PROPERTY], baton_json[BATON_DATA_OBJECT_PROPERTY]),
         baton_json[BATON_CHECKSUM_PROPERTY],
         _extract_acl_from_baton_json(baton_json),
         _extract_metadata_from_baton_json(baton_json),
@@ -30,7 +29,7 @@ def baton_json_to_collection(baton_json: dict) -> Collection:
     :return: the corresponding model
     """
     return Collection(
-        CollectionPath(baton_json[BATON_COLLECTION_PROPERTY]),
+        baton_json[BATON_COLLECTION_PROPERTY],
         _extract_acl_from_baton_json(baton_json),
         _extract_metadata_from_baton_json(baton_json)
     )

@@ -8,7 +8,7 @@ from testwithbaton import TestWithBatonSetup
 from testwithbaton.helpers import SetupHelper
 
 from baton._baton_mappers import BatonDataObjectMapper, BatonCollectionMapper, _BatonIrodsEntityMapper
-from baton.models import IrodsMetadata, IrodsEntity, DataObject, Collection, Path, CollectionPath, DataObjectPath
+from baton.models import IrodsMetadata, IrodsEntity, DataObject, Collection
 from baton.tests._helpers import combine_metadata, create_data_object, create_collection
 
 _NAMES = ["name_1", "name_2", "name_3"]
@@ -102,7 +102,7 @@ class _TestBatonIrodsEntityMapper(unittest.TestCase, metaclass=ABCMeta):
         self.assertEquals(retrieved_entities[0], irods_entity_1)
 
     def test_get_by_path_when_entity_does_not_exist(self):
-        self.assertRaises(FileNotFoundError, self.create_mapper().get_by_path, Path("/invalid/name"))
+        self.assertRaises(FileNotFoundError, self.create_mapper().get_by_path, "/invalid/name")
 
     def test_get_by_path_with_single_entity(self):
         irods_entity_1 = self.create_irods_entity(_NAMES[0], self.metadata_1)
@@ -124,7 +124,7 @@ class _TestBatonIrodsEntityMapper(unittest.TestCase, metaclass=ABCMeta):
         paths = [irods_entity.path for irods_entity in irods_entities]
 
         self.assertRaises(
-            FileNotFoundError, self.create_mapper().get_by_path, paths + [Path("/invalid/name")])
+            FileNotFoundError, self.create_mapper().get_by_path, paths + ["/invalid/name"])
 
     def test_get_by_path_when_metadata_not_required(self):
         irods_entity_1 = self.create_irods_entity(_NAMES[0], self.metadata_1)
@@ -159,7 +159,7 @@ class TestBatonDataObjectMapper(_TestBatonIrodsEntityMapper):
         self.assertCountEqual(retrieved_entities, [data_object_1, data_object_2])
 
     def get_all_in_collection_when_collection_does_not_exist(self):
-        self.assertRaises(FileNotFoundError, self.create_mapper().get_all_in_collection, CollectionPath("/invalid"))
+        self.assertRaises(FileNotFoundError, self.create_mapper().get_all_in_collection, "/invalid")
 
     def get_all_in_collection_with_multiple_collections(self):
         files = [
@@ -176,8 +176,7 @@ class TestBatonDataObjectMapper(_TestBatonIrodsEntityMapper):
         self.assertCountEqual(retrieved_entities, files)
 
     def get_all_in_collection_when_one_of_multiple_collections_does_not_exist(self):
-        collection_paths = [
-            CollectionPath(self.setup_helper.create_collection("collection")), CollectionPath("/invalid")]
+        collection_paths = [self.setup_helper.create_collection("collection"), "/invalid"]
         self.assertRaises(FileNotFoundError, self.create_mapper().get_all_in_collection, collection_paths)
 
     def get_all_in_collection_with_multiple_collections_when_some_do_not_exist(self):
@@ -186,7 +185,7 @@ class TestBatonDataObjectMapper(_TestBatonIrodsEntityMapper):
             assert data_objects[i].path == data_objects[i + 1]
 
         self.assertRaises(
-            FileNotFoundError, self.create_mapper().get_all_in_collection, data_objects[0].path + [File("/invalid")])
+            FileNotFoundError, self.create_mapper().get_all_in_collection, data_objects[0].path + ["/invalid"])
 
     def get_all_in_collection_when_metadata_not_required(self):
         data_object_1 = self.create_irods_entity(_NAMES[0], self.metadata_1)

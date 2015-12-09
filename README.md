@@ -29,8 +29,8 @@ from hgicommon import SearchCriteria, SearchCriterion, ComparisonOperator
 irods = connect_to_irods_with_baton("/where/baton/binaries/are/installed/", "irods_query_zone") # type: Connection
 
 # Get information about the data objects or collections at the given path(s) in iRODS
-irods.data_object.get_by_path(Path("/collection/data_object"))    # type: List[DataObject]:
-irods.collection.get_by_path([Path("/collection"), Path("/other_collection")])   # type: List[Collection]:
+irods.data_object.get_by_path("/collection/data_object")    # type: List[DataObject]:
+irods.collection.get_by_path(["/collection", "/other_collection"])   # type: List[Collection]:
 
 # Setup search for data objects or collections based on their metadata
 search_criterion_1 = SearchCriterion("attribute", "match_value", ComparisonOperator.EQUALS)
@@ -41,8 +41,8 @@ irods.data_object.get_by_metadata(search_criteria)   # type: List[DataObject]
 irods.collection.get_by_metadata(search_criteria)   # type: List[Collection]
 
 # Get data objects in a collection(s)
-irods.data_object.get_in_collection(Path("/collection"))    # type: List[DataObject]:
-irods.data_object.get_in_collection([Path("/collection"), Path("/other_collection")])   # type: List[DataObject]:
+irods.data_object.get_in_collection("/collection")    # type: List[DataObject]:
+irods.data_object.get_in_collection(["/collection", "/other_collection"])   # type: List[DataObject]:
 ```
 
 

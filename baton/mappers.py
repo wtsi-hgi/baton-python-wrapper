@@ -25,8 +25,7 @@ class IrodsEntityMapper(Generic[EntityType, EntityPathType]):
         pass
 
     @abstractmethod
-    def get_by_path(self, paths: Union[EntityPathType, List[EntityPathType]], load_metadata: bool=True) \
-            -> List[EntityType]:
+    def get_by_path(self, paths: Union[str, List[str]], load_metadata: bool=True) -> List[EntityType]:
         """
         Gets information about the given paths from iRODS.
 
@@ -43,8 +42,8 @@ class DataObjectMapper(IrodsEntityMapper[DataObject, DataObjectPath], metaclass=
     iRODS data object mapper.
     """
     @abstractmethod
-    def get_all_in_collection(self, collection_paths: Union[CollectionPath, List[CollectionPath]],
-                              load_metadata: bool=True) -> List[DataObject]:
+    def get_all_in_collection(self, collection_paths: Union[str, List[str]], load_metadata: bool=True) \
+            -> List[DataObject]:
         """
         Gets information about files in the given iRODS collection_paths.
 

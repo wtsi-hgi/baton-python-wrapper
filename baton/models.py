@@ -1,9 +1,8 @@
-from abc import ABC, ABCMeta
 from enum import Enum, unique
-from typing import Sequence, Iterable, Set, TypeVar, Generic
+from typing import Sequence, Iterable, Set, TypeVar
 
 from hgicommon.collections import Metadata
-from hgicommon.models import File, Model
+from hgicommon.models import Model
 
 
 class Path(Model):
@@ -85,13 +84,11 @@ class AccessControl(Model):
         self.level = level
 
 
-# XXX: Not using generics here for path type as their current level of support is terrible.
 class IrodsEntity(Model):
     """
     Model of an entity in iRODS.
     """
-    def __init__(self, path: Path, access_control_list: Iterable[AccessControl],
-                 metadata: Iterable[IrodsMetadata]=None):
+    def __init__(self, path: str, access_control_list: Iterable[AccessControl], metadata: Iterable[IrodsMetadata]=None):
         self.path = path
         self.acl = access_control_list
         self.metadata = metadata
@@ -101,7 +98,7 @@ class DataObject(IrodsEntity):
     """
     Model of a data object in iRODS.
     """
-    def __init__(self, path: DataObjectPath, checksum: str, access_control_list: Iterable[AccessControl],
+    def __init__(self, path: str, checksum: str, access_control_list: Iterable[AccessControl],
                  metadata: Iterable[IrodsMetadata] = None, replicas: Iterable[DataObjectReplica] = ()):
         super().__init__(path, access_control_list, metadata)
         self.checksum = checksum
@@ -124,7 +121,7 @@ class Collection(IrodsEntity):
     """
     Model of a collection in iRODS.
     """
-    def __init__(self, path: CollectionPath, access_control_list: Iterable[AccessControl],
+    def __init__(self, path: str, access_control_list: Iterable[AccessControl],
                  metadata: Iterable[IrodsMetadata] = None):
         super().__init__(path, access_control_list, metadata)
 

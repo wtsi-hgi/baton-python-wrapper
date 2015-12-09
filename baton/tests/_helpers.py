@@ -29,7 +29,7 @@ def create_data_object(test_with_baton: TestWithBatonSetup, name: str, metadata:
     replicas = [DataObjectReplica(0, checksum)]
     acl = [AccessControl(user.username, user.zone, AccessControl.Level.OWN)]
 
-    return DataObject(path, checksum, acl, metadata, replicas)
+    return DataObject(location, checksum, acl, metadata, replicas)
 
 
 def create_collection(test_with_baton: TestWithBatonSetup, name: str, metadata: IrodsMetadata()) -> DataObject:
@@ -44,13 +44,12 @@ def create_collection(test_with_baton: TestWithBatonSetup, name: str, metadata: 
     setup_helper = SetupHelper(test_with_baton.icommands_location)
 
     location = setup_helper.create_collection(name)
-    path = CollectionPath(location)
 
     setup_helper.add_metadata_to(location, metadata)
 
     acl = [AccessControl(user.username, user.zone, AccessControl.Level.OWN)]
 
-    return Collection(path, acl, metadata)
+    return Collection(location, acl, metadata)
 
 
 def combine_metadata(metadata_collection: Iterable[IrodsMetadata]) -> IrodsMetadata:

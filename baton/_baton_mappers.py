@@ -12,7 +12,7 @@ from baton._json_to_model import baton_json_to_collection
 from baton._json_to_model import baton_json_to_data_object
 from baton._model_to_json import search_criteria_to_baton_json, path_to_baton_json
 from baton.mappers import DataObjectMapper, CollectionMapper, IrodsEntityMapper, EntityType, EntityPathType
-from baton.models import CollectionPath, DataObject, Collection
+from baton.models import CollectionPath, DataObject, Collection, DataObjectPath
 
 
 class _BatonIrodsEntityMapper(BatonRunner, IrodsEntityMapper, metaclass=ABCMeta):
@@ -32,8 +32,7 @@ class _BatonIrodsEntityMapper(BatonRunner, IrodsEntityMapper, metaclass=ABCMeta)
         baton_out_as_json = self.run_baton_query(BatonBinary.BATON_METAQUERY, arguments, input_data=baton_json)
         return self._baton_json_to_irods_entities(baton_out_as_json)
 
-    def get_by_path(self, paths: Union[EntityPathType, List[EntityPathType]], load_metadata: bool=True) \
-            -> List[EntityType]:
+    def get_by_path(self, paths: Union[str, List[str]], load_metadata: bool=True) -> List[EntityType]:
         if not isinstance(paths, list):
             paths = [paths]
         if len(paths) == 0:
@@ -41,7 +40,7 @@ class _BatonIrodsEntityMapper(BatonRunner, IrodsEntityMapper, metaclass=ABCMeta)
 
         baton_json = []
         for path in paths:
-            baton_json.append(path_to_baton_json(path))
+            baton_json.append(self._path_to_baton_json(path))
         arguments = self._create_entity_query_arguments(load_metadata)
 
         baton_out_as_json = self.run_baton_query(BatonBinary.BATON_LIST, arguments, input_data=baton_json)
@@ -57,6 +56,15 @@ class _BatonIrodsEntityMapper(BatonRunner, IrodsEntityMapper, metaclass=ABCMeta)
         if load_metadata:
             arguments.append("--avu")
         return arguments
+
+    @abstractmethod
+    def _path_to_baton_json(self, path: str) -> dict:
+        """
+        TODO
+        :param path:
+        :return:
+        """
+        pass
 
     @abstractmethod
     def _baton_json_to_irod_entity(self, entity_as_baton_json: dict) -> EntityType:
@@ -87,8 +95,8 @@ class BatonDataObjectMapper(_BatonIrodsEntityMapper, DataObjectMapper):
     """
     TODO
     """
-    def get_all_in_collection(self, collection_paths: Union[CollectionPath, List[CollectionPath]],
-                              load_metadata: bool=True) -> List[DataObject]:
+    def get_all_in_collection(self, collection_paths: Union[str, List[str]], load_metadata: bool=True) \
+            -> List[DataObject]:
         if not isinstance(collection_paths, list):
             collection_paths = [collection_paths]
         if len(collection_paths) == 0:
@@ -108,6 +116,10 @@ class BatonDataObjectMapper(_BatonIrodsEntityMapper, DataObjectMapper):
 
         return self._baton_json_to_irods_entities(baton_out_as_json)
 
+    def _path_to_baton_json(self, path: str) -> dict:
+        path_as_model = DataObjectPath(path)
+        return path_to_baton_json(path_as_model)
+
     def _baton_json_to_irod_entity(self, entity_as_baton_json: dict) -> DataObject:
         return baton_json_to_data_object(entity_as_baton_json)
 
@@ -116,5 +128,9 @@ class BatonCollectionMapper(_BatonIrodsEntityMapper, CollectionMapper):
     """
     TODO
     """
+    def _path_to_baton_json(self, path: str) -> dict:
+        path_as_model = CollectionPath(path)
+        return path_to_baton_json(path_as_model)
+
     def _baton_json_to_irod_entity(self, entity_as_baton_json: dict) -> Collection:
         return baton_json_to_collection(entity_as_baton_json)

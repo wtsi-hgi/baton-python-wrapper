@@ -1,6 +1,6 @@
 import unittest
 
-from baton.models import DataObjectReplica, DataObjectPath, DataObject, CollectionPath, Collection, IrodsMetadata
+from baton.models import DataObjectReplica, DataObjectPath, DataObject, IrodsMetadata
 
 _COLLECTION = "/collection/sub_collection"
 _FILE_NAME = "file_name"
@@ -26,7 +26,7 @@ class TestDataObject(unittest.TestCase):
     Tests for `DataObject`.
     """
     def setUp(self):
-        self.data_object = DataObject(DataObjectPath("%s/%s" % (_COLLECTION, _FILE_NAME)), _CHECKSUMS[0], [], [])
+        self.data_object = DataObject("%s/%s" % (_COLLECTION, _FILE_NAME), _CHECKSUMS[0], [], [])
 
     def test_get_invalid_replicas_with_no_replicas(self):
         self.assertCountEqual(self.data_object.get_invalid_replicas(), [])

@@ -6,7 +6,7 @@ from testwithbaton.helpers import SetupHelper
 from baton._baton_mappers import BatonBinary
 from baton._json_to_model import baton_json_to_data_object, baton_json_to_collection
 from baton._model_to_json import path_to_baton_json
-from baton.models import IrodsMetadata
+from baton.models import IrodsMetadata, CollectionPath, DataObjectPath
 from baton.tests._helpers import create_data_object, create_collection
 from baton.tests._stubs import StubBatonRunner
 
@@ -31,20 +31,22 @@ class TestConversions(unittest.TestCase):
 
     def test_baton_json_to_data_object(self):
         data_object = create_data_object(self.test_with_baton, _NAME, self.metadata)
+        path_as_model = DataObjectPath(data_object.path)
 
         arguments = ["--obj", "--checksum", "--replicate", "--avu", "--acl"]
         baton_out_as_json = self.baton_irods_mapper.run_baton_query(
-            BatonBinary.BATON_LIST, arguments, input_data=path_to_baton_json(data_object.path))
+            BatonBinary.BATON_LIST, arguments, input_data=path_to_baton_json(path_as_model))
 
         self.assertEquals(len(baton_out_as_json), 1)
         self.assertEquals(baton_json_to_data_object(baton_out_as_json[0]), data_object)
 
     def test_baton_json_to_collection(self):
         collection = create_collection(self.test_with_baton, _NAME, self.metadata)
+        path_as_model = CollectionPath(collection.path)
 
-        arguments = ["--obj", "--checksum", "--avu", "--acl"]
+        arguments = ["--coll" "--checksum", "--avu", "--acl"]
         baton_out_as_json = self.baton_irods_mapper.run_baton_query(
-            BatonBinary.BATON_LIST, arguments, input_data=path_to_baton_json(collection.path))
+            BatonBinary.BATON_LIST, arguments, input_data=path_to_baton_json(path_as_model))
 
         self.assertEquals(len(baton_out_as_json), 1)
         self.assertEquals(baton_json_to_collection(baton_out_as_json[0]), collection)
