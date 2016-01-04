@@ -1,15 +1,20 @@
 import unittest
 from abc import ABCMeta, abstractmethod
+from typing import Sequence
+from unittest.mock import MagicMock
 
 from hgicommon.collections import SearchCriteria
 from hgicommon.enums import ComparisonOperator
-from hgicommon.models import File, SearchCriterion
+from hgicommon.models import SearchCriterion
 from testwithbaton import TestWithBatonSetup
 from testwithbaton.helpers import SetupHelper
 
-from baton._baton_mappers import BatonDataObjectMapper, BatonCollectionMapper, _BatonIrodsEntityMapper
-from baton.models import IrodsMetadata, IrodsEntity, DataObject, Collection
+from baton._baton_mappers import BatonDataObjectMapper, BatonCollectionMapper, _BatonIrodsEntityMapper, \
+    BatonSpecificQueryMapper
+from baton.models import IrodsMetadata, IrodsEntity, DataObject, Collection, PreparedSpecificQuery, SpecificQuery
 from baton.tests._helpers import combine_metadata, create_data_object, create_collection
+from baton.tests._settings import BATON_DOCKER_BUILD
+from baton.tests._stubs import StubBatonCustomObjectMapper
 
 _NAMES = ["name_1", "name_2", "name_3"]
 _ATTRIBUTES = ["attribute_1", "attribute_2"]
@@ -22,7 +27,7 @@ class _TestBatonIrodsEntityMapper(unittest.TestCase, metaclass=ABCMeta):
     Tests for `_BatonIrodsEntityMapper`.
     """
     def setUp(self):
-        self.test_with_baton = TestWithBatonSetup()
+        self.test_with_baton = TestWithBatonSetup(baton_docker_build=BATON_DOCKER_BUILD)
         self.test_with_baton.setup()
         self.setup_helper = SetupHelper(self.test_with_baton.icommands_location)
 
@@ -167,9 +172,9 @@ class TestBatonDataObjectMapper(_TestBatonIrodsEntityMapper):
         for i in range(len(files) - 1):
             assert files[i].path == files[i + 1].path
 
-        other_collection_path = CollectionPath(self.setup_helper.create_collection("other_collection"))
-        moved_path = DataObjectPath("%s/%s" % (other_collection_path, files[0].path.get_name()))
-        self.setup_helper.run_icommand("imv", [files[0].path.location, moved_path.location])
+        other_collection_path = self.setup_helper.create_collection("other_collection")
+        moved_path = "%s/%s" % (other_collection_path, files[0].path.get_name())
+        self.setup_helper.run_icommand("imv", [files[0].path.location, moved_path])
         files[0].path = moved_path
 
         retrieved_entities = self.create_mapper().get_all_in_collection(files[0].path, files[1].path)
@@ -209,8 +214,67 @@ class TestBatonCollectionMapper(_TestBatonIrodsEntityMapper):
         return create_collection(self.test_with_baton, name, metadata)
 
 
+class TestBatonCustomObjectMapper(unittest.TestCase):
+    """
+    Tests for `BatonCustomObjectMapper`.
+    """
+    def setUp(self):
+        self.test_with_baton = TestWithBatonSetup(baton_docker_build=BATON_DOCKER_BUILD)
+        self.test_with_baton.setup()
+        self.setup_helper = SetupHelper(self.test_with_baton.icommands_location)
+
+        self.mapper = StubBatonCustomObjectMapper(
+                self.test_with_baton.baton_location, self.test_with_baton.irods_test_server.users[0].zone)
+        self.mapper._object_serialiser = MagicMock(wraps=self.mapper._object_serialiser)
+
+    def test_get_using_specific_query(self):
+        results = self.mapper._get_with_prepared_specific_query(PreparedSpecificQuery("ls"))
+        self.assertIsInstance(results, list)
+        self.assertEquals(len(results), self.mapper._object_serialiser.call_count)
+
+
+class TestBatonInstalledSpecificQueryMapper(unittest.TestCase):
+    """
+    Tests for `BatonSpecificQueryMapper`.
+    """
+    def setUp(self):
+        self.test_with_baton = TestWithBatonSetup(baton_docker_build=BATON_DOCKER_BUILD)
+        self.test_with_baton.setup()
+        self.setup_helper = SetupHelper(self.test_with_baton.icommands_location)
+
+        self.mapper = BatonSpecificQueryMapper(
+                self.test_with_baton.baton_location, self.test_with_baton.irods_test_server.users[0].zone)
+
+    def test_get_all(self):
+        iquest_ls_response = self.setup_helper.run_icommand("iquest", ["--sql", "ls"])
+        expected = TestBatonInstalledSpecificQueryMapper._parse_iquest_ls(iquest_ls_response)
+
+        specific_queries = self.mapper.get_all()
+
+        self.assertCountEqual(specific_queries, expected)
+
+    @staticmethod
+    def _parse_iquest_ls(iquest_ls_response: str) -> Sequence[SpecificQuery]:
+        """
+        Gets the installed specific queries by parsing the output returned by "iquest --sql ls".
+        :param iquest_ls_response: the response returned by the iquest command
+        :return: the specific queries installed on the iRODS server
+        """
+        iquest_ls_response_lines = iquest_ls_response.split('\n')
+        assert (len(iquest_ls_response_lines) + 1) % 3 == 0
+
+        specific_queries = []
+        for i in range(int((len(iquest_ls_response_lines) + 1) / 3)):
+            i3 = int(3 * i)
+            alias = iquest_ls_response_lines[i3]
+            sql = iquest_ls_response_lines[i3 + 1]
+            specific_queries.append(SpecificQuery(alias, sql))
+
+        return specific_queries
+
+
 # Trick required to stop Python's unittest from running the abstract base class as a test
-del(_TestBatonIrodsEntityMapper)
+del _TestBatonIrodsEntityMapper
 
 
 if __name__ == "__main__":

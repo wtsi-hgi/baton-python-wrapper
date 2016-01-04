@@ -1,14 +1,13 @@
 from abc import ABCMeta, abstractmethod
-from typing import List, Generic, TypeVar
-from typing import Union
+from typing import List, Generic, Union, Sequence
 
 from hgicommon.collections import SearchCriteria
 from hgicommon.models import SearchCriterion
 
-from baton.models import EntityType, Collection, DataObject, SpecificQuery
+from baton.models import Collection, DataObject, PreparedSpecificQuery, SpecificQuery
+from baton.types import EntityType, CustomObjectType
 
 
-# XXX: For some reason, generics and abstract don't get along...
 class IrodsEntityMapper(Generic[EntityType], metaclass=ABCMeta):
     """
     iRODS entity mapper.
@@ -62,19 +61,28 @@ class CollectionMapper(IrodsEntityMapper[Collection], metaclass=ABCMeta):
     pass
 
 
-# Object type returned by the custom object mapper
-_CustomObjectType = TypeVar('T')
-
-
-class CustomObjectMapper(Generic[_CustomObjectType]):
+class CustomObjectMapper(Generic[CustomObjectType], metaclass=ABCMeta):
     """
     Mapper for a custom object, retrieved from iRODS using a pre-installed specific query.
     """
     @abstractmethod
-    def get_using_specific_query(self, specific_query: SpecificQuery) -> List[_CustomObjectType]:
+    def _get_with_prepared_specific_query(self, specific_query: PreparedSpecificQuery) -> List[CustomObjectType]:
         """
         Gets an object from iRODS using a specific query.
         :param specific_query: the specific query to use
         :return: Python model of the object returned from iRODS using the specific query
+        """
+        pass
+
+
+class SpecificQueryMapper(CustomObjectMapper[SpecificQuery], metaclass=ABCMeta):
+    """
+    Mapper for specific queries installed on iRODS, implemented using baton.
+    """
+    @abstractmethod
+    def get_all(self) -> Sequence[SpecificQuery]:
+        """
+        Gets all of the specific queries installed on the iRODS server.
+        :return: all of the installed queries
         """
         pass

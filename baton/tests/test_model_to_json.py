@@ -6,8 +6,8 @@ from hgicommon.enums import ComparisonOperator
 from hgicommon.models import SearchCriterion
 
 from baton._model_to_json import search_criteria_to_baton_json, irods_metadata_to_baton_json, data_object_to_baton_json, \
-    collection_to_baton_json, specific_query_to_baton_json
-from baton.models import IrodsMetadata, DataObject, Collection, SpecificQuery
+    collection_to_baton_json, prepared_specific_query_to_baton_json
+from baton.models import IrodsMetadata, DataObject, Collection, PreparedSpecificQuery
 
 _ATTRIBUTE_1 = "attribute1"
 _ATTRIBUTE_2 = "attribute2"
@@ -25,17 +25,12 @@ _QUERY_ARGUMENT = "lsl"
 
 
 class TestConversions(unittest.TestCase):
-    def setUp(self):
-        self._search_criterion1 = SearchCriterion(_ATTRIBUTE_1, _VALUE_1, _COMPARISON_OPERATOR_1)
-        self._search_criterion2 = SearchCriterion(_ATTRIBUTE_2, _VALUE_2, _COMPARISON_OPERATOR_2)
-        self._search_criteria = SearchCriteria([self._search_criterion1, self._search_criterion2])
-        self._metadata = IrodsMetadata({_ATTRIBUTE_1: {_VALUE_1, _VALUE_2}, _ATTRIBUTE_2: {_VALUE_3}})
-        self._data_object = DataObject("%s/%s" % (_COLLECTION_LOCATION, _DATA_OBJECT_LOCATION))
-        self._collection = Collection(_COLLECTION_LOCATION)
-        self._specific_query = SpecificQuery(_QUERY_ALIAS, [_QUERY_ARGUMENT])
-
     def test_search_criteria_to_baton_json(self):
-        baton_json = search_criteria_to_baton_json(self._search_criteria)
+        search_criterion1 = SearchCriterion(_ATTRIBUTE_1, _VALUE_1, _COMPARISON_OPERATOR_1)
+        search_criterion2 = SearchCriterion(_ATTRIBUTE_2, _VALUE_2, _COMPARISON_OPERATOR_2)
+        search_criteria = SearchCriteria([search_criterion1, search_criterion2])
+
+        baton_json = search_criteria_to_baton_json(search_criteria)
 
         self.assertIsInstance(baton_json, dict)
         expect_in_json = [_ATTRIBUTE_1, _VALUE_1, _ATTRIBUTE_2, _VALUE_2]
@@ -43,32 +38,41 @@ class TestConversions(unittest.TestCase):
             self.assertIn(expected, json.dumps(baton_json))
 
     def test_path_to_baton_json_with_data_object(self):
-        baton_json = data_object_to_baton_json(self._data_object)
+        data_object = DataObject("%s/%s" % (_COLLECTION_LOCATION, _DATA_OBJECT_LOCATION))
+
+        baton_json = data_object_to_baton_json(data_object)
 
         self.assertIsInstance(baton_json, dict)
-        self.assertIn(self._data_object.get_name(), baton_json.values())
-        self.assertIn(self._data_object.get_directory(), baton_json.values())
+        self.assertIn(data_object.get_name(), baton_json.values())
+        self.assertIn(data_object.get_directory(), baton_json.values())
 
     def test_path_to_baton_json_with_collection(self):
-        baton_json = collection_to_baton_json(self._collection)
+        collection = Collection(_COLLECTION_LOCATION)
+
+        baton_json = collection_to_baton_json(collection)
 
         self.assertIsInstance(baton_json, dict)
-        self.assertIn(self._collection.path, baton_json.values())
+        self.assertIn(collection.path, baton_json.values())
 
     def test_metadata_to_baton_json(self):
-        baton_json = irods_metadata_to_baton_json(self._metadata)
+        metadata = IrodsMetadata({_ATTRIBUTE_1: {_VALUE_1, _VALUE_2}, _ATTRIBUTE_2: {_VALUE_3}})
+
+        baton_json = irods_metadata_to_baton_json(metadata)
 
         self.assertIsInstance(baton_json, dict)
         baton_json_as_string = json.dumps(baton_json)
-        for values in self._metadata:
+        for values in metadata:
             self.assertIn(values, baton_json_as_string)
 
-    def test_specific_query_to_baton_json(self):
-        baton_json = specific_query_to_baton_json(self._specific_query)
+    def test_prepared_specific_query_to_baton_json(self):
+        prepared_specific_query = PreparedSpecificQuery(_QUERY_ALIAS, [_QUERY_ARGUMENT])
+
+        baton_json = prepared_specific_query_to_baton_json(prepared_specific_query)
 
         self.assertIsInstance(baton_json, dict)
-        self.assertIn(self._specific_query.query_alias, baton_json.values())
-        self.assertIn(self._specific_query.query_arguments, baton_json.values())
+        self.assertIn(prepared_specific_query.alias, str(baton_json.values()))
+        for query_argument in prepared_specific_query.query_arguments:
+            self.assertIn(query_argument, str(baton_json.values()))
 
 
 if __name__ == "__main__":

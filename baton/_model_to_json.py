@@ -5,7 +5,7 @@ from baton._baton_constants import BATON_ATTRIBUTE_PROPERTY, BATON_COMPARISON_OP
     BATON_METADATA_PROPERTY, BATON_SPECIFIC_QUERY_PROPERTY, BATON_SPECIFIC_QUERY_ARGUMENTS_PROPERTY, \
     BATON_SPECIFIC_QUERY_SQL_PROPERTY
 from baton._baton_constants import BATON_VALUE_PROPERTY
-from baton.models import DataObject, Collection, IrodsMetadata, SpecificQuery
+from baton.models import DataObject, Collection, IrodsMetadata, PreparedSpecificQuery
 
 
 def search_criteria_to_baton_json(search_criteria: SearchCriteria) -> dict:
@@ -69,15 +69,15 @@ def irods_metadata_to_baton_json(metadata: IrodsMetadata) -> dict:
     }
 
 
-def specific_query_to_baton_json(specific_query: SpecificQuery) -> dict:
+def prepared_specific_query_to_baton_json(prepared_specific_query: PreparedSpecificQuery) -> dict:
     """
     Creates a baton JSON representation of the given specific query.
-    :param specific_query: the specific query
+    :param prepared_specific_query: the specific query
     :return: the baton JSON representation of the given specific query
     """
     return {
         BATON_SPECIFIC_QUERY_PROPERTY: {
-            BATON_SPECIFIC_QUERY_SQL_PROPERTY: specific_query.query_alias,
-            BATON_SPECIFIC_QUERY_ARGUMENTS_PROPERTY: specific_query.query_arguments
+            BATON_SPECIFIC_QUERY_SQL_PROPERTY: prepared_specific_query.alias,
+            BATON_SPECIFIC_QUERY_ARGUMENTS_PROPERTY: prepared_specific_query.query_arguments
         }
     }

@@ -4,7 +4,7 @@ from baton._baton_constants import BATON_ATTRIBUTE_PROPERTY, BATON_COLLECTION_PR
     BATON_CHECKSUM_PROPERTY, BATON_METADATA_PROPERTY, BATON_FILE_REPLICATE_PROPERTY, BATON_FILE_REPLICATE_ID_PROPERTY, \
     BATON_ACL_LEVEL_PROPERTY, BATON_ACL_OWNER_PROPERTY, BATON_ACL_ZONE_PROPERTY, BATON_ACL_PROPERTY, BATON_ACL_LEVELS
 from baton._baton_constants import BATON_VALUE_PROPERTY
-from baton.models import IrodsMetadata, DataObjectReplica, AccessControl, DataObject, Collection
+from baton.models import IrodsMetadata, DataObjectReplica, AccessControl, DataObject, Collection, PreparedSpecificQuery
 
 
 def baton_json_to_data_object(baton_json: dict) -> DataObject:

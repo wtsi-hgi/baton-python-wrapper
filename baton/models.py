@@ -105,14 +105,26 @@ class Collection(IrodsEntity):
         super().__init__(path, access_control_list, metadata)
 
 
-class SpecificQuery:
+class SpecificQuery(Model):
     """
-    Model of a specific query in iRODS.
+    Model of a query installed on iRODS.
     """
-    def __init__(self, query_alias: str, query_arguments: List[Any]):
-        self.query_alias = query_alias
-        self.query_arguments = query_arguments
+    def __init__(self, alias: str, sql: str):
+        self.alias = alias
+        self.sql = sql
+
+    def get_number_of_arguments(self) -> int:
+        """
+        Gets the number of a arguments in the specific query.
+        :return: the number of arguments
+        """
+        return self.sql.count("?")
 
 
-# Type of iRODS entity
-EntityType = TypeVar('T', DataObject, Collection)
+class PreparedSpecificQuery(SpecificQuery):
+    """
+    Model of a prepared specific query.
+    """
+    def __init__(self, alias: str, arguments: List[Any] = None, sql: str= "unknown"):
+        super().__init__(alias, sql)
+        self.query_arguments = arguments if arguments is not None else []

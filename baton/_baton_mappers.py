@@ -9,10 +9,10 @@ from baton._baton_runner import BatonRunner
 from baton._json_to_model import baton_json_to_collection
 from baton._json_to_model import baton_json_to_data_object
 from baton._model_to_json import search_criteria_to_baton_json, data_object_to_baton_json, \
-    collection_to_baton_json, specific_query_to_baton_json
-from baton.mappers import DataObjectMapper, CollectionMapper, IrodsEntityMapper, EntityType, _CustomObjectType, \
-    CustomObjectMapper
-from baton.models import DataObject, Collection, SpecificQuery
+    collection_to_baton_json, prepared_specific_query_to_baton_json
+from baton.mappers import DataObjectMapper, CollectionMapper, IrodsEntityMapper, EntityType, CustomObjectType, \
+    CustomObjectMapper, SpecificQueryMapper
+from baton.models import DataObject, Collection, PreparedSpecificQuery, SpecificQuery
 
 
 class _BatonIrodsEntityMapper(BatonRunner, IrodsEntityMapper, metaclass=ABCMeta):
@@ -136,12 +136,12 @@ class BatonCollectionMapper(_BatonIrodsEntityMapper, CollectionMapper):
         return baton_json_to_collection(entity_as_baton_json)
 
 
-class BatonCustomObjectMapper(BatonRunner, CustomObjectMapper):
+class BatonCustomObjectMapper(BatonRunner, CustomObjectMapper, metaclass=ABCMeta):
     """
-    Mapper for a custom object, implemented using baton.
+    Mapper for custom objects, implemented using baton.
     """
-    def get_using_specific_query(self, specific_query: SpecificQuery) -> List[_CustomObjectType]:
-        specific_query_as_baton_json = specific_query_to_baton_json(specific_query)
+    def _get_with_prepared_specific_query(self, specific_query: PreparedSpecificQuery) -> List[CustomObjectType]:
+        specific_query_as_baton_json = prepared_specific_query_to_baton_json(specific_query)
 
         custom_objects_as_baton_json = self.run_baton_query(
                 BatonBinary.BATON_SPECIFIC_QUERY, input_data=specific_query_as_baton_json)
@@ -152,7 +152,7 @@ class BatonCustomObjectMapper(BatonRunner, CustomObjectMapper):
         return custom_objects
 
     @abstractmethod
-    def _object_serialiser(self, object_as_json: dict) -> _CustomObjectType:
+    def _object_serialiser(self, object_as_json: dict) -> CustomObjectType:
         """
         Function used to take the JSON representation of the custom object returned by the specific query and produce a
         model.
@@ -160,3 +160,18 @@ class BatonCustomObjectMapper(BatonRunner, CustomObjectMapper):
         :return: Python model of the custom object
         """
         pass
+
+
+class BatonSpecificQueryMapper(BatonCustomObjectMapper[SpecificQuery], SpecificQueryMapper):
+    """
+    Mapper for specific queries installed on iRODS, implemented using baton.
+    """
+    def get_all(self) -> Sequence[SpecificQuery]:
+        retrieve_query = PreparedSpecificQuery("ls")
+        return self._get_with_prepared_specific_query(retrieve_query)
+
+    def _object_serialiser(self, object_as_json: dict) -> SpecificQuery:
+        return SpecificQuery(
+            object_as_json["alias"],
+            object_as_json["sqlStr"]
+        )
