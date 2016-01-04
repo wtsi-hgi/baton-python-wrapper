@@ -1,5 +1,5 @@
 from abc import ABCMeta, abstractmethod
-from typing import List, Generic, Union, Sequence
+from typing import Generic, Union, Sequence
 
 from hgicommon.collections import SearchCriteria
 from hgicommon.models import SearchCriterion
@@ -14,7 +14,7 @@ class IrodsEntityMapper(Generic[EntityType], metaclass=ABCMeta):
     """
     @abstractmethod
     def get_by_metadata(self, metadata_search_criteria: Union[SearchCriterion, SearchCriteria],
-                        load_metadata: bool=True) -> List[EntityType]:
+                        load_metadata: bool=True) -> Sequence[EntityType]:
         """
         Gets files from iRODS that have metadata that matches the given search criteria.
         :param metadata_search_criteria: the metadata search criteria
@@ -24,9 +24,9 @@ class IrodsEntityMapper(Generic[EntityType], metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def get_by_path(self, paths: Union[str, List[str]], load_metadata: bool=True) -> List[EntityType]:
+    def get_by_path(self, paths: Union[str, Sequence[str]], load_metadata: bool=True) -> Sequence[EntityType]:
         """
-        Gets information about the given paths from iRODS.
+        Gets entities in the given paths from iRODS.
 
         If one or more of the paths does not exist, a `FileNotFound` exception will be raised.
         :param paths: the paths to get from iRODS
@@ -41,13 +41,13 @@ class DataObjectMapper(IrodsEntityMapper[DataObject], metaclass=ABCMeta):
     iRODS data object mapper.
     """
     @abstractmethod
-    def get_all_in_collection(self, collection_paths: Union[str, List[str]], load_metadata: bool=True) \
-            -> List[DataObject]:
+    def get_all_in_collection(self, collection_paths: Union[str, Sequence[str]], load_metadata: bool=True) \
+            -> Sequence[DataObject]:
         """
-        Gets information about files in the given iRODS collection_paths.
+        Gets data objects in the given iRODS collections.
 
         If one or more of the collection_paths does not exist, a `FileNotFound` exception will be raised.
-        :param collection_paths: the collection_paths to get the files from
+        :param collection_paths: the collection(s) to get the files from
         :param load_metadata: whether metadata associated to the files should be loaded
         :return: the file information loaded from iRODS
         """
@@ -66,7 +66,7 @@ class CustomObjectMapper(Generic[CustomObjectType], metaclass=ABCMeta):
     Mapper for a custom object, retrieved from iRODS using a pre-installed specific query.
     """
     @abstractmethod
-    def _get_with_prepared_specific_query(self, specific_query: PreparedSpecificQuery) -> List[CustomObjectType]:
+    def _get_with_prepared_specific_query(self, specific_query: PreparedSpecificQuery) -> Sequence[CustomObjectType]:
         """
         Gets an object from iRODS using a specific query.
         :param specific_query: the specific query to use

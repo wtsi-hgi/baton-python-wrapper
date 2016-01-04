@@ -22,7 +22,7 @@ git+https://github.com/wtsi-hgi/common-python.git@master#egg=hgicommon
 
 ### API
 ```python
-from baton import connect_to_irods_with_baton, Connection, IrodsEntity, IrodsMetadata, Path, DataObject, Collection, SpecificQuery
+from baton import connect_to_irods_with_baton, Connection, IrodsEntity, IrodsMetadata, DataObject, Collection, SpecificQuery
 from hgicommon import SearchCriteria, SearchCriterion, ComparisonOperator
 
 # Setup connection to iRODS using baton
