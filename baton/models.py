@@ -1,45 +1,8 @@
 from enum import Enum, unique
-from typing import Sequence, Iterable, Set, TypeVar
+from typing import Sequence, Iterable, Set, TypeVar, List, Any
 
 from hgicommon.collections import Metadata
 from hgicommon.models import Model
-
-
-class Path(Model):
-    """
-    Model of a location of an entity in iRODS.
-    """
-    def __init__(self, location: str):
-        self.location = location
-
-
-class DataObjectPath(Path):
-    """
-    Model of a location to a data object in iRODS.
-    """
-    def get_collection_path(self) -> str:
-        """
-        Gets the iRODS collection that the data object belongs to.
-        :return: the collection the object belongs to
-        """
-        return self.location.rsplit('/', 1)[0]
-
-    def get_name(self) -> str:
-        """
-        Gets the name of the data object.
-        :return: the name of the data object
-        """
-        return self.location.rsplit('/', 1)[-1]
-
-
-class CollectionPath(Path):
-    """
-    Model of a location to a collection in iRODS.
-    """
-    pass
-
-
-EntityPathType = TypeVar('S', DataObjectPath, CollectionPath)
 
 
 class DataObjectReplica(Model):
@@ -88,7 +51,8 @@ class IrodsEntity(Model):
     """
     Model of an entity in iRODS.
     """
-    def __init__(self, path: str, access_control_list: Iterable[AccessControl], metadata: Iterable[IrodsMetadata]=None):
+    def __init__(self, path: str, access_control_list: Iterable[AccessControl] = None,
+                 metadata: Iterable[IrodsMetadata] = None):
         self.path = path
         self.acl = access_control_list
         self.metadata = metadata
@@ -98,7 +62,7 @@ class DataObject(IrodsEntity):
     """
     Model of a data object in iRODS.
     """
-    def __init__(self, path: str, checksum: str, access_control_list: Iterable[AccessControl],
+    def __init__(self, path: str, checksum: str = None, access_control_list: Iterable[AccessControl]=None,
                  metadata: Iterable[IrodsMetadata] = None, replicas: Iterable[DataObjectReplica] = ()):
         super().__init__(path, access_control_list, metadata)
         self.checksum = checksum
@@ -116,14 +80,51 @@ class DataObject(IrodsEntity):
                 invalid_replicas.append(replica)
         return invalid_replicas
 
+    def get_directory(self) -> str:
+        """
+        Gets the directory of this data object.
+        :return: the directory that the data object is in
+        """
+        return self.path.rsplit('/', 1)[0]
+
+    def get_name(self) -> str:
+        """
+        Gets the name of this data object.
+        :param data_object_path: the path of the data object
+        :return: the name of the data object
+        """
+        return self.path.rsplit('/', 1)[-1]
+
 
 class Collection(IrodsEntity):
     """
     Model of a collection in iRODS.
     """
-    def __init__(self, path: str, access_control_list: Iterable[AccessControl],
+    def __init__(self, path: str, access_control_list: Iterable[AccessControl] = None,
                  metadata: Iterable[IrodsMetadata] = None):
         super().__init__(path, access_control_list, metadata)
 
 
-EntityType = TypeVar('T', DataObject, Collection)
+class SpecificQuery(Model):
+    """
+    Model of a query installed on iRODS.
+    """
+    def __init__(self, alias: str, sql: str):
+        self.alias = alias
+        self.sql = sql
+
+    def get_number_of_arguments(self) -> int:
+        """
+        Gets the number of a arguments in the specific query.
+        :return: the number of arguments
+        """
+        return self.sql.count("?")
+
+
+class PreparedSpecificQuery(SpecificQuery):
+    """
+    Model of a prepared specific query.
+    """
+    def __init__(self, alias: str, arguments: List[Any] = None, sql: str= "unknown"):
+        super().__init__(alias, sql)
+        self.query_arguments = arguments if arguments is not None else []

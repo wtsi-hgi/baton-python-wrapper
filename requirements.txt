@@ -1,2 +1,1 @@
 git+https://github.com/wtsi-hgi/common-python.git@master#egg=hgicommon
-git+https://github.com/wtsi-hgi/test-with-baton.git@master#egg=testwithbaton

@@ -1,21 +1,20 @@
 from abc import ABCMeta, abstractmethod
-from typing import List, Generic
-from typing import Union
+from typing import Generic, Union, Sequence
 
 from hgicommon.collections import SearchCriteria
 from hgicommon.models import SearchCriterion
 
-from baton.models import CollectionPath, DataObject, Collection, DataObjectPath, EntityType, EntityPathType
+from baton.models import Collection, DataObject, PreparedSpecificQuery, SpecificQuery
+from baton.types import EntityType, CustomObjectType
 
 
-# XXX: For some reason, generics and abstract don't get along...
-class IrodsEntityMapper(Generic[EntityType, EntityPathType]):
+class IrodsEntityMapper(Generic[EntityType], metaclass=ABCMeta):
     """
     iRODS entity mapper.
     """
     @abstractmethod
     def get_by_metadata(self, metadata_search_criteria: Union[SearchCriterion, SearchCriteria],
-                        load_metadata: bool=True) -> List[EntityType]:
+                        load_metadata: bool=True) -> Sequence[EntityType]:
         """
         Gets files from iRODS that have metadata that matches the given search criteria.
         :param metadata_search_criteria: the metadata search criteria
@@ -25,9 +24,9 @@ class IrodsEntityMapper(Generic[EntityType, EntityPathType]):
         pass
 
     @abstractmethod
-    def get_by_path(self, paths: Union[str, List[str]], load_metadata: bool=True) -> List[EntityType]:
+    def get_by_path(self, paths: Union[str, Sequence[str]], load_metadata: bool=True) -> Sequence[EntityType]:
         """
-        Gets information about the given paths from iRODS.
+        Gets entities in the given paths from iRODS.
 
         If one or more of the paths does not exist, a `FileNotFound` exception will be raised.
         :param paths: the paths to get from iRODS
@@ -37,27 +36,53 @@ class IrodsEntityMapper(Generic[EntityType, EntityPathType]):
         pass
 
 
-class DataObjectMapper(IrodsEntityMapper[DataObject, DataObjectPath], metaclass=ABCMeta):
+class DataObjectMapper(IrodsEntityMapper[DataObject], metaclass=ABCMeta):
     """
     iRODS data object mapper.
     """
     @abstractmethod
-    def get_all_in_collection(self, collection_paths: Union[str, List[str]], load_metadata: bool=True) \
-            -> List[DataObject]:
+    def get_all_in_collection(self, collection_paths: Union[str, Sequence[str]], load_metadata: bool=True) \
+            -> Sequence[DataObject]:
         """
-        Gets information about files in the given iRODS collection_paths.
+        Gets data objects in the given iRODS collections.
 
-        TODO: Is the below true?
         If one or more of the collection_paths does not exist, a `FileNotFound` exception will be raised.
-        :param collection_paths: the collection_paths to get the files from
+        :param collection_paths: the collection(s) to get the files from
         :param load_metadata: whether metadata associated to the files should be loaded
         :return: the file information loaded from iRODS
         """
         pass
 
 
-class CollectionMapper(IrodsEntityMapper[Collection, CollectionPath], metaclass=ABCMeta):
+class CollectionMapper(IrodsEntityMapper[Collection], metaclass=ABCMeta):
     """
     iRODS collection mapper.
     """
     pass
+
+
+class CustomObjectMapper(Generic[CustomObjectType], metaclass=ABCMeta):
+    """
+    Mapper for a custom object, retrieved from iRODS using a pre-installed specific query.
+    """
+    @abstractmethod
+    def _get_with_prepared_specific_query(self, specific_query: PreparedSpecificQuery) -> Sequence[CustomObjectType]:
+        """
+        Gets an object from iRODS using a specific query.
+        :param specific_query: the specific query to use
+        :return: Python model of the object returned from iRODS using the specific query
+        """
+        pass
+
+
+class SpecificQueryMapper(CustomObjectMapper[SpecificQuery], metaclass=ABCMeta):
+    """
+    Mapper for specific queries installed on iRODS, implemented using baton.
+    """
+    @abstractmethod
+    def get_all(self) -> Sequence[SpecificQuery]:
+        """
+        Gets all of the specific queries installed on the iRODS server.
+        :return: all of the installed queries
+        """
+        pass

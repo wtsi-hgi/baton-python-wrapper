@@ -18,14 +18,13 @@ class BatonBinary(Enum):
     BATON = "baton"
     BATON_METAQUERY = "baton-metaquery"
     BATON_LIST = "baton-list"
+    BATON_SPECIFIC_QUERY = "baton-specificquery"
 
 
 class BatonRunner(metaclass=ABCMeta):
     """
-    Superclass for all baton mappers.
+    Baton query runner.
     """
-    # _multiprocess_can_split_ = True
-
     def __init__(self, baton_binaries_directory: str, irods_query_zone: str,
                  skip_baton_binaries_validation: bool=False, timeout_queries_after: timedelta=None):
         """

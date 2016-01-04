@@ -1,24 +1,10 @@
 import unittest
 
-from baton.models import DataObjectReplica, DataObjectPath, DataObject, IrodsMetadata
+from baton.models import DataObjectReplica, DataObject, IrodsMetadata
 
 _COLLECTION = "/collection/sub_collection"
 _FILE_NAME = "file_name"
 _CHECKSUMS = ["2c558824f250de9d55c07600291f4272", "2c558824f250de9d55c07600291f4233", "2c558824f250de9d55c07600291f4257"]
-
-
-class TestDataObjectPath(unittest.TestCase):
-    """
-    Tests for `DataObjectPath`.
-    """
-    def setUp(self):
-        self.path = DataObjectPath("%s/%s" % (_COLLECTION, _FILE_NAME))
-
-    def test_get_collection_path(self):
-        self.assertEquals(self.path.get_collection_path(), _COLLECTION)
-
-    def test_get_name(self):
-        self.assertEquals(self.path.get_name(), _FILE_NAME)
 
 
 class TestDataObject(unittest.TestCase):
@@ -52,6 +38,12 @@ class TestDataObject(unittest.TestCase):
         self.data_object.replicas = replicas
 
         self.assertCountEqual(self.data_object.get_invalid_replicas(), replicas[1:])
+
+    def test_get_collection_path(self):
+        self.assertEquals(self.data_object.get_directory(), _COLLECTION)
+
+    def test_get_name(self):
+        self.assertEquals(self.data_object.get_name(), _FILE_NAME)
 
 
 class TestIrodsMetadata(unittest.TestCase):
