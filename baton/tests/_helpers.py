@@ -3,8 +3,7 @@ from typing import Iterable
 from testwithbaton.api import TestWithBatonSetup
 from testwithbaton.helpers import SetupHelper
 
-from baton.models import DataObjectReplica, AccessControl, IrodsMetadata, DataObjectPath, DataObject, CollectionPath,\
-    Collection
+from baton.models import DataObject, IrodsMetadata, DataObjectReplica, AccessControl, Collection
 
 
 def create_data_object(test_with_baton: TestWithBatonSetup, name: str, metadata: IrodsMetadata()) -> DataObject:
@@ -18,18 +17,17 @@ def create_data_object(test_with_baton: TestWithBatonSetup, name: str, metadata:
     user = test_with_baton.irods_test_server.users[0]
     setup_helper = SetupHelper(test_with_baton.icommands_location)
 
-    location = setup_helper.create_data_object(name)
-    path = DataObjectPath(location)
+    temp_data_object = DataObject(setup_helper.create_data_object(name))
 
-    setup_helper.run_icommand("icd", [path.get_collection_path()])
-    setup_helper.run_icommand("irepl", [path.get_name()])
-    setup_helper.add_metadata_to(path.location, metadata)
-    checksum = setup_helper.get_checksum(location)
+    setup_helper.run_icommand("icd", [temp_data_object.get_directory()])
+    setup_helper.run_icommand("irepl", [temp_data_object.get_name()])
+    setup_helper.add_metadata_to(temp_data_object.path, metadata)
+    checksum = setup_helper.get_checksum(temp_data_object.path)
 
     replicas = [DataObjectReplica(0, checksum)]
     acl = [AccessControl(user.username, user.zone, AccessControl.Level.OWN)]
 
-    return DataObject(location, checksum, acl, metadata, replicas)
+    return DataObject(temp_data_object.path, checksum, acl, metadata, replicas)
 
 
 def create_collection(test_with_baton: TestWithBatonSetup, name: str, metadata: IrodsMetadata()) -> DataObject:

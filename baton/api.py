@@ -7,7 +7,7 @@ class Connection:
     """
     def __init__(self, baton_binaries_directory: str, irods_query_zone: str):
         """
-        TODO
+        Constructor.
         :param baton_binaries_directory:
         :param irods_query_zone:
         """

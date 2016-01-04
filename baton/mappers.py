@@ -1,15 +1,15 @@
 from abc import ABCMeta, abstractmethod
-from typing import List, Generic
+from typing import List, Generic, TypeVar
 from typing import Union
 
 from hgicommon.collections import SearchCriteria
 from hgicommon.models import SearchCriterion
 
-from baton.models import CollectionPath, DataObject, Collection, DataObjectPath, EntityType, EntityPathType
+from baton.models import EntityType, Collection, DataObject, SpecificQuery
 
 
 # XXX: For some reason, generics and abstract don't get along...
-class IrodsEntityMapper(Generic[EntityType, EntityPathType]):
+class IrodsEntityMapper(Generic[EntityType], metaclass=ABCMeta):
     """
     iRODS entity mapper.
     """
@@ -37,7 +37,7 @@ class IrodsEntityMapper(Generic[EntityType, EntityPathType]):
         pass
 
 
-class DataObjectMapper(IrodsEntityMapper[DataObject, DataObjectPath], metaclass=ABCMeta):
+class DataObjectMapper(IrodsEntityMapper[DataObject], metaclass=ABCMeta):
     """
     iRODS data object mapper.
     """
@@ -47,7 +47,6 @@ class DataObjectMapper(IrodsEntityMapper[DataObject, DataObjectPath], metaclass=
         """
         Gets information about files in the given iRODS collection_paths.
 
-        TODO: Is the below true?
         If one or more of the collection_paths does not exist, a `FileNotFound` exception will be raised.
         :param collection_paths: the collection_paths to get the files from
         :param load_metadata: whether metadata associated to the files should be loaded
@@ -56,8 +55,26 @@ class DataObjectMapper(IrodsEntityMapper[DataObject, DataObjectPath], metaclass=
         pass
 
 
-class CollectionMapper(IrodsEntityMapper[Collection, CollectionPath], metaclass=ABCMeta):
+class CollectionMapper(IrodsEntityMapper[Collection], metaclass=ABCMeta):
     """
     iRODS collection mapper.
     """
     pass
+
+
+# Object type returned by the custom object mapper
+_CustomObjectType = TypeVar('T')
+
+
+class CustomObjectMapper(Generic[_CustomObjectType]):
+    """
+    Mapper for a custom object, retrieved from iRODS using a pre-installed specific query.
+    """
+    @abstractmethod
+    def get_using_specific_query(self, specific_query: SpecificQuery) -> List[_CustomObjectType]:
+        """
+        Gets an object from iRODS using a specific query.
+        :param specific_query: the specific query to use
+        :return: Python model of the object returned from iRODS using the specific query
+        """
+        pass

@@ -1,12 +1,11 @@
 from hgicommon.collections import SearchCriteria
 
-from baton import IrodsMetadata
 from baton._baton_constants import BATON_ATTRIBUTE_PROPERTY, BATON_COMPARISON_OPERATOR_PROPERTY, \
     BATON_COMPARISON_OPERATORS, BATON_AVU_SEARCH_PROPERTY, BATON_DATA_OBJECT_PROPERTY, BATON_COLLECTION_PROPERTY, \
-    BATON_METADATA_PROPERTY
+    BATON_METADATA_PROPERTY, BATON_SPECIFIC_QUERY_PROPERTY, BATON_SPECIFIC_QUERY_ARGUMENTS_PROPERTY, \
+    BATON_SPECIFIC_QUERY_SQL_PROPERTY
 from baton._baton_constants import BATON_VALUE_PROPERTY
-from baton.models import CollectionPath
-from baton.models import Path, DataObjectPath
+from baton.models import DataObject, Collection, IrodsMetadata, SpecificQuery
 
 
 def search_criteria_to_baton_json(search_criteria: SearchCriteria) -> dict:
@@ -29,31 +28,33 @@ def search_criteria_to_baton_json(search_criteria: SearchCriteria) -> dict:
     }
 
 
-def path_to_baton_json(path: Path) -> dict:
+def data_object_to_baton_json(data_object: DataObject) -> dict:
     """
-    Creates a baton JSON representation of the given iRODS data object location.
-    :param path: the iRODS location to convert to a baton representation
-    :return: the baton JSON representation of the given iRODS file
+    Creates a baton representation of the given iRODS data object (i.e. iRODS "file").
+    :param data_object: the data object
+    :return: the baton JSON representation of the data object
     """
-    if type(path) == DataObjectPath:
-        data_object_path = path # type: DataObjectPath
-        return {
-            BATON_COLLECTION_PROPERTY: data_object_path.get_collection_path(),
-            BATON_DATA_OBJECT_PROPERTY: data_object_path.get_name()
-        }
-    elif type(path) == CollectionPath:
-        collection_path = path  # type: CollectionPath
-        return {
-            BATON_COLLECTION_PROPERTY: collection_path.location
-        }
-    else:
-        raise ValueError("Unsupported path type: %s" % type(path))
+    return {
+        BATON_COLLECTION_PROPERTY: data_object.get_directory(),
+        BATON_DATA_OBJECT_PROPERTY: data_object.get_name()
+    }
+
+
+def collection_to_baton_json(collection: Collection) -> dict:
+    """
+    Creates a baton representation of the given iRODS collection (i.e. iRODS "folder").
+    :param collection: the collection
+    :return: the baton JSON representation of the collection
+    """
+    return {
+        BATON_COLLECTION_PROPERTY: collection.path
+    }
 
 
 def irods_metadata_to_baton_json(metadata: IrodsMetadata) -> dict:
     """
     Creates a baton JSON representation of the given collection of metadata.
-    :param metadata: the collection of metadata to convert to a baton representation
+    :param metadata: the collection of metadata
     :return: the baton JSON representation of the given metadata
     """
     metadata_items_as_json = []
@@ -65,4 +66,18 @@ def irods_metadata_to_baton_json(metadata: IrodsMetadata) -> dict:
             })
     return {
         BATON_METADATA_PROPERTY: metadata_items_as_json
+    }
+
+
+def specific_query_to_baton_json(specific_query: SpecificQuery) -> dict:
+    """
+    Creates a baton JSON representation of the given specific query.
+    :param specific_query: the specific query
+    :return: the baton JSON representation of the given specific query
+    """
+    return {
+        BATON_SPECIFIC_QUERY_PROPERTY: {
+            BATON_SPECIFIC_QUERY_SQL_PROPERTY: specific_query.query_alias,
+            BATON_SPECIFIC_QUERY_ARGUMENTS_PROPERTY: specific_query.query_arguments
+        }
     }
