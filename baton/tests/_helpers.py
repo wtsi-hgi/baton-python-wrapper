@@ -19,7 +19,7 @@ def create_data_object(test_with_baton: TestWithBatonSetup, name: str, metadata:
 
     temp_data_object = DataObject(setup_helper.create_data_object(name))
 
-    setup_helper.run_icommand("icd", [temp_data_object.get_directory()])
+    setup_helper.run_icommand("icd", [temp_data_object.get_collection_path()])
     setup_helper.run_icommand("irepl", [temp_data_object.get_name()])
     setup_helper.add_metadata_to(temp_data_object.path, metadata)
     checksum = setup_helper.get_checksum(temp_data_object.path)

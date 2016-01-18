@@ -1,5 +1,6 @@
+from abc import ABCMeta
 from enum import Enum, unique
-from typing import Sequence, Iterable, Set, TypeVar, List, Any
+from typing import Sequence, Iterable, Set, List
 
 from hgicommon.collections import Metadata
 from hgicommon.models import Model
@@ -9,8 +10,8 @@ class DataObjectReplica(Model):
     """
     Model of a file replicate in iRODS.
     """
-    def __init__(self, id: int, checksum: str):
-        self.id = id
+    def __init__(self, number: int, checksum: str):
+        self.number = number
         self.checksum = checksum
 
 
@@ -21,14 +22,19 @@ class IrodsMetadata(Metadata):
 
     Units are no currently considered.
     """
-    def set(self, key: str, value: Set[str]):
-        assert isinstance(value, set)
-        super().set(key, value)
-
-    def get(self, attribute: str, default=None) -> Set[str]:
-        value = super().get(attribute, default)
+    def get(self, key: str, default=None) -> Set[str]:
+        value = super().get(key, default)
         assert isinstance(value, set)
         return value
+
+    def __getitem__(self, key: str) -> Set[str]:
+        value = super().__getitem__(key)
+        assert isinstance(value, set)
+        return value
+
+    def __setitem__(self, key: str, value: Set[str]):
+        assert isinstance(value, set)
+        super().__setitem__(key, value)
 
 
 class AccessControl(Model):
@@ -47,12 +53,12 @@ class AccessControl(Model):
         self.level = level
 
 
-class IrodsEntity(Model):
+class IrodsEntity(Model, metaclass=ABCMeta):
     """
     Model of an entity in iRODS.
     """
-    def __init__(self, path: str, access_control_list: Iterable[AccessControl] = None,
-                 metadata: Iterable[IrodsMetadata] = None):
+    def __init__(self, path: str, access_control_list: Iterable[AccessControl]=None,
+                 metadata: Iterable[IrodsMetadata]=None):
         self.path = path
         self.acl = access_control_list
         self.metadata = metadata
@@ -62,8 +68,8 @@ class DataObject(IrodsEntity):
     """
     Model of a data object in iRODS.
     """
-    def __init__(self, path: str, checksum: str = None, access_control_list: Iterable[AccessControl]=None,
-                 metadata: Iterable[IrodsMetadata] = None, replicas: Iterable[DataObjectReplica] = ()):
+    def __init__(self, path: str, checksum: str=None, access_control_list: Iterable[AccessControl]=None,
+                 metadata: Iterable[IrodsMetadata]=None, replicas: Iterable[DataObjectReplica]=()):
         super().__init__(path, access_control_list, metadata)
         self.checksum = checksum
         self.replicas = replicas
@@ -80,17 +86,16 @@ class DataObject(IrodsEntity):
                 invalid_replicas.append(replica)
         return invalid_replicas
 
-    def get_directory(self) -> str:
+    def get_collection_path(self) -> str:
         """
-        Gets the directory of this data object.
-        :return: the directory that the data object is in
+        Gets the path of the collection in which this data object resides.
+        :return: the path of the collection that the data object is in
         """
         return self.path.rsplit('/', 1)[0]
 
     def get_name(self) -> str:
         """
         Gets the name of this data object.
-        :param data_object_path: the path of the data object
         :return: the name of the data object
         """
         return self.path.rsplit('/', 1)[-1]
@@ -100,8 +105,8 @@ class Collection(IrodsEntity):
     """
     Model of a collection in iRODS.
     """
-    def __init__(self, path: str, access_control_list: Iterable[AccessControl] = None,
-                 metadata: Iterable[IrodsMetadata] = None):
+    def __init__(self, path: str, access_control_list: Iterable[AccessControl]=None,
+                 metadata: Iterable[IrodsMetadata]=None):
         super().__init__(path, access_control_list, metadata)
 
 
@@ -125,6 +130,6 @@ class PreparedSpecificQuery(SpecificQuery):
     """
     Model of a prepared specific query.
     """
-    def __init__(self, alias: str, arguments: List[Any] = None, sql: str= "unknown"):
+    def __init__(self, alias: str, arguments: List[str]=None, sql: str="(unknown)"):
         super().__init__(alias, sql)
         self.query_arguments = arguments if arguments is not None else []

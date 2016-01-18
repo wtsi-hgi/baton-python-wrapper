@@ -44,7 +44,7 @@ class TestConversions(unittest.TestCase):
 
         self.assertIsInstance(baton_json, dict)
         self.assertIn(data_object.get_name(), baton_json.values())
-        self.assertIn(data_object.get_directory(), baton_json.values())
+        self.assertIn(data_object.get_collection_path(), baton_json.values())
 
     def test_path_to_baton_json_with_collection(self):
         collection = Collection(_COLLECTION_LOCATION)

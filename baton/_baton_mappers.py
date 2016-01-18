@@ -145,7 +145,7 @@ class BatonCustomObjectMapper(BatonRunner, CustomObjectMapper, metaclass=ABCMeta
                 BatonBinary.BATON_SPECIFIC_QUERY, input_data=specific_query_as_baton_json)
 
         custom_objects = [self._object_serialiser(custom_object_as_baton_json)
-                         for custom_object_as_baton_json in custom_objects_as_baton_json]
+                          for custom_object_as_baton_json in custom_objects_as_baton_json]
 
         return custom_objects
 
@@ -169,6 +169,7 @@ class BatonSpecificQueryMapper(BatonCustomObjectMapper[SpecificQuery], SpecificQ
         return self._get_with_prepared_specific_query(retrieve_query)
 
     def _object_serialiser(self, object_as_json: dict) -> SpecificQuery:
+        # TODO: Strings -> Constants (probably should move to _json_to_model.py)
         return SpecificQuery(
             object_as_json["alias"],
             object_as_json["sqlStr"]
