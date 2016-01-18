@@ -87,6 +87,7 @@ class BatonRunner(metaclass=ABCMeta):
         """
         process = subprocess.Popen(arguments, stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.PIPE)
 
+
         if isinstance(input_data, list):
             for to_write in input_data:
                 to_write_as_json = json.dumps(to_write)

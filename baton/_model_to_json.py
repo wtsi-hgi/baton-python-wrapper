@@ -35,7 +35,7 @@ def data_object_to_baton_json(data_object: DataObject) -> dict:
     :return: the baton JSON representation of the data object
     """
     return {
-        BATON_COLLECTION_PROPERTY: data_object.get_directory(),
+        BATON_COLLECTION_PROPERTY: data_object.get_collection_path(),
         BATON_DATA_OBJECT_PROPERTY: data_object.get_name()
     }
 
