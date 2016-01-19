@@ -17,17 +17,23 @@ def create_data_object(test_with_baton: TestWithBatonSetup, name: str, metadata:
     user = test_with_baton.irods_test_server.users[0]
     setup_helper = SetupHelper(test_with_baton.icommands_location)
 
-    data_object = setup_helper.create_data_object(name)
-    replica_storage = setup_helper.create_replica_storage()
-    setup_helper.replicate_data_object(data_object, replica_storage)
-    setup_helper.update_checksums(data_object)
-    setup_helper.add_metadata_to(data_object, metadata)
+    path = setup_helper.create_data_object(name)
+    setup_helper.add_metadata_to(path, metadata)
+    checksum = setup_helper.get_checksum(path)
+    replicas = []
+    for i in range(2):
+        replica_storage = setup_helper.create_replica_storage()
+        setup_helper.replicate_data_object(path, replica_storage)
+        replica = DataObjectReplica(i + 1, checksum, replica_storage.host, replica_storage.name, True)
+        replicas.append(replica)
+    setup_helper.update_checksums(path)
 
-    checksum = setup_helper.get_checksum(data_object)
-    replicas = [DataObjectReplica(0, checksum, replica_storage.name, replica_storage.location, True)]
+    # Difficult to get all the details of replica 0 using icommands so remove
+    setup_helper.run_icommand(["irm", "-n", "0", path])
+
     acl = [AccessControl(user.username, user.zone, AccessControl.Level.OWN)]
 
-    return DataObject(data_object, acl, metadata, replicas)
+    return DataObject(path, acl, metadata, replicas)
 
 
 def create_collection(test_with_baton: TestWithBatonSetup, name: str, metadata: IrodsMetadata()) -> Collection:
