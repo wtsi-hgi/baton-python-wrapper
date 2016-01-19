@@ -32,7 +32,7 @@ class TestConversions(unittest.TestCase):
     def test_baton_json_to_data_object(self):
         data_object = create_data_object(self.test_with_baton, _NAME, self.metadata)
 
-        arguments = ["--obj", "--checksum", "--replicate", "--avu", "--acl"]
+        arguments = ["--obj", "--replicate", "--avu", "--acl"]
         baton_out_as_json = self.baton_irods_mapper.run_baton_query(
             BatonBinary.BATON_LIST, arguments, input_data=data_object_to_baton_json(data_object))
 
@@ -42,7 +42,7 @@ class TestConversions(unittest.TestCase):
     def test_baton_json_to_collection(self):
         collection = create_collection(self.test_with_baton, _NAME, self.metadata)
 
-        arguments = ["--coll" "--checksum", "--avu", "--acl"]
+        arguments = ["--coll", "--avu", "--acl"]
         baton_out_as_json = self.baton_irods_mapper.run_baton_query(
             BatonBinary.BATON_LIST, arguments, input_data=collection_to_baton_json(collection))
 

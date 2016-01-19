@@ -17,19 +17,17 @@ def create_data_object(test_with_baton: TestWithBatonSetup, name: str, metadata:
     user = test_with_baton.irods_test_server.users[0]
     setup_helper = SetupHelper(test_with_baton.icommands_location)
 
-    temp_data_object = DataObject(setup_helper.create_data_object(name))
+    data_object = setup_helper.create_data_object(name)
     replica_storage = setup_helper.create_replica_storage()
+    setup_helper.replicate_data_object(data_object, replica_storage)
+    setup_helper.update_checksums(data_object)
+    setup_helper.add_metadata_to(data_object, metadata)
 
-    setup_helper.run_icommand("icd", [temp_data_object.get_collection_path()])
-
-    setup_helper.replicate_data_object(temp_data_object.path, replica_storage)
-    setup_helper.add_metadata_to(temp_data_object.path, metadata)
-    checksum = setup_helper.get_checksum(temp_data_object.path)
-
-    replicas = [DataObjectReplica(0, checksum, replica_storage.name, replica_storage.location)]
+    checksum = setup_helper.get_checksum(data_object)
+    replicas = [DataObjectReplica(0, checksum, replica_storage.name, replica_storage.location, True)]
     acl = [AccessControl(user.username, user.zone, AccessControl.Level.OWN)]
 
-    return DataObject(temp_data_object.path, acl, metadata, replicas)
+    return DataObject(data_object, acl, metadata, replicas)
 
 
 def create_collection(test_with_baton: TestWithBatonSetup, name: str, metadata: IrodsMetadata()) -> Collection:

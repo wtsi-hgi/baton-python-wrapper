@@ -1,3 +1,4 @@
+import logging
 import unittest
 from abc import ABCMeta, abstractmethod
 from typing import Sequence
@@ -36,6 +37,8 @@ class _TestBatonIrodsEntityMapper(unittest.TestCase, metaclass=ABCMeta):
         self.metadata_1_2 = combine_metadata([self.metadata_1, self.metadata_2])
         self.search_criterion_1 = SearchCriterion(_ATTRIBUTES[0], _VALUES[0], ComparisonOperator.EQUALS)
         self.search_criterion_2 = SearchCriterion(_ATTRIBUTES[1], _VALUES[1], ComparisonOperator.EQUALS)
+
+        logging.root.setLevel(logging.DEBUG)
 
     @abstractmethod
     def create_mapper(self) -> _BatonIrodsEntityMapper:

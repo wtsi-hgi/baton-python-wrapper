@@ -3,7 +3,7 @@ from typing import Iterable, Optional
 from baton._constants import BATON_ATTRIBUTE_PROPERTY, BATON_COLLECTION_PROPERTY, BATON_DATA_OBJECT_PROPERTY,\
     BATON_CHECKSUM_PROPERTY, BATON_METADATA_PROPERTY, BATON_REPLICA_PROPERTY, BATON_REPLICA_NUMBER_PROPERTY, \
     BATON_ACL_LEVEL_PROPERTY, BATON_ACL_OWNER_PROPERTY, BATON_ACL_ZONE_PROPERTY, BATON_ACL_PROPERTY, BATON_ACL_LEVELS, \
-    BATON_LOCATION_PROPERTY, BATON_RESOURCE_PROPERTY
+    BATON_LOCATION_PROPERTY, BATON_RESOURCE_PROPERTY, BATON_REPLICA_VALID_PROPERTY
 from baton._constants import BATON_VALUE_PROPERTY
 from baton.models import IrodsMetadata, DataObjectReplica, AccessControl, DataObject, Collection, PreparedSpecificQuery
 
@@ -45,7 +45,8 @@ def _baton_json_to_irods_data_object_replica(baton_json: dict) -> DataObjectRepl
         baton_json[BATON_REPLICA_NUMBER_PROPERTY],
         baton_json[BATON_CHECKSUM_PROPERTY],
         baton_json[BATON_LOCATION_PROPERTY],
-        baton_json[BATON_RESOURCE_PROPERTY]
+        baton_json[BATON_RESOURCE_PROPERTY],
+        baton_json[BATON_REPLICA_VALID_PROPERTY]
     )
 
 

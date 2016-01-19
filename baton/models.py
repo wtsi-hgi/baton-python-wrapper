@@ -10,11 +10,12 @@ class DataObjectReplica(Model):
     """
     Model of a file replicate in iRODS.
     """
-    def __init__(self, number: int, checksum: str, location: str, resource: str):
+    def __init__(self, number: int, checksum: str, location: str, resource: str, up_to_date: bool):
         self.number = number
         self.checksum = checksum
         self.location = location
         self.resource = resource
+        self.up_to_date = up_to_date
 
 
 class IrodsMetadata(Metadata):
