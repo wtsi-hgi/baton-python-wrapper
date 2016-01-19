@@ -1,7 +1,6 @@
 from typing import TypeVar
 
-from baton.models import Collection
-from baton.models import DataObject
+from baton.models import Collection, DataObject
 
 # Type of iRODS entity
 EntityType = TypeVar('T', DataObject, Collection)

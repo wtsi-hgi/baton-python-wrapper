@@ -1,7 +1,6 @@
 import unittest
 
 from testwithbaton.api import TestWithBatonSetup
-from testwithbaton.helpers import SetupHelper
 
 from baton._baton_mappers import BatonBinary
 from baton._json_to_model import baton_json_to_data_object, baton_json_to_collection
@@ -22,7 +21,6 @@ class TestConversions(unittest.TestCase):
     def setUp(self):
         self.test_with_baton = TestWithBatonSetup()
         self.test_with_baton.setup()
-        self.setup_helper = SetupHelper(self.test_with_baton.icommands_location)
 
         self.baton_irods_mapper = StubBatonRunner(
             self.test_with_baton.baton_location, self.test_with_baton.irods_test_server.users[0].zone)

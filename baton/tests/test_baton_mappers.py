@@ -1,4 +1,3 @@
-import logging
 import unittest
 from abc import ABCMeta, abstractmethod
 from typing import Sequence
@@ -37,8 +36,6 @@ class _TestBatonIrodsEntityMapper(unittest.TestCase, metaclass=ABCMeta):
         self.metadata_1_2 = combine_metadata([self.metadata_1, self.metadata_2])
         self.search_criterion_1 = SearchCriterion(_ATTRIBUTES[0], _VALUES[0], ComparisonOperator.EQUALS)
         self.search_criterion_2 = SearchCriterion(_ATTRIBUTES[1], _VALUES[1], ComparisonOperator.EQUALS)
-
-        logging.root.setLevel(logging.DEBUG)
 
     @abstractmethod
     def create_mapper(self) -> _BatonIrodsEntityMapper:
@@ -177,7 +174,7 @@ class TestBatonDataObjectMapper(_TestBatonIrodsEntityMapper):
 
         other_collection_path = self.setup_helper.create_collection("other_collection")
         moved_path = "%s/%s" % (other_collection_path, files[0].path.get_name())
-        self.setup_helper.run_icommand("imv", [files[0].path.location, moved_path])
+        self.setup_helper.run_icommand(["imv", files[0].path.location, moved_path])
         files[0].path = moved_path
 
         retrieved_entities = self.create_mapper().get_all_in_collection(files[0].path, files[1].path)
@@ -224,7 +221,6 @@ class TestBatonCustomObjectMapper(unittest.TestCase):
     def setUp(self):
         self.test_with_baton = TestWithBatonSetup(baton_docker_build=BATON_DOCKER_BUILD)
         self.test_with_baton.setup()
-        self.setup_helper = SetupHelper(self.test_with_baton.icommands_location)
 
         self.mapper = StubBatonCustomObjectMapper(
                 self.test_with_baton.baton_location, self.test_with_baton.irods_test_server.users[0].zone)
@@ -249,7 +245,7 @@ class TestBatonInstalledSpecificQueryMapper(unittest.TestCase):
                 self.test_with_baton.baton_location, self.test_with_baton.irods_test_server.users[0].zone)
 
     def test_get_all(self):
-        iquest_ls_response = self.setup_helper.run_icommand("iquest", ["--sql", "ls"])
+        iquest_ls_response = self.setup_helper.run_icommand(["iquest", "--sql", "ls"])
         expected = TestBatonInstalledSpecificQueryMapper._parse_iquest_ls(iquest_ls_response)
 
         specific_queries = self.mapper.get_all()

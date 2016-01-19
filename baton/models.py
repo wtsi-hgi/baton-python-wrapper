@@ -1,6 +1,6 @@
 from abc import ABCMeta
 from enum import Enum, unique
-from typing import Sequence, Iterable, Set, List
+from typing import Iterable, Set, List
 
 from hgicommon.collections import Metadata
 from hgicommon.models import Model
@@ -10,11 +10,11 @@ class DataObjectReplica(Model):
     """
     Model of a file replicate in iRODS.
     """
-    def __init__(self, number: int, checksum: str, location: str, resource: str, up_to_date: bool):
+    def __init__(self, number: int, checksum: str, host: str=None, resource_name: str=None, up_to_date: bool=None):
         self.number = number
         self.checksum = checksum
-        self.location = location
-        self.resource = resource
+        self.host = host
+        self.resource_name = resource_name
         self.up_to_date = up_to_date
 
 
@@ -94,9 +94,7 @@ class Collection(IrodsEntity):
     """
     Model of a collection in iRODS.
     """
-    def __init__(self, path: str, access_control_list: Iterable[AccessControl]=None,
-                 metadata: Iterable[IrodsMetadata]=None):
-        super().__init__(path, access_control_list, metadata)
+    pass
 
 
 class SpecificQuery(Model):
