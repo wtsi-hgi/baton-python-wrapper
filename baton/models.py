@@ -71,9 +71,9 @@ class DataObject(IrodsEntity):
     Model of a data object in iRODS.
     """
     def __init__(self, path: str, access_control_list: Iterable[AccessControl]=None,
-                 metadata: Iterable[IrodsMetadata]=None, replicas: Iterable[DataObjectReplica]=()):
+                 metadata: Iterable[IrodsMetadata]=None, replicas: Iterable[DataObjectReplica]=None):
         super().__init__(path, access_control_list, metadata)
-        self.replicas = replicas
+        self.replicas = [] if replicas is None else replicas
 
     def get_collection_path(self) -> str:
         """
