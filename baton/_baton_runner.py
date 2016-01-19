@@ -7,8 +7,8 @@ from datetime import timedelta
 from enum import Enum
 from typing import Any, List
 
-from baton._baton_constants import BATON_ERROR_MESSAGE_KEY, BATON_FILE_DOES_NOT_EXIST_ERROR_CODE
-from baton._baton_constants import BATON_ERROR_PROPERTY, BATON_ERROR_CODE_KEY
+from baton._constants import BATON_ERROR_MESSAGE_KEY, BATON_FILE_DOES_NOT_EXIST_ERROR_CODE
+from baton._constants import BATON_ERROR_PROPERTY, BATON_ERROR_CODE_KEY
 
 
 class BatonBinary(Enum):

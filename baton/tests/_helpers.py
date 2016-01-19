@@ -18,19 +18,21 @@ def create_data_object(test_with_baton: TestWithBatonSetup, name: str, metadata:
     setup_helper = SetupHelper(test_with_baton.icommands_location)
 
     temp_data_object = DataObject(setup_helper.create_data_object(name))
+    replica_storage = setup_helper.create_replica_storage()
 
     setup_helper.run_icommand("icd", [temp_data_object.get_collection_path()])
-    setup_helper.run_icommand("irepl", [temp_data_object.get_name()])
+
+    setup_helper.replicate_data_object(temp_data_object.path, replica_storage)
     setup_helper.add_metadata_to(temp_data_object.path, metadata)
     checksum = setup_helper.get_checksum(temp_data_object.path)
 
-    replicas = [DataObjectReplica(0, checksum)]
+    replicas = [DataObjectReplica(0, checksum, replica_storage.name, replica_storage.location)]
     acl = [AccessControl(user.username, user.zone, AccessControl.Level.OWN)]
 
-    return DataObject(temp_data_object.path, checksum, acl, metadata, replicas)
+    return DataObject(temp_data_object.path, acl, metadata, replicas)
 
 
-def create_collection(test_with_baton: TestWithBatonSetup, name: str, metadata: IrodsMetadata()) -> DataObject:
+def create_collection(test_with_baton: TestWithBatonSetup, name: str, metadata: IrodsMetadata()) -> Collection:
     """
     Factory method to create an iRODS collection that has metadata and an ACL.
     :param test_with_baton: framework to allow testing with baton

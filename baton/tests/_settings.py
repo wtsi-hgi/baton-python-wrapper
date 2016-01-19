@@ -7,6 +7,6 @@ BATON_DOCKER_BUILD = BatonDockerBuild(
     "custom/irods-3.3.1/Dockerfile",
     {
         "REPOSITORY": "https://github.com/wtsi-hgi/baton.git",
-        "BRANCH": "tmp"
+        "BRANCH": "feature/specificquery"
     }
 )

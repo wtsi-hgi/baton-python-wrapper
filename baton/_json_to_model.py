@@ -1,9 +1,10 @@
 from typing import Iterable, Optional
 
-from baton._baton_constants import BATON_ATTRIBUTE_PROPERTY, BATON_COLLECTION_PROPERTY, BATON_DATA_OBJECT_PROPERTY,\
-    BATON_CHECKSUM_PROPERTY, BATON_METADATA_PROPERTY, BATON_FILE_REPLICATE_PROPERTY, BATON_FILE_REPLICATE_ID_PROPERTY, \
-    BATON_ACL_LEVEL_PROPERTY, BATON_ACL_OWNER_PROPERTY, BATON_ACL_ZONE_PROPERTY, BATON_ACL_PROPERTY, BATON_ACL_LEVELS
-from baton._baton_constants import BATON_VALUE_PROPERTY
+from baton._constants import BATON_ATTRIBUTE_PROPERTY, BATON_COLLECTION_PROPERTY, BATON_DATA_OBJECT_PROPERTY,\
+    BATON_CHECKSUM_PROPERTY, BATON_METADATA_PROPERTY, BATON_REPLICA_PROPERTY, BATON_REPLICA_NUMBER_PROPERTY, \
+    BATON_ACL_LEVEL_PROPERTY, BATON_ACL_OWNER_PROPERTY, BATON_ACL_ZONE_PROPERTY, BATON_ACL_PROPERTY, BATON_ACL_LEVELS, \
+    BATON_LOCATION_PROPERTY, BATON_RESOURCE_PROPERTY
+from baton._constants import BATON_VALUE_PROPERTY
 from baton.models import IrodsMetadata, DataObjectReplica, AccessControl, DataObject, Collection, PreparedSpecificQuery
 
 
@@ -15,7 +16,6 @@ def baton_json_to_data_object(baton_json: dict) -> DataObject:
     """
     return DataObject(
         "%s/%s" % (baton_json[BATON_COLLECTION_PROPERTY], baton_json[BATON_DATA_OBJECT_PROPERTY]),
-        baton_json[BATON_CHECKSUM_PROPERTY],
         _extract_acl_from_baton_json(baton_json),
         _extract_metadata_from_baton_json(baton_json),
         _extract_replicas_from_baton_json(baton_json)
@@ -42,8 +42,10 @@ def _baton_json_to_irods_data_object_replica(baton_json: dict) -> DataObjectRepl
     :return: the corresponding model
     """
     return DataObjectReplica(
-        baton_json[BATON_FILE_REPLICATE_ID_PROPERTY],
-        baton_json[BATON_CHECKSUM_PROPERTY]
+        baton_json[BATON_REPLICA_NUMBER_PROPERTY],
+        baton_json[BATON_CHECKSUM_PROPERTY],
+        baton_json[BATON_LOCATION_PROPERTY],
+        baton_json[BATON_RESOURCE_PROPERTY]
     )
 
 
@@ -100,8 +102,8 @@ def _extract_replicas_from_baton_json(baton_json: dict) -> Iterable[DataObjectRe
     :return: the extracted replicas
     """
     replicas = []
-    if BATON_FILE_REPLICATE_PROPERTY in baton_json:
-        for replica_as_json in baton_json[BATON_FILE_REPLICATE_PROPERTY]:
+    if BATON_REPLICA_PROPERTY in baton_json:
+        for replica_as_json in baton_json[BATON_REPLICA_PROPERTY]:
             replica = _baton_json_to_irods_data_object_replica(replica_as_json)
             replicas.append(replica)
     return replicas

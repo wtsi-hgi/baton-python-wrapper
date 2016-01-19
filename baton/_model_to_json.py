@@ -1,10 +1,10 @@
 from hgicommon.collections import SearchCriteria
 
-from baton._baton_constants import BATON_ATTRIBUTE_PROPERTY, BATON_COMPARISON_OPERATOR_PROPERTY, \
+from baton._constants import BATON_ATTRIBUTE_PROPERTY, BATON_COMPARISON_OPERATOR_PROPERTY, \
     BATON_COMPARISON_OPERATORS, BATON_AVU_SEARCH_PROPERTY, BATON_DATA_OBJECT_PROPERTY, BATON_COLLECTION_PROPERTY, \
     BATON_METADATA_PROPERTY, BATON_SPECIFIC_QUERY_PROPERTY, BATON_SPECIFIC_QUERY_ARGUMENTS_PROPERTY, \
     BATON_SPECIFIC_QUERY_SQL_PROPERTY
-from baton._baton_constants import BATON_VALUE_PROPERTY
+from baton._constants import BATON_VALUE_PROPERTY
 from baton.models import DataObject, Collection, IrodsMetadata, PreparedSpecificQuery
 
 

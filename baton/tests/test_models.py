@@ -15,31 +15,6 @@ class TestDataObject(unittest.TestCase):
     def setUp(self):
         self.data_object = DataObject("%s/%s" % (_COLLECTION, _FILE_NAME), _CHECKSUMS[0], [], [])
 
-    def test_get_invalid_replicas_with_no_replicas(self):
-        self.assertCountEqual(self.data_object.get_invalid_replicas(), [])
-
-    def test_get_invalid_replicas_with_no_valid_replicas(self):
-        replicas = [DataObjectReplica(1, _CHECKSUMS[1]), DataObjectReplica(2, _CHECKSUMS[2])]
-        self.data_object.replicas = replicas
-
-        self.assertCountEqual(self.data_object.get_invalid_replicas(), replicas)
-
-    def test_get_invalid_replicas_with_all_valid_replicas(self):
-        replicas = []
-        for i in range(10):
-            replicas.append(DataObjectReplica(i, _CHECKSUMS[0]))
-        self.data_object.replicas = replicas
-
-        self.assertCountEqual(self.data_object.get_invalid_replicas(), [])
-
-    def test_get_invalid_replicas_with_mixed_valid_replicas(self):
-        replicas = []
-        for i in range(len(_CHECKSUMS)):
-            replicas.append(DataObjectReplica(i, _CHECKSUMS[i]))
-        self.data_object.replicas = replicas
-
-        self.assertCountEqual(self.data_object.get_invalid_replicas(), replicas[1:])
-
     def test_get_collection_path(self):
         self.assertEquals(self.data_object.get_collection_path(), _COLLECTION)
 

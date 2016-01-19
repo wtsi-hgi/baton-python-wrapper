@@ -10,9 +10,11 @@ class DataObjectReplica(Model):
     """
     Model of a file replicate in iRODS.
     """
-    def __init__(self, number: int, checksum: str):
+    def __init__(self, number: int, checksum: str, location: str, resource: str):
         self.number = number
         self.checksum = checksum
+        self.location = location
+        self.resource = resource
 
 
 class IrodsMetadata(Metadata):
@@ -57,8 +59,7 @@ class IrodsEntity(Model, metaclass=ABCMeta):
     """
     Model of an entity in iRODS.
     """
-    def __init__(self, path: str, access_control_list: Iterable[AccessControl]=None,
-                 metadata: Iterable[IrodsMetadata]=None):
+    def __init__(self, path: str, access_control_list: Iterable[AccessControl]=None, metadata: IrodsMetadata=None):
         self.path = path
         self.acl = access_control_list
         self.metadata = metadata
@@ -68,23 +69,10 @@ class DataObject(IrodsEntity):
     """
     Model of a data object in iRODS.
     """
-    def __init__(self, path: str, checksum: str=None, access_control_list: Iterable[AccessControl]=None,
+    def __init__(self, path: str, access_control_list: Iterable[AccessControl]=None,
                  metadata: Iterable[IrodsMetadata]=None, replicas: Iterable[DataObjectReplica]=()):
         super().__init__(path, access_control_list, metadata)
-        self.checksum = checksum
         self.replicas = replicas
-
-    def get_invalid_replicas(self) -> Sequence[DataObjectReplica]:
-        """
-        Gets the replicates that have checksums that do not match that of the "original" file and which should
-        subsequently be regarded as invalid.
-        :return: list of invalid replicas
-        """
-        invalid_replicas = []
-        for replica in self.replicas:
-            if replica.checksum != self.checksum:
-                invalid_replicas.append(replica)
-        return invalid_replicas
 
     def get_collection_path(self) -> str:
         """
