@@ -1,6 +1,30 @@
-from typing import Sequence, Union, Optional, Sized, Iterable, Any
+from typing import Dict, Sequence, Union, Optional, Sized, Iterable, Any, Set
+
+from hgicommon.collections import Metadata
 
 from baton.models import DataObjectReplica
+
+
+class IrodsMetadata(Metadata):
+    """
+    iRODS metadata is in the form of "AVUs" (attribute-value-unit tuples). Attributes may have many values therefore all
+    attributes are a sets.
+
+    Units are no currently considered.
+    """
+    def get(self, key: str, default=None) -> Set[str]:
+        value = super().get(key, default)
+        assert isinstance(value, set)
+        return value
+
+    def __getitem__(self, key: str) -> Set[str]:
+        value = super().__getitem__(key)
+        assert isinstance(value, set)
+        return value
+
+    def __setitem__(self, key: str, value: Set[str]):
+        assert isinstance(value, set)
+        super().__setitem__(key, value)
 
 
 class DataObjectReplicaCollection(Sized, Iterable):

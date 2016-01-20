@@ -26,15 +26,5 @@ class TestDataObject(unittest.TestCase):
         self.assertEqual(data_object_2, self.data_object)
 
 
-class TestIrodsMetadata(unittest.TestCase):
-    """
-    Tests for `IrodsMetadata`.
-    """
-    def setUp(self):
-        self.metadata = IrodsMetadata()
-
-    def test_equal(self):
-        self.metadata["key"] = {"value_1", "value_2"}
-        metadata_2 = IrodsMetadata()
-        metadata_2["key"] = {"value_2", "value_1"}
-        self.assertEquals(self.metadata, metadata_2)
+if __name__ == "__main__":
+    unittest.main()

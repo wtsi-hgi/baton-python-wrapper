@@ -1,8 +1,23 @@
 import copy
 import unittest
 
-from baton.collections import DataObjectReplicaCollection
+from baton.collections import DataObjectReplicaCollection, IrodsMetadata
 from baton.models import DataObjectReplica
+
+
+
+class TestIrodsMetadata(unittest.TestCase):
+    """
+    Tests for `IrodsMetadata`.
+    """
+    def setUp(self):
+        self.metadata = IrodsMetadata()
+
+    def test_equal(self):
+        self.metadata["key"] = {"value_1", "value_2"}
+        metadata_2 = IrodsMetadata()
+        metadata_2["key"] = {"value_2", "value_1"}
+        self.assertEquals(self.metadata, metadata_2)
 
 
 class TestDataObjectReplicaCollection(unittest.TestCase):
