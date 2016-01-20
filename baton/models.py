@@ -71,9 +71,10 @@ class DataObject(IrodsEntity):
     Model of a data object in iRODS.
     """
     def __init__(self, path: str, access_control_list: Iterable[AccessControl]=None,
-                 metadata: Iterable[IrodsMetadata]=None, replicas: Iterable[DataObjectReplica]=None):
+                 metadata: Iterable[IrodsMetadata]=None, replicas: Iterable[DataObjectReplica]=()):
         super().__init__(path, access_control_list, metadata)
-        self.replicas = [] if replicas is None else replicas
+        from baton.collections import DataObjectReplicaCollection
+        self.replicas = DataObjectReplicaCollection(replicas)
 
     def get_collection_path(self) -> str:
         """

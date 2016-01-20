@@ -5,6 +5,7 @@ from baton._constants import BATON_ATTRIBUTE_PROPERTY, BATON_COLLECTION_PROPERTY
     BATON_ACL_LEVEL_PROPERTY, BATON_ACL_OWNER_PROPERTY, BATON_ACL_ZONE_PROPERTY, BATON_ACL_PROPERTY, BATON_ACL_LEVELS, \
     BATON_LOCATION_PROPERTY, BATON_RESOURCE_PROPERTY, BATON_REPLICA_VALID_PROPERTY
 from baton._constants import BATON_VALUE_PROPERTY
+from baton.collections import DataObjectReplicaCollection
 from baton.models import IrodsMetadata, DataObjectReplica, AccessControl, DataObject, Collection, PreparedSpecificQuery
 
 
@@ -102,11 +103,11 @@ def _extract_replicas_from_baton_json(baton_json: dict) -> Iterable[DataObjectRe
     :param baton_json: the baton JSON
     :return: the extracted replicas
     """
-    replicas = []
+    replicas = DataObjectReplicaCollection()
     if BATON_REPLICA_PROPERTY in baton_json:
         for replica_as_json in baton_json[BATON_REPLICA_PROPERTY]:
             replica = _baton_json_to_irods_data_object_replica(replica_as_json)
-            replicas.append(replica)
+            replicas.add(replica)
     return replicas
 
 
