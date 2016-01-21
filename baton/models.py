@@ -38,6 +38,7 @@ class IrodsEntity(Model, metaclass=ABCMeta):
     Model of an entity in iRODS.
     """
     from baton.collections import IrodsMetadata
+
     def __init__(self, path: str, access_control_list: Iterable[AccessControl]=None, metadata: IrodsMetadata=None):
         self.path = path
         self.acl = access_control_list
@@ -49,6 +50,7 @@ class DataObject(IrodsEntity):
     Model of a data object in iRODS.
     """
     from baton.collections import IrodsMetadata
+
     def __init__(self, path: str, access_control_list: Iterable[AccessControl]=None,
                  metadata: Iterable[IrodsMetadata]=None, replicas: Iterable[DataObjectReplica]=()):
         super().__init__(path, access_control_list, metadata)

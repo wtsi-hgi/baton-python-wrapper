@@ -1,8 +1,10 @@
 from json import JSONEncoder
 
-from baton.collections import DataObjectReplicaCollection
 from hgicommon.json import DefaultSupportedReturnType
 from hgicommon.json_conversion import MetadataJSONEncoder
+
+from baton import IrodsEntity, DataObject
+from baton.collections import DataObjectReplicaCollection
 
 # `IrodsMetadata` JSON encoder can be the same as the `Metadata` JSON encoder as it has no additional properties
 IrodsMetadataJSONEncoder = MetadataJSONEncoder
@@ -12,8 +14,48 @@ class DataObjectReplicaCollectionJSONEncoder(JSONEncoder):
     """
     JSON encoder for `DataObjectReplicaCollection`.
     """
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self._data_object_encoder = DataObjectJSONEncoder(**kwargs)
+
     def default(self, to_encode: DataObjectReplicaCollection) -> DefaultSupportedReturnType:
         if not isinstance(to_encode, DataObjectReplicaCollection):
             super().default(to_encode)
 
-        return to_encode._data
+        return self._data_object_encoder.default(to_encode._data)
+
+
+class IrodsEntityJSONEncoder(JSONEncoder):
+    """
+    JSON encoder for `IrodsEntity`.
+    """
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self._metadata_encoder = MetadataJSONEncoder(**kwargs)
+
+    def default(self, to_encode: IrodsEntity) -> DefaultSupportedReturnType:
+        if not isinstance(to_encode, IrodsEntity):
+            super().default(to_encode)
+
+        return {
+            "path": to_encode.path,
+            "acl": to_encode.acl,
+            "metadata": self._metadata_encoder.default(to_encode)
+        }
+
+
+class DataObjectJSONEncoder(IrodsEntityJSONEncoder):
+    """
+    JSON encoder for `DataObject`.
+    """
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self._replicas_encoder = DataObjectReplicaCollectionJSONEncoder(**kwargs)
+
+    def default(self, to_encode: DataObject) -> DefaultSupportedReturnType:
+        if not isinstance(to_encode, DataObject):
+            super().default(to_encode)
+
+        encoded = super().encode(to_encode)
+        encoded.update(self._replicas_encoder.default(to_encode.replicas))
+        return encoded
