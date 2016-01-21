@@ -22,7 +22,11 @@ class DataObjectReplicaCollectionJSONEncoder(JSONEncoder):
         if not isinstance(to_encode, DataObjectReplicaCollection):
             super().default(to_encode)
 
-        return self._data_object_replica_encoder.default(to_encode._data)
+        replicas = []
+        for replica in to_encode.get_all():
+            replicas.append(self._data_object_replica_encoder.default(replica))
+
+        return replicas
 
 
 class IrodsEntityJSONEncoder(JSONEncoder):
