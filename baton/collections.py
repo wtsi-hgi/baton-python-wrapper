@@ -1,8 +1,7 @@
 from typing import Dict, Sequence, Union, Optional, Sized, Iterable, Any, Set
 
-from hgicommon.collections import Metadata
-
 from baton.models import DataObjectReplica
+from hgicommon.collections import Metadata
 
 
 class IrodsMetadata(Metadata):

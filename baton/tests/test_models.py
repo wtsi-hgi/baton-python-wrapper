@@ -1,7 +1,7 @@
 import copy
 import unittest
 
-from baton.models import DataObject, IrodsMetadata
+from baton.models import DataObject
 
 _COLLECTION = "/collection/sub_collection"
 _FILE_NAME = "file_name"

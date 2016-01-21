@@ -1,13 +1,14 @@
 import json
 import unittest
 
+from baton.collections import IrodsMetadata
 from hgicommon.collections import SearchCriteria
 from hgicommon.enums import ComparisonOperator
 from hgicommon.models import SearchCriterion
 
 from baton._model_to_json import search_criteria_to_baton_json, irods_metadata_to_baton_json, data_object_to_baton_json, \
     collection_to_baton_json, prepared_specific_query_to_baton_json
-from baton.models import IrodsMetadata, DataObject, Collection, PreparedSpecificQuery
+from baton.models import DataObject, Collection, PreparedSpecificQuery
 
 _ATTRIBUTE_1 = "attribute1"
 _ATTRIBUTE_2 = "attribute2"

@@ -1,10 +1,11 @@
+from baton.collections import IrodsMetadata
 from hgicommon.collections import SearchCriteria
 
 from baton._constants import BATON_ATTRIBUTE_PROPERTY, BATON_COMPARISON_OPERATOR_PROPERTY, \
     BATON_COMPARISON_OPERATORS, BATON_AVU_SEARCH_PROPERTY, BATON_DATA_OBJECT_PROPERTY, BATON_COLLECTION_PROPERTY, \
     BATON_METADATA_PROPERTY, BATON_SPECIFIC_QUERY_PROPERTY, BATON_SPECIFIC_QUERY_ARGUMENTS_PROPERTY, \
     BATON_SPECIFIC_QUERY_SQL_PROPERTY, BATON_VALUE_PROPERTY
-from baton.models import DataObject, Collection, IrodsMetadata, PreparedSpecificQuery
+from baton.models import DataObject, Collection, PreparedSpecificQuery
 
 
 def search_criteria_to_baton_json(search_criteria: SearchCriteria) -> dict:

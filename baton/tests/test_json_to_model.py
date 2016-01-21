@@ -1,11 +1,11 @@
 import unittest
 
+from baton.collections import IrodsMetadata
 from testwithbaton.api import TestWithBatonSetup
 
 from baton._baton_mappers import BatonBinary
 from baton._json_to_model import baton_json_to_data_object, baton_json_to_collection
 from baton._model_to_json import data_object_to_baton_json, collection_to_baton_json
-from baton.models import IrodsMetadata
 from baton.tests._helpers import create_data_object, create_collection
 from baton.tests._stubs import StubBatonRunner
 

@@ -1,9 +1,10 @@
 from typing import Iterable
 
+from baton.collections import IrodsMetadata
 from testwithbaton.api import TestWithBatonSetup
 from testwithbaton.helpers import SetupHelper
 
-from baton.models import DataObject, IrodsMetadata, DataObjectReplica, AccessControl, Collection
+from baton.models import DataObject, DataObjectReplica, AccessControl, Collection
 
 
 def create_data_object(test_with_baton: TestWithBatonSetup, name: str, metadata: IrodsMetadata()) -> DataObject:

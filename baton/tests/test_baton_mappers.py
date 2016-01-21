@@ -3,6 +3,7 @@ from abc import ABCMeta, abstractmethod
 from typing import Sequence
 from unittest.mock import MagicMock
 
+from baton.collections import IrodsMetadata
 from hgicommon.collections import SearchCriteria
 from hgicommon.enums import ComparisonOperator
 from hgicommon.models import SearchCriterion
@@ -11,7 +12,7 @@ from testwithbaton.helpers import SetupHelper
 
 from baton._baton_mappers import BatonDataObjectMapper, BatonCollectionMapper, _BatonIrodsEntityMapper, \
     BatonSpecificQueryMapper
-from baton.models import IrodsMetadata, IrodsEntity, DataObject, Collection, PreparedSpecificQuery, SpecificQuery
+from baton.models import IrodsEntity, DataObject, Collection, PreparedSpecificQuery, SpecificQuery
 from baton.tests._helpers import combine_metadata, create_data_object, create_collection
 from baton.tests._settings import BATON_DOCKER_BUILD
 from baton.tests._stubs import StubBatonCustomObjectMapper

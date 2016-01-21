@@ -5,8 +5,8 @@ from baton._constants import BATON_ATTRIBUTE_PROPERTY, BATON_COLLECTION_PROPERTY
     BATON_ACL_LEVEL_PROPERTY, BATON_ACL_OWNER_PROPERTY, BATON_ACL_ZONE_PROPERTY, BATON_ACL_PROPERTY, BATON_ACL_LEVELS, \
     BATON_LOCATION_PROPERTY, BATON_RESOURCE_PROPERTY, BATON_REPLICA_VALID_PROPERTY
 from baton._constants import BATON_VALUE_PROPERTY
-from baton.collections import DataObjectReplicaCollection
-from baton.models import IrodsMetadata, DataObjectReplica, AccessControl, DataObject, Collection, PreparedSpecificQuery
+from baton.collections import DataObjectReplicaCollection, IrodsMetadata
+from baton.models import DataObjectReplica, AccessControl, DataObject, Collection
 
 
 def baton_json_to_data_object(baton_json: dict) -> DataObject:
