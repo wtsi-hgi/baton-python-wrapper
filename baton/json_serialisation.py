@@ -1,7 +1,7 @@
 from json import JSONEncoder
 
 from hgicommon.json import DefaultSupportedReturnType
-from hgicommon.json_conversion import MetadataJSONEncoder
+from hgicommon.json_conversion import MetadataJSONEncoder, ModelJSONEncoder
 
 from baton import IrodsEntity, DataObject
 from baton.collections import DataObjectReplicaCollection
@@ -16,13 +16,13 @@ class DataObjectReplicaCollectionJSONEncoder(JSONEncoder):
     """
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self._data_object_encoder = DataObjectJSONEncoder(**kwargs)
+        self._data_object_replica_encoder = ModelJSONEncoder(**kwargs)
 
     def default(self, to_encode: DataObjectReplicaCollection) -> DefaultSupportedReturnType:
         if not isinstance(to_encode, DataObjectReplicaCollection):
             super().default(to_encode)
 
-        return self._data_object_encoder.default(to_encode._data)
+        return self._data_object_replica_encoder.default(to_encode._data)
 
 
 class IrodsEntityJSONEncoder(JSONEncoder):
@@ -37,6 +37,7 @@ class IrodsEntityJSONEncoder(JSONEncoder):
         if not isinstance(to_encode, IrodsEntity):
             super().default(to_encode)
 
+        # TODO: Fix hardcoded strings used with property values
         return {
             "path": to_encode.path,
             "acl": to_encode.acl,
