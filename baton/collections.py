@@ -114,6 +114,12 @@ class DataObjectReplicaCollection(Sized, Iterable):
             return False
         return other._data == self._data
 
+    def __str__(self):
+        return self._data
+
+    def __repr__(self):
+        return "<%s object at %s: %s>" % (type(self), id(self), str(self))
+
     def __len__(self) -> int:
         return len(self._data)
 

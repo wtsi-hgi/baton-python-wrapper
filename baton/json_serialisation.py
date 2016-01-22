@@ -1,13 +1,10 @@
 from json import JSONEncoder
 
 from hgicommon.json import DefaultSupportedReturnType
-from hgicommon.json_conversion import MetadataJSONEncoder, ModelJSONEncoder
+from hgicommon.json_conversion import ModelJSONEncoder
 
 from baton import IrodsEntity, DataObject
 from baton.collections import DataObjectReplicaCollection
-
-# `IrodsMetadata` JSON encoder can be the same as the `Metadata` JSON encoder as it has no additional properties
-IrodsMetadataJSONEncoder = MetadataJSONEncoder
 
 
 class DataObjectReplicaCollectionJSONEncoder(JSONEncoder):
@@ -20,7 +17,7 @@ class DataObjectReplicaCollectionJSONEncoder(JSONEncoder):
 
     def default(self, to_encode: DataObjectReplicaCollection) -> DefaultSupportedReturnType:
         if not isinstance(to_encode, DataObjectReplicaCollection):
-            super().default(to_encode)
+            JSONEncoder.default(self, to_encode)
 
         replicas = []
         for replica in to_encode.get_all():
@@ -33,19 +30,14 @@ class IrodsEntityJSONEncoder(JSONEncoder):
     """
     JSON encoder for `IrodsEntity`.
     """
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self._metadata_encoder = MetadataJSONEncoder(**kwargs)
-
     def default(self, to_encode: IrodsEntity) -> DefaultSupportedReturnType:
         if not isinstance(to_encode, IrodsEntity):
-            super().default(to_encode)
+            JSONEncoder.default(self, to_encode)
 
-        # TODO: Fix hardcoded strings used with property values
         return {
             "path": to_encode.path,
             "acl": to_encode.acl,
-            "metadata": self._metadata_encoder.default(to_encode)
+            "metadata": dict(to_encode.metadata)
         }
 
 
@@ -59,7 +51,7 @@ class DataObjectJSONEncoder(IrodsEntityJSONEncoder):
 
     def default(self, to_encode: DataObject) -> DefaultSupportedReturnType:
         if not isinstance(to_encode, DataObject):
-            super().default(to_encode)
+            JSONEncoder.default(self, to_encode)
 
         encoded = super().encode(to_encode)
         encoded.update(self._replicas_encoder.default(to_encode.replicas))
