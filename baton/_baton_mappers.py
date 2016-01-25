@@ -102,17 +102,19 @@ class BatonDataObjectMapper(_BatonIrodsEntityMapper, DataObjectMapper):
 
         baton_json = []
         for path in collection_paths:
-            baton_json.append(self._path_to_baton_json(path))
+            collection = Collection(path)
+            baton_json.append(collection_to_baton_json(collection))
         arguments = self._create_entity_query_arguments(load_metadata)
         arguments.append("--contents")
 
         baton_out_as_json = self.run_baton_query(BatonBinary.BATON_LIST, arguments, input_data=baton_json)
 
-        files_as_baton_json = []
+        data_objects_as_baton_json = []
         for baton_item_as_json in baton_out_as_json:
-            files_as_baton_json += baton_item_as_json["contents"]
+            # TODO: Remove hard-coded JSON property name
+            data_objects_as_baton_json += baton_item_as_json["contents"]
 
-        return self._baton_json_to_irods_entities(baton_out_as_json)
+        return self._baton_json_to_irods_entities(data_objects_as_baton_json)
 
     def _path_to_baton_json(self, path: str) -> dict:
         data_object = DataObject(path)

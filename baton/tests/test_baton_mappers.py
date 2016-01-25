@@ -3,7 +3,6 @@ from abc import ABCMeta, abstractmethod
 from typing import Sequence
 from unittest.mock import MagicMock
 
-from baton.collections import IrodsMetadata
 from hgicommon.collections import SearchCriteria
 from hgicommon.enums import ComparisonOperator
 from hgicommon.models import SearchCriterion
@@ -12,6 +11,7 @@ from testwithbaton.helpers import SetupHelper
 
 from baton._baton_mappers import BatonDataObjectMapper, BatonCollectionMapper, _BatonIrodsEntityMapper, \
     BatonSpecificQueryMapper
+from baton.collections import IrodsMetadata
 from baton.models import IrodsEntity, DataObject, Collection, PreparedSpecificQuery, SpecificQuery
 from baton.tests._helpers import combine_metadata, create_data_object, create_collection
 from baton.tests._settings import BATON_DOCKER_BUILD
@@ -107,6 +107,10 @@ class _TestBatonIrodsEntityMapper(unittest.TestCase, metaclass=ABCMeta):
         irods_entity_1.metadata = None
         self.assertEquals(retrieved_entities[0], irods_entity_1)
 
+    def test_get_by_path_when_no_paths_given(self):
+        retrieved_entities = self.create_mapper().get_by_path([])
+        self.assertEqual(len(retrieved_entities), 0)
+
     def test_get_by_path_when_entity_does_not_exist(self):
         self.assertRaises(FileNotFoundError, self.create_mapper().get_by_path, "/invalid/name")
 
@@ -153,50 +157,55 @@ class TestBatonDataObjectMapper(_TestBatonIrodsEntityMapper):
         return BatonDataObjectMapper(
             self.test_with_baton.baton_location, self.test_with_baton.irods_test_server.users[0].zone)
 
-    def create_irods_entity(self, file_name: str, metadata: IrodsMetadata()) -> DataObject:
-        return create_data_object(self.test_with_baton, file_name, metadata)
+    def create_irods_entity(self, name: str, metadata: IrodsMetadata()) -> DataObject:
+        return create_data_object(self.test_with_baton, name, metadata)
 
-    def get_all_in_collection_with_single_collection(self):
-        data_object_1 = self.create_irods_entity(_NAMES[0], self.metadata_1)
-        data_object_2 = self.create_irods_entity(_NAMES[1], self.metadata_2)
-        assert data_object_1.path == data_object_2.path
-
-        retrieved_entities = self.create_mapper().get_all_in_collection(data_object_1.path)
-        self.assertCountEqual(retrieved_entities, [data_object_1, data_object_2])
-
-    def get_all_in_collection_when_collection_does_not_exist(self):
+    def test_get_all_in_collection_when_collection_does_not_exist(self):
         self.assertRaises(FileNotFoundError, self.create_mapper().get_all_in_collection, "/invalid")
 
-    def get_all_in_collection_with_multiple_collections(self):
-        files = [
-            self.create_irods_entity(_NAMES[i], self.metadata_1) for i in range(len(_NAMES))]
-        for i in range(len(files) - 1):
-            assert files[i].path == files[i + 1].path
+    def test_get_all_in_collection_with_single_collection_containing_one_entity(self):
+        data_object_1 = self.create_irods_entity(_NAMES[0], self.metadata_1)
 
-        other_collection_path = self.setup_helper.create_collection("other_collection")
-        moved_path = "%s/%s" % (other_collection_path, files[0].path.get_name())
-        self.setup_helper.run_icommand(["imv", files[0].path.location, moved_path])
-        files[0].path = moved_path
+        retrieved_entities = self.create_mapper().get_all_in_collection(data_object_1.get_collection_path())
+        self.assertCountEqual(retrieved_entities, [data_object_1])
 
-        retrieved_entities = self.create_mapper().get_all_in_collection(files[0].path, files[1].path)
-        self.assertCountEqual(retrieved_entities, files)
+    def test_get_all_in_collection_with_single_collection_containing_multiple_entities(self):
+        data_object_1 = self.create_irods_entity(_NAMES[0], self.metadata_1)
+        data_object_2 = self.create_irods_entity(_NAMES[1], self.metadata_2)
+        assert data_object_1.get_collection_path() == data_object_2.get_collection_path()
 
-    def get_all_in_collection_when_one_of_multiple_collections_does_not_exist(self):
+        retrieved_entities = self.create_mapper().get_all_in_collection(data_object_1.get_collection_path())
+        self.assertCountEqual(retrieved_entities, [data_object_1, data_object_2])
+
+    def test_get_all_in_collection_with_multiple_collections(self):
+        collections = []
+        data_objects = []
+
+        for i in range(3):
+            collection = self.setup_helper.create_collection("collection_%d" % i)
+
+            for j in range(len(_NAMES)):
+                data_object = self.create_irods_entity(_NAMES[j], self.metadata_1)
+                moved_path = "%s/%s" % (collection, data_object.get_name())
+                self.setup_helper.run_icommand(["imv", data_object.path, moved_path])
+                data_object.path = moved_path
+                data_objects.append(data_object)
+
+            collections.append(collection)
+
+        retrieved_entities = self.create_mapper().get_all_in_collection(collections)
+        self.assertCountEqual(retrieved_entities, data_objects)
+
+    def test_get_all_in_collection_when_one_of_multiple_collections_does_not_exist(self):
         collection_paths = [self.setup_helper.create_collection("collection"), "/invalid"]
         self.assertRaises(FileNotFoundError, self.create_mapper().get_all_in_collection, collection_paths)
 
-    def get_all_in_collection_with_multiple_collections_when_some_do_not_exist(self):
-        data_objects = [self.create_irods_entity(_NAMES[i], self.metadata_1) for i in range(len(_NAMES))]
-        for i in range(len(data_objects) - 1):
-            assert data_objects[i].path == data_objects[i + 1]
-
-        self.assertRaises(
-            FileNotFoundError, self.create_mapper().get_all_in_collection, data_objects[0].path + ["/invalid"])
-
-    def get_all_in_collection_when_metadata_not_required(self):
+    def test_get_all_in_collection_when_metadata_not_required(self):
         data_object_1 = self.create_irods_entity(_NAMES[0], self.metadata_1)
+        self.create_irods_entity(_NAMES[1], self.metadata_1)
 
-        retrieved_entities = self.create_mapper().get_all_in_collection(data_object_1.path, load_metadata=False)
+        retrieved_entities = self.create_mapper().get_all_in_collection(
+                data_object_1.get_collection_path(), load_metadata=False)
 
         self.assertIsNone(retrieved_entities[0].metadata)
         data_object_1.metadata = None
