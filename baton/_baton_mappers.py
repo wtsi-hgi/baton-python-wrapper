@@ -58,7 +58,7 @@ class _BatonIrodsEntityMapper(BatonRunner, IrodsEntityMapper, metaclass=ABCMeta)
     def _baton_json_to_irods_entities(self, entities_as_baton_json: List[dict]) -> List[EntityType]:
         """
         Converts the baton representation of multiple iRODS entities to a list of `EntityType` models.
-        :param entities_as_baton_json: the baton json representation of the entities
+        :param entities_as_baton_json: the baton serialization representation of the entities
         :return: the equivalent models
         """
         assert(isinstance(entities_as_baton_json, list))
@@ -83,7 +83,7 @@ class _BatonIrodsEntityMapper(BatonRunner, IrodsEntityMapper, metaclass=ABCMeta)
     def _baton_json_to_irod_entity(self, entity_as_baton_json: dict) -> EntityType:
         """
         Converts the baton representation of an iRODS entity to a list of `EntityType` models.
-        :param entity_as_baton_json: the baton json representation of the entity
+        :param entity_as_baton_json: the baton serialization representation of the entity
         :return: the equivalent models
         """
         pass

@@ -2,8 +2,8 @@ import unittest
 
 from testwithbaton import TestWithBatonSetup
 
-from baton._baton_mappers import BatonDataObjectMapper, BatonCollectionMapper, BatonSpecificQueryMapper
 from baton.api import Connection
+from baton._baton_mappers import BatonCollectionMapper, BatonDataObjectMapper, BatonSpecificQueryMapper
 from baton.tests._settings import BATON_DOCKER_BUILD
 
 

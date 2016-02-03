@@ -19,6 +19,7 @@ class BatonBinary(Enum):
     BATON_METAQUERY = "baton-metaquery"
     BATON_LIST = "baton-list"
     BATON_SPECIFIC_QUERY = "baton-specificquery"
+    BATON_GET = "baton-get"
 
 
 class BatonRunner(metaclass=ABCMeta):
@@ -51,7 +52,7 @@ class BatonRunner(metaclass=ABCMeta):
         :param baton_binary: the baton binary to use
         :param program_arguments: arguments to give to the baton binary
         :param input_data: input data to the baton binary
-        :return: parsed json returned by baton
+        :return: parsed serialization returned by baton
         """
         if program_arguments is None:
             program_arguments = []
@@ -120,7 +121,7 @@ class BatonRunner(metaclass=ABCMeta):
     def _raise_any_errors_given_in_baton_out(baton_out_as_json: List[dict]):
         """
         Raises any errors that baton has expressed in its output.
-        :param baton_out_as_json: the output baton gave as parsed json
+        :param baton_out_as_json: the output baton gave as parsed serialization
         """
         if not isinstance(baton_out_as_json, list):
             baton_out_as_json = [baton_out_as_json]

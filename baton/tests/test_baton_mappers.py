@@ -66,7 +66,7 @@ class _TestBatonIrodsEntityMapper(unittest.TestCase, metaclass=ABCMeta):
 
         retrieved_entities = self.create_mapper().get_by_metadata(self.search_criterion_1)
         self.assertEquals(retrieved_entities[0], irods_entity_1)
-        self.assertCountEqual(retrieved_entities, [irods_entity_1])
+        self.assertEqual(retrieved_entities, [irods_entity_1])
 
     def test_get_by_metadata_when_multiple_criterions_match_single_entity(self):
         search_criteria = SearchCriteria([self.search_criterion_1, self.search_criterion_2])
@@ -76,7 +76,7 @@ class _TestBatonIrodsEntityMapper(unittest.TestCase, metaclass=ABCMeta):
 
         retrieved_entities = self.create_mapper().get_by_metadata(search_criteria)
         self.maxDiff = None
-        self.assertCountEqual(retrieved_entities, [irods_entity_1])
+        self.assertEqual(retrieved_entities, [irods_entity_1])
 
     def test_get_by_metadata_when_single_criterion_match_multiple_entities(self):
         irods_entity_1 = self.create_irods_entity(_NAMES[0], self.metadata_1_2)
@@ -85,7 +85,7 @@ class _TestBatonIrodsEntityMapper(unittest.TestCase, metaclass=ABCMeta):
 
         retrieved_entities = self.create_mapper().get_by_metadata(self.search_criterion_1)
         self.maxDiff = None
-        self.assertCountEqual(retrieved_entities, [irods_entity_1, irods_entity_2])
+        self.assertEqual(retrieved_entities, [irods_entity_1, irods_entity_2])
 
     def test_get_by_metadata_when_multiple_criterions_match_multiple_entities(self):
         search_criteria = SearchCriteria([self.search_criterion_1, self.search_criterion_2])
@@ -96,7 +96,7 @@ class _TestBatonIrodsEntityMapper(unittest.TestCase, metaclass=ABCMeta):
 
         retrieved_entities = self.create_mapper().get_by_metadata(search_criteria)
         self.maxDiff = None
-        self.assertCountEqual(retrieved_entities, [irods_entity_1, irods_entity_2])
+        self.assertEqual(retrieved_entities, [irods_entity_1, irods_entity_2])
 
     def test_get_by_metadata_when_metadata_not_required_for_entities(self):
         irods_entity_1 = self.create_irods_entity(_NAMES[0], self.metadata_1)
@@ -105,7 +105,7 @@ class _TestBatonIrodsEntityMapper(unittest.TestCase, metaclass=ABCMeta):
 
         self.assertIsNone(retrieved_entities[0].metadata)
         irods_entity_1.metadata = None
-        self.assertEquals(retrieved_entities[0], irods_entity_1)
+        self.assertEqual(retrieved_entities[0], irods_entity_1)
 
     def test_get_by_path_when_no_paths_given(self):
         retrieved_entities = self.create_mapper().get_by_path([])
@@ -118,7 +118,7 @@ class _TestBatonIrodsEntityMapper(unittest.TestCase, metaclass=ABCMeta):
         irods_entity_1 = self.create_irods_entity(_NAMES[0], self.metadata_1)
 
         retrieved_entities = self.create_mapper().get_by_path(irods_entity_1.path)
-        self.assertCountEqual(retrieved_entities, [irods_entity_1])
+        self.assertEqual(retrieved_entities, [irods_entity_1])
 
     def test_get_by_path_with_multiple_entities(self):
         irods_entities = [
@@ -126,7 +126,7 @@ class _TestBatonIrodsEntityMapper(unittest.TestCase, metaclass=ABCMeta):
         paths = [irods_entity.path for irods_entity in irods_entities]
 
         retrieved_entities = self.create_mapper().get_by_path(paths)
-        self.assertCountEqual(retrieved_entities, irods_entities)
+        self.assertEqual(retrieved_entities, irods_entities)
 
     def test_get_by_path_with_multiple_files_when_some_do_not_exist(self):
         irods_entities = [
@@ -163,11 +163,15 @@ class TestBatonDataObjectMapper(_TestBatonIrodsEntityMapper):
     def test_get_all_in_collection_when_collection_does_not_exist(self):
         self.assertRaises(FileNotFoundError, self.create_mapper().get_all_in_collection, "/invalid")
 
+    def test_get_all_in_collection_when_no_paths_given(self):
+        retrieved = self.create_mapper().get_all_in_collection([])
+        self.assertEqual(len(retrieved), 0)
+
     def test_get_all_in_collection_with_single_collection_containing_one_entity(self):
         data_object_1 = self.create_irods_entity(_NAMES[0], self.metadata_1)
 
         retrieved_entities = self.create_mapper().get_all_in_collection(data_object_1.get_collection_path())
-        self.assertCountEqual(retrieved_entities, [data_object_1])
+        self.assertEqual(retrieved_entities, [data_object_1])
 
     def test_get_all_in_collection_with_single_collection_containing_multiple_entities(self):
         data_object_1 = self.create_irods_entity(_NAMES[0], self.metadata_1)
@@ -175,7 +179,7 @@ class TestBatonDataObjectMapper(_TestBatonIrodsEntityMapper):
         assert data_object_1.get_collection_path() == data_object_2.get_collection_path()
 
         retrieved_entities = self.create_mapper().get_all_in_collection(data_object_1.get_collection_path())
-        self.assertCountEqual(retrieved_entities, [data_object_1, data_object_2])
+        self.assertEqual(retrieved_entities, [data_object_1, data_object_2])
 
     def test_get_all_in_collection_with_multiple_collections(self):
         collections = []
@@ -194,7 +198,7 @@ class TestBatonDataObjectMapper(_TestBatonIrodsEntityMapper):
             collections.append(collection)
 
         retrieved_entities = self.create_mapper().get_all_in_collection(collections)
-        self.assertCountEqual(retrieved_entities, data_objects)
+        self.assertEqual(retrieved_entities, data_objects)
 
     def test_get_all_in_collection_when_one_of_multiple_collections_does_not_exist(self):
         collection_paths = [self.setup_helper.create_collection("collection"), "/invalid"]

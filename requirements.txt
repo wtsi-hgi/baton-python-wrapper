@@ -1,2 +1,2 @@
-git+https://github.com/wtsi-hgi/common-python.git@master#egg=hgicommon
-git+https://github.com/wtsi-hgi/baton-python-wrapper.git@master#egg=baton
+git+https://github.com/wtsi-hgi/python-common.git@develop#egg=hgicommon
+git+https://github.com/wtsi-hgi/python-json.git@develop#egg=hgijson
