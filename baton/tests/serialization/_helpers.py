@@ -9,8 +9,8 @@ from baton._baton_runner import BatonRunner
 from baton.collections import IrodsMetadata
 from baton.tests._helpers import create_data_object
 
-_data_object = None
-_data_object_as_json = None
+_data_object_modification = None
+_data_object_modification_as_json = None
 
 
 def create_data_object_with_baton_json_representation() -> Tuple[DataObject, Dict]:
@@ -21,7 +21,7 @@ def create_data_object_with_baton_json_representation() -> Tuple[DataObject, Dic
     :return: a tuple where the first element is the created data object and the second is it's JSON representation
     according to baton
     """
-    global _data_object, _data_object_as_json
+    global _data_object_modification, _data_object_modification_as_json
 
     # Starting baton is expensive - get view of baton JSON and cache
     if _data_object is None:

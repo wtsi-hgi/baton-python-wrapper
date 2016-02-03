@@ -1,4 +1,3 @@
-import copy
 from typing import Dict, Sequence, Union, Optional, Sized, Iterable, Any, Set
 
 from baton.models import DataObjectReplica
@@ -31,6 +30,18 @@ class IrodsMetadata(Metadata):
     def __setitem__(self, key: str, value: Set[str]):
         assert isinstance(value, set)
         super().__setitem__(key, value)
+
+    @staticmethod
+    def from_metadata(metadata: Metadata) -> Any:
+        """
+        Static factory method to create an equivalent instance of this type from the given `Metadata` instance.
+        :param metadata: the `Metadata` instance to create an instance of this class from
+        :return: the created instance of this class
+        """
+        irods_metadata = IrodsMetadata()
+        for key, value in metadata.items():
+            irods_metadata[key] = {value}
+        return irods_metadata
 
 
 class DataObjectReplicaCollection(Sized, Iterable):
