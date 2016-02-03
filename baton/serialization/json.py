@@ -1,13 +1,13 @@
 import json
 from json import JSONEncoder, JSONDecoder
 
+from baton.collections import IrodsMetadata, DataObjectReplicaCollection
+from baton.models import AccessControl, DataObjectReplica, DataObject, IrodsEntity
 from hgijson.json.builders import MappingJSONEncoderClassBuilder, MappingJSONDecoderClassBuilder
 from hgijson.json.models import JsonPropertyMapping
 
-from baton.collections import IrodsMetadata, DataObjectReplicaCollection
-from baton.models import AccessControl, DataObjectReplica, DataObject, IrodsEntity
-
 # JSON encoder/decoder for `AccessControl`
+from hgijson.json.primitive import IntJSONDecoder, StrJSONEncoder
 from hgijson.types import PrimitiveJsonSerializableType
 
 _ACCESS_CONTROL_LEVEL_TO_STRING_MAP = {
@@ -36,7 +36,7 @@ AccessControlJSONDecoder = MappingJSONDecoderClassBuilder(AccessControl, _access
 
 # JSON encoder/decoder for `DataObjectReplica`
 _data_object_replica_json_mappings = [
-    JsonPropertyMapping("number", "number", "number"),
+    JsonPropertyMapping("number", "number", "number", decoder_cls=IntJSONDecoder),
     JsonPropertyMapping("checksum", "checksum", "checksum"),
     JsonPropertyMapping("location", "host", "host"),
     JsonPropertyMapping("resource", "resource_name", "resource_name"),
