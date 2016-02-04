@@ -4,8 +4,8 @@ from typing import Tuple, Dict
 from testwithbaton.api import TestWithBatonSetup
 
 from baton import DataObject
-from baton._baton_runner import BatonBinary
-from baton._baton_runner import BatonRunner
+from baton.baton_runner import BatonBinary
+from baton.baton_runner import BatonRunner
 from baton.collections import IrodsMetadata
 from baton.tests._helpers import create_data_object
 

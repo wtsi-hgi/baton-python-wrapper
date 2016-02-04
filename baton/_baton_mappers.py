@@ -4,7 +4,7 @@ from typing import Union, Sequence, List
 from hgicommon.collections import SearchCriteria
 from hgicommon.models import SearchCriterion
 
-from baton._baton_runner import BatonBinary, BatonRunner
+from baton.baton_runner import BatonBinary, BatonRunner
 from baton._json_to_model import baton_json_to_collection,baton_json_to_data_object
 from baton._model_to_json import search_criteria_to_baton_json, data_object_to_baton_json, \
     collection_to_baton_json, prepared_specific_query_to_baton_json

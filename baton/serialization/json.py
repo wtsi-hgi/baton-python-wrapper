@@ -53,7 +53,7 @@ class DataObjectReplicaCollectionJSONEncoder(JSONEncoder):
 
     def default(self, data_object_replica_collection: DataObjectReplicaCollection) -> PrimitiveJsonSerializableType:
         if not isinstance(data_object_replica_collection, DataObjectReplicaCollection):
-            super().default(data_object_replica_collection)
+            return super().default(data_object_replica_collection)
         return [self._replica_encoder.default(replica) for replica in data_object_replica_collection.get_all()]
 
 class DataObjectReplicaCollectionJSONDecoder(JSONDecoder):
@@ -64,7 +64,7 @@ class DataObjectReplicaCollectionJSONDecoder(JSONDecoder):
     def decode(self, json_as_string: str, **kwargs) -> DataObjectReplicaCollection:
         json_as_list = json.loads(json_as_string)
         if not isinstance(json_as_list, list):
-            super().decode(json_as_list)
+            return super().decode(json_as_list)
         return DataObjectReplicaCollection([self._replica_decoder.decode(json.dumps(item)) for item in json_as_list])
 
 
@@ -72,7 +72,7 @@ class DataObjectReplicaCollectionJSONDecoder(JSONDecoder):
 class IrodsMetadataJSONEncoder(JSONEncoder):
     def default(self, irods_metadata: IrodsMetadata) -> PrimitiveJsonSerializableType:
         if not isinstance(irods_metadata, IrodsMetadata):
-            super().default(irods_metadata)
+            return super().default(irods_metadata)
         avus = []
         for key, values in irods_metadata.items():
             for value in values:
@@ -86,7 +86,7 @@ class IrodsMetadataJSONDecoder(JSONDecoder):
     def decode(self, json_as_string: str, **kwargs) -> IrodsMetadata:
         json_as_list = json.loads(json_as_string)
         if not isinstance(json_as_list, list):
-            super().decode(json_as_list)
+            return super().decode(json_as_list)
         irods_metadata = IrodsMetadata()
         for item in json_as_list:
             assert isinstance(item, dict)

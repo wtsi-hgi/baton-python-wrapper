@@ -3,7 +3,7 @@ import unittest
 from testwithbaton import TestWithBatonSetup
 
 from baton._baton_mappers import BatonBinary
-from baton._baton_runner import BatonRunner
+from baton.baton_runner import BatonRunner
 from baton.tests._settings import BATON_DOCKER_BUILD
 from baton.tests._stubs import StubBatonRunner
 
