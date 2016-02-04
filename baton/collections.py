@@ -62,7 +62,7 @@ class DataObjectReplicaCollection(Sized, Iterable):
         Gets all of the replica in this collection.
         :return: the replica in this collection
         """
-        return self._data.values()
+        return list(self._data.values())
 
     def get_by_number(self, number: int) -> Optional[DataObjectReplica]:
         """
