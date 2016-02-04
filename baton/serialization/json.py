@@ -7,7 +7,6 @@ from hgijson.json.builders import MappingJSONEncoderClassBuilder, MappingJSONDec
 from hgijson.json.models import JsonPropertyMapping
 
 # JSON encoder/decoder for `AccessControl`
-from hgijson.json.primitive import IntJSONDecoder, StrJSONEncoder
 from hgijson.types import PrimitiveJsonSerializableType
 
 _ACCESS_CONTROL_LEVEL_TO_STRING_MAP = {
@@ -36,7 +35,7 @@ AccessControlJSONDecoder = MappingJSONDecoderClassBuilder(AccessControl, _access
 
 # JSON encoder/decoder for `DataObjectReplica`
 _data_object_replica_json_mappings = [
-    JsonPropertyMapping("number", "number", "number", decoder_cls=IntJSONDecoder),
+    JsonPropertyMapping("number", "number", "number"),
     JsonPropertyMapping("checksum", "checksum", "checksum"),
     JsonPropertyMapping("location", "host", "host"),
     JsonPropertyMapping("resource", "resource_name", "resource_name"),
@@ -62,11 +61,11 @@ class DataObjectReplicaCollectionJSONDecoder(JSONDecoder):
         super().__init__(*args, **kwargs)
         self._replica_decoder = DataObjectReplicaJSONDecoder(*args, **kwargs)   # type: JSONDecoder
 
-    def decode(self, json_as_string: str, **kwargs):
+    def decode(self, json_as_string: str, **kwargs) -> DataObjectReplicaCollection:
         json_as_list = json.loads(json_as_string)
         if not isinstance(json_as_list, list):
             super().decode(json_as_list)
-        return set([self._replica_decoder.decode(json.dumps(item)) for item in json_as_list])
+        return DataObjectReplicaCollection([self._replica_decoder.decode(json.dumps(item)) for item in json_as_list])
 
 
 # JSON encoder/decoder for `IrodsMetadata`

@@ -5,7 +5,7 @@ from frozendict import frozendict
 
 from baton.serialization.json import DataObjectReplicaJSONEncoder, AccessControlJSONEncoder, DataObjectJSONEncoder, \
     IrodsMetadataJSONEncoder, AccessControlJSONDecoder, DataObjectReplicaJSONDecoder, IrodsMetadataJSONDecoder, \
-    DataObjectJSONDecoder
+    DataObjectJSONDecoder, DataObjectReplicaCollectionJSONEncoder, DataObjectReplicaCollectionJSONDecoder
 from baton.tests.serialization._helpers import create_data_object_with_baton_json_representation
 
 
@@ -51,17 +51,17 @@ class TestDataObjectReplicaJSONEncoder(unittest.TestCase):
     """
     def setUp(self):
         self.data_object, self.data_object_as_json = create_data_object_with_baton_json_representation()
-        self.replicate = self.data_object.replicas.get_by_number(1)
-        self.replicate_as_json = self.data_object_as_json["replicates"][0]
-        assert self.replicate_as_json["number"] == 1
+        self.replica = self.data_object.replicas.get_by_number(1)
+        self.replica_as_json = self.data_object_as_json["replicates"][0]
+        assert self.replica_as_json["number"] == 1
 
     def test_default(self):
-        encoded = DataObjectReplicaJSONEncoder().default(self.replicate)
-        self.assertEqual(encoded, self.replicate_as_json)
+        encoded = DataObjectReplicaJSONEncoder().default(self.replica)
+        self.assertEqual(encoded, self.replica_as_json)
 
     def test_with_json_dumps(self):
-        encoded = json.dumps(self.replicate, cls=DataObjectReplicaJSONEncoder)
-        self.assertEqual(json.loads(encoded), self.replicate_as_json)
+        encoded = json.dumps(self.replica, cls=DataObjectReplicaJSONEncoder)
+        self.assertEqual(json.loads(encoded), self.replica_as_json)
 
 
 class TestDataObjectReplicaJSONDecoder(unittest.TestCase):
@@ -70,16 +70,54 @@ class TestDataObjectReplicaJSONDecoder(unittest.TestCase):
     """
     def setUp(self):
         self.data_object, self.data_object_as_json = create_data_object_with_baton_json_representation()
-        self.replicate = self.data_object.replicas.get_by_number(1)
-        self.replicate_as_json_string = json.dumps(self.data_object_as_json["replicates"][0])
+        self.replica = self.data_object.replicas.get_by_number(1)
+        self.replica_as_json_string = json.dumps(self.data_object_as_json["replicates"][0])
 
     def test_decode(self):
-        decoded = DataObjectReplicaJSONDecoder().decode(self.replicate_as_json_string)
-        self.assertEqual(decoded, self.replicate)
+        decoded = DataObjectReplicaJSONDecoder().decode(self.replica_as_json_string)
+        self.assertEqual(decoded, self.replica)
 
     def test_with_json_loads(self):
-        decoded = json.loads(self.replicate_as_json_string, cls=DataObjectReplicaJSONDecoder)
-        self.assertEqual(decoded, self.replicate)
+        decoded = json.loads(self.replica_as_json_string, cls=DataObjectReplicaJSONDecoder)
+        self.assertEqual(decoded, self.replica)
+
+
+class TestDataObjectReplicaCollectionJSONEncoder(unittest.TestCase):
+    """
+    Tests for `DataObjectReplicaCollectionJSONDecoder`.
+    """
+    def setUp(self):
+        self.data_object, self.data_object_as_json = create_data_object_with_baton_json_representation()
+        self.replicas = self.data_object.replicas
+        self.replicas_as_json = self.data_object_as_json["replicates"]
+
+    def test_default(self):
+        encoded = DataObjectReplicaCollectionJSONEncoder().default(self.replicas)
+        self.assertEqual(encoded, self.replicas_as_json)
+
+    def test_with_json_dumps(self):
+        encoded = json.dumps(self.replicas, cls=DataObjectReplicaCollectionJSONEncoder)
+        self.assertEqual(json.loads(encoded), self.replicas_as_json)
+
+
+class TestDataObjectReplicaCollectionJSONDecoder(unittest.TestCase):
+    """
+    Tests for `DataObjectReplicaCollectionJSONDecoder`.
+    """
+    def setUp(self):
+        self.data_object, self.data_object_as_json = create_data_object_with_baton_json_representation()
+        self.replicas = self.data_object.replicas
+        self.replicas_as_json_as_string = json.dumps(self.data_object_as_json["replicates"])
+
+    def test_decode(self):
+        decoded = DataObjectReplicaCollectionJSONDecoder().decode(self.replicas_as_json_as_string)
+        print(decoded)
+        print(self.replicas)
+        self.assertEqual(decoded, self.replicas)
+
+    def test_with_json_loads(self):
+        decoded = json.loads(self.replicas_as_json_as_string, cls=DataObjectReplicaCollectionJSONDecoder)
+        self.assertEqual(decoded, self.replicas)
 
 
 class TestIrodsMetadataJSONEncoder(unittest.TestCase):
