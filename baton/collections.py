@@ -1,3 +1,4 @@
+from copy import copy
 from typing import Dict, Sequence, Union, Optional, Sized, Iterable, Any, Set
 
 from baton.models import DataObjectReplica
@@ -22,10 +23,23 @@ class IrodsMetadata(Metadata):
         assert isinstance(value, set)
         return value
 
+    def add(self, key: str, value: str):
+        """
+        Adds the given value to the set of data stored under the given key.
+        :param key: the set's key
+        :param value: the value to add in the set associated to the given key
+        """
+        if key in self:
+            # Use super to get mutable set
+            super().__getitem__(key).add(value)
+        else:
+            self[key] = {value}
+
     def __getitem__(self, key: str) -> Set[str]:
         value = super().__getitem__(key)
         assert isinstance(value, set)
-        return value
+        # Return copy to keep underlying data immutable
+        return copy(value)
 
     def __setitem__(self, key: str, value: Set[str]):
         assert isinstance(value, set)

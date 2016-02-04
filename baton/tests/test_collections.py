@@ -15,6 +15,15 @@ class TestIrodsMetadata(unittest.TestCase):
     def test_equal(self):
         self.assertEqual(copy.deepcopy(self.metadata), self.metadata)
 
+    def test_add_when_key_does_not_exists(self):
+        self.metadata.add("key", "value")
+        self.assertEqual(self.metadata["key"], {"value"})
+
+    def test_add_when_key_exists(self):
+        self.metadata["key"] = {"value_1"}
+        self.metadata.add("key", "value_2")
+        self.assertEqual(self.metadata["key"], {"value_1", "value_2"})
+
 
 class TestDataObjectReplicaCollection(unittest.TestCase):
     """
