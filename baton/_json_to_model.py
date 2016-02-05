@@ -62,13 +62,10 @@ def _baton_json_to_irods_metadata(baton_json: dict) -> IrodsMetadata:
         key = metadatum_as_json[BATON_ATTRIBUTE_PROPERTY]
         value = metadatum_as_json[BATON_VALUE_PROPERTY]
 
-        if key not in metadata:
-            metadata[key] = {value}
-        else:
-            assert isinstance(metadata[key], set)
-            if value in metadata[key]:
-                raise ValueError("Duplicate values are not allowed in iRODS metadata")
-            metadata[key].add(value)
+        if key in metadata and value in metadata[key]:
+            raise ValueError("Duplicate values are not allowed in iRODS metadata")
+        metadata.add(key, value)
+
     return metadata
 
 

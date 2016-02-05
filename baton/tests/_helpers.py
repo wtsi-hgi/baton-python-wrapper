@@ -65,9 +65,7 @@ def combine_metadata(metadata_collection: Iterable[IrodsMetadata]) -> IrodsMetad
     """
     combined = IrodsMetadata()
     for metadata in metadata_collection:
-        for key, value in metadata.items():
-            if key not in combined:
-                combined[key] = value
-            else:
-                combined[key].add(value)
+        for key, values in metadata.items():
+            for value in values:
+                combined.add(key, value)
     return combined

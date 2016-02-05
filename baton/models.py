@@ -39,7 +39,7 @@ class IrodsEntity(Model, metaclass=ABCMeta):
     """
     from baton.collections import IrodsMetadata
 
-    def __init__(self, path: str, access_control_list: Set[AccessControl]=None, metadata: IrodsMetadata=None):
+    def __init__(self, path: str, access_control_list: Iterable[AccessControl]=None, metadata: IrodsMetadata=None):
         self.path = path
         self.acl = access_control_list
         self.metadata = metadata

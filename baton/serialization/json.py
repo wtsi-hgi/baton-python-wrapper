@@ -92,10 +92,7 @@ class IrodsMetadataJSONDecoder(JSONDecoder):
             assert isinstance(item, dict)
             attribute = item["attribute"]
             value = item["value"]
-            if attribute in irods_metadata:
-                irods_metadata[attribute].add(value)
-            else:
-                irods_metadata[attribute] = {value}
+            irods_metadata.add(attribute, value)
         return irods_metadata
 
 
