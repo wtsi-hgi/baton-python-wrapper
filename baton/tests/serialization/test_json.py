@@ -111,8 +111,6 @@ class TestDataObjectReplicaCollectionJSONDecoder(unittest.TestCase):
 
     def test_decode(self):
         decoded = DataObjectReplicaCollectionJSONDecoder().decode(self.replicas_as_json_as_string)
-        print(decoded)
-        print(self.replicas)
         self.assertEqual(decoded, self.replicas)
 
     def test_with_json_loads(self):

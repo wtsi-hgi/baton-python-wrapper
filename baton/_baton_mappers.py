@@ -1,16 +1,15 @@
 from abc import ABCMeta, abstractmethod
 from typing import Union, Sequence, List
 
-from hgicommon.collections import SearchCriteria
-from hgicommon.models import SearchCriterion
-
-from baton.baton_runner import BatonBinary, BatonRunner
-from baton._json_to_model import baton_json_to_collection,baton_json_to_data_object
 from baton._model_to_json import search_criteria_to_baton_json, data_object_to_baton_json, \
     collection_to_baton_json, prepared_specific_query_to_baton_json
+from baton.baton_runner import BatonBinary, BatonRunner
 from baton.mappers import DataObjectMapper, CollectionMapper, IrodsEntityMapper, EntityType, CustomObjectType, \
     CustomObjectMapper, SpecificQueryMapper
 from baton.models import DataObject, Collection, PreparedSpecificQuery, SpecificQuery
+from baton.serialization.json import DataObjectJSONDecoder, CollectionJSONDecoder
+from hgicommon.collections import SearchCriteria
+from hgicommon.models import SearchCriterion
 
 
 class _BatonIrodsEntityMapper(BatonRunner, IrodsEntityMapper, metaclass=ABCMeta):
@@ -121,7 +120,7 @@ class BatonDataObjectMapper(_BatonIrodsEntityMapper, DataObjectMapper):
         return data_object_to_baton_json(data_object)
 
     def _baton_json_to_irod_entity(self, entity_as_baton_json: dict) -> DataObject:
-        return baton_json_to_data_object(entity_as_baton_json)
+        return DataObjectJSONDecoder().decode_dict(entity_as_baton_json)
 
 
 class BatonCollectionMapper(_BatonIrodsEntityMapper, CollectionMapper):
@@ -133,7 +132,7 @@ class BatonCollectionMapper(_BatonIrodsEntityMapper, CollectionMapper):
         return collection_to_baton_json(collection)
 
     def _baton_json_to_irod_entity(self, entity_as_baton_json: dict) -> Collection:
-        return baton_json_to_collection(entity_as_baton_json)
+        return CollectionJSONDecoder().decode_dict(entity_as_baton_json)
 
 
 class BatonCustomObjectMapper(BatonRunner, CustomObjectMapper, metaclass=ABCMeta):
