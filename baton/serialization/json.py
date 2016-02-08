@@ -2,9 +2,11 @@ import json
 from json import JSONEncoder, JSONDecoder
 
 from baton.collections import IrodsMetadata, DataObjectReplicaCollection
-from baton.models import AccessControl, DataObjectReplica, DataObject, IrodsEntity
+from baton.models import AccessControl, DataObjectReplica, DataObject, IrodsEntity, Collection
 from hgijson.json.builders import MappingJSONEncoderClassBuilder, MappingJSONDecoderClassBuilder
+from hgijson.json.misc import DictJSONDecoder
 from hgijson.json.models import JsonPropertyMapping
+
 
 # JSON encoder/decoder for `AccessControl`
 from hgijson.types import PrimitiveJsonSerializableType
@@ -56,16 +58,19 @@ class DataObjectReplicaCollectionJSONEncoder(JSONEncoder):
             return super().default(data_object_replica_collection)
         return [self._replica_encoder.default(replica) for replica in data_object_replica_collection.get_all()]
 
-class DataObjectReplicaCollectionJSONDecoder(JSONDecoder):
+class DataObjectReplicaCollectionJSONDecoder(JSONDecoder, DictJSONDecoder):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._replica_decoder = DataObjectReplicaJSONDecoder(*args, **kwargs)   # type: JSONDecoder
 
     def decode(self, json_as_string: str, **kwargs) -> DataObjectReplicaCollection:
-        json_as_list = json.loads(json_as_string)
-        if not isinstance(json_as_list, list):
-            return super().decode(json_as_list)
-        return DataObjectReplicaCollection([self._replica_decoder.decode(json.dumps(item)) for item in json_as_list])
+        json_as_dict = json.loads(json_as_string)
+        return self.decode_dict(json_as_dict)
+
+    def decode_dict(self, json_as_dict: dict) -> DataObjectReplicaCollection:
+        if not isinstance(json_as_dict, list):
+            return super().decode(json_as_dict)
+        return DataObjectReplicaCollection([self._replica_decoder.decode(json.dumps(item)) for item in json_as_dict])
 
 
 # JSON encoder/decoder for `IrodsMetadata`
@@ -82,13 +87,16 @@ class IrodsMetadataJSONEncoder(JSONEncoder):
                 })
         return avus
 
-class IrodsMetadataJSONDecoder(JSONDecoder):
+class IrodsMetadataJSONDecoder(JSONDecoder, DictJSONDecoder):
     def decode(self, json_as_string: str, **kwargs) -> IrodsMetadata:
-        json_as_list = json.loads(json_as_string)
-        if not isinstance(json_as_list, list):
-            return super().decode(json_as_list)
+        json_as_dict = json.loads(json_as_string)
+        return self.decode_dict(json_as_dict)
+
+    def decode_dict(self, json_as_dict: dict) -> IrodsMetadata:
+        if not isinstance(json_as_dict, list):
+            return super().decode(json_as_dict)
         irods_metadata = IrodsMetadata()
-        for item in json_as_list:
+        for item in json_as_dict:
             assert isinstance(item, dict)
             attribute = item["attribute"]
             value = item["value"]
@@ -98,14 +106,12 @@ class IrodsMetadataJSONDecoder(JSONDecoder):
 
 # JSON encoder/decoder for `IrodsEntity`
 _irods_entity_json_mappings = [
-    JsonPropertyMapping(None, "path", "path",
-                        json_property_getter=lambda json_as_dict: json_as_dict["collection"] + "/" + json_as_dict["data_object"]),
     JsonPropertyMapping("collection", object_property_getter=lambda irods_entity: irods_entity.get_collection_path()),
     JsonPropertyMapping("data_object", object_property_getter=lambda irods_entity: irods_entity.get_name()),
     JsonPropertyMapping("access", "acl", "access_control_list",
                         encoder_cls=AccessControlJSONEncoder, decoder_cls=AccessControlJSONDecoder),
     JsonPropertyMapping("avus", "metadata", "metadata",
-                        encoder_cls=IrodsMetadataJSONEncoder, decoder_cls=IrodsMetadataJSONDecoder)
+                        encoder_cls=IrodsMetadataJSONEncoder, decoder_cls=IrodsMetadataJSONDecoder, optional=True)
 ]
 _IrodsEntityJSONEncoder = MappingJSONEncoderClassBuilder(IrodsEntity, _irods_entity_json_mappings).build()
 _IrodsEntityJSONDecoder = MappingJSONDecoderClassBuilder(IrodsEntity, _irods_entity_json_mappings).build()
@@ -113,8 +119,18 @@ _IrodsEntityJSONDecoder = MappingJSONDecoderClassBuilder(IrodsEntity, _irods_ent
 
 # JSON encoder/decoder for `DataObject`
 _data_object_json_mappings = [
+    JsonPropertyMapping(None, "path", "path",
+                        json_property_getter=lambda json_as_dict: json_as_dict["collection"] + "/" + json_as_dict["data_object"]),
     JsonPropertyMapping("replicates", "replicas", "replicas",
                         encoder_cls=DataObjectReplicaCollectionJSONEncoder, decoder_cls=DataObjectReplicaCollectionJSONDecoder)
 ]
 DataObjectJSONEncoder = MappingJSONEncoderClassBuilder(DataObject, _data_object_json_mappings, _IrodsEntityJSONEncoder).build()
 DataObjectJSONDecoder = MappingJSONDecoderClassBuilder(DataObject, _data_object_json_mappings, _IrodsEntityJSONDecoder).build()
+
+
+# JSON encoder/decoder for `Collection`
+_collection_json_mappings = [
+    JsonPropertyMapping(None, "path", "path", json_property_getter=lambda json_as_dict: json_as_dict["collection"])
+]
+CollectionJSONEncoder = MappingJSONEncoderClassBuilder(Collection, _collection_json_mappings, _IrodsEntityJSONEncoder).build()
+CollectionJSONDecoder = MappingJSONDecoderClassBuilder(Collection, _collection_json_mappings, _IrodsEntityJSONDecoder).build()
