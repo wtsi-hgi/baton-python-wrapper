@@ -4,12 +4,6 @@ from abc import ABCMeta, abstractmethod
 from typing import Sequence
 from unittest.mock import MagicMock
 
-from hgicommon.collections import SearchCriteria
-from hgicommon.enums import ComparisonOperator
-from hgicommon.models import SearchCriterion
-from testwithbaton import TestWithBatonSetup
-from testwithbaton.helpers import SetupHelper
-
 from baton._baton_mappers import BatonDataObjectMapper, BatonCollectionMapper, _BatonIrodsEntityMapper, \
     BatonSpecificQueryMapper
 from baton.collections import IrodsMetadata
@@ -17,6 +11,11 @@ from baton.models import IrodsEntity, DataObject, Collection, PreparedSpecificQu
 from baton.tests._helpers import combine_metadata, create_data_object, create_collection
 from baton.tests._settings import BATON_DOCKER_BUILD
 from baton.tests._stubs import StubBatonCustomObjectMapper
+from hgicommon.collections import SearchCriteria
+from hgicommon.enums import ComparisonOperator
+from hgicommon.models import SearchCriterion
+from testwithbaton import TestWithBatonSetup
+from testwithbaton.helpers import SetupHelper
 
 _NAMES = ["name_1", "name_2", "name_3"]
 _ATTRIBUTES = ["attribute_1", "attribute_2"]
@@ -239,12 +238,12 @@ class TestBatonCustomObjectMapper(unittest.TestCase):
 
         self.mapper = StubBatonCustomObjectMapper(
                 self.test_with_baton.baton_location, self.test_with_baton.irods_test_server.users[0].zone)
-        self.mapper._object_serialiser = MagicMock(wraps=self.mapper._object_serialiser)
+        self.mapper._object_deserialiser = MagicMock(wraps=self.mapper._object_deserialiser)
 
     def test_get_using_specific_query(self):
         results = self.mapper._get_with_prepared_specific_query(PreparedSpecificQuery("ls"))
         self.assertIsInstance(results, list)
-        self.assertEquals(len(results), self.mapper._object_serialiser.call_count)
+        self.assertEquals(len(results), self.mapper._object_deserialiser.call_count)
 
 
 class TestBatonInstalledSpecificQueryMapper(unittest.TestCase):
@@ -262,9 +261,7 @@ class TestBatonInstalledSpecificQueryMapper(unittest.TestCase):
     def test_get_all(self):
         iquest_ls_response = self.setup_helper.run_icommand(["iquest", "--sql", "ls"])
         expected = TestBatonInstalledSpecificQueryMapper._parse_iquest_ls(iquest_ls_response)
-
         specific_queries = self.mapper.get_all()
-
         self.assertCountEqual(specific_queries, expected)
 
     @staticmethod

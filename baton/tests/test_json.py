@@ -3,10 +3,12 @@ import unittest
 
 from frozendict import frozendict
 
-from baton.serialization.json import DataObjectReplicaJSONEncoder, AccessControlJSONEncoder, DataObjectJSONEncoder, \
+from baton.json import DataObjectReplicaJSONEncoder, AccessControlJSONEncoder, DataObjectJSONEncoder, \
     IrodsMetadataJSONEncoder, AccessControlJSONDecoder, DataObjectReplicaJSONDecoder, IrodsMetadataJSONDecoder, \
-    DataObjectJSONDecoder, DataObjectReplicaCollectionJSONEncoder, DataObjectReplicaCollectionJSONDecoder
-from baton.tests.serialization._helpers import create_data_object_with_baton_json_representation
+    DataObjectJSONDecoder, DataObjectReplicaCollectionJSONEncoder, DataObjectReplicaCollectionJSONDecoder, \
+    CollectionJSONEncoder, CollectionJSONDecoder
+from baton.tests._json_helpers import create_collection_with_baton_json_representation, \
+    create_data_object_with_baton_json_representation
 
 
 class TestAccessControlJSONEncoder(unittest.TestCase):
@@ -132,7 +134,7 @@ class TestIrodsMetadataJSONEncoder(unittest.TestCase):
         self.assertCountEqual(encoded, self.metadata_as_json)
 
     def test_with_json_dumps(self):
-        encoded = json.dumps(self.metadata_as_json, cls=IrodsMetadataJSONEncoder)
+        encoded = json.dumps(self.metadata, cls=IrodsMetadataJSONEncoder)
         self.assertCountEqual(json.loads(encoded), self.metadata_as_json)
 
 
@@ -209,6 +211,39 @@ class TestDataObjectJSONDecoder(unittest.TestCase):
     def test_with_json_loads(self):
         decoded = json.loads(self.data_object_as_json_string, cls=DataObjectJSONDecoder)
         self.assertEqual(decoded, self.data_object)
+
+
+class TestCollectionJSONEncoder(unittest.TestCase):
+    """
+    Tests for `CollectionJSONEncoder`.
+    """
+    def setUp(self):
+        self.collection, self.collection_as_json = create_collection_with_baton_json_representation()
+
+    def test_default(self):
+        encoded = CollectionJSONEncoder().default(self.collection)
+        self.assertCountEqual(encoded, self.collection_as_json)
+
+    def test_with_json_dumps(self):
+        encoded = json.dumps(self.collection_as_json, cls=CollectionJSONEncoder)
+        self.assertCountEqual(json.loads(encoded), self.collection_as_json)
+
+
+class TestCollectionJSONDecoder(unittest.TestCase):
+    """
+    Tests for `CollectionJSONDecoder`.
+    """
+    def setUp(self):
+        self.collection, self.collection_as_json = create_collection_with_baton_json_representation()
+        self.collection_as_json_string = json.dumps(self.collection_as_json)
+
+    def test_decode(self):
+        decoded = CollectionJSONDecoder().decode(self.collection_as_json_string)
+        self.assertEqual(decoded, self.collection)
+
+    def test_with_json_loads(self):
+        decoded = json.loads(self.collection_as_json_string, cls=CollectionJSONDecoder)
+        self.assertEqual(decoded, self.collection)
 
 
 if __name__ == "__main__":
