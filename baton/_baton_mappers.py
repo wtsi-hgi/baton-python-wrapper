@@ -1,16 +1,17 @@
 from abc import ABCMeta, abstractmethod
 from typing import Union, Sequence, List
 
-from hgicommon.collections import SearchCriteria
-from hgicommon.models import SearchCriterion
+from baton._constants import BATON_SPECIFIC_QUERY_PROPERTY, IRODS_SPECIFIC_QUERY_LS
 
 from baton.baton_runner import BatonBinary, BatonRunner
-from baton._json_to_model import baton_json_to_collection,baton_json_to_data_object
-from baton._model_to_json import search_criteria_to_baton_json, data_object_to_baton_json, \
-    collection_to_baton_json, prepared_specific_query_to_baton_json
+from baton.json import DataObjectJSONDecoder, CollectionJSONDecoder, DataObjectJSONEncoder, \
+    CollectionJSONEncoder, SearchCriteriaJSONEncoder, PreparedSpecificQueryJSONEncoder, \
+    SpecificQueryJSONDecoder
 from baton.mappers import DataObjectMapper, CollectionMapper, IrodsEntityMapper, EntityType, CustomObjectType, \
     CustomObjectMapper, SpecificQueryMapper
 from baton.models import DataObject, Collection, PreparedSpecificQuery, SpecificQuery
+from hgicommon.collections import SearchCriteria
+from hgicommon.models import SearchCriterion
 
 
 class _BatonIrodsEntityMapper(BatonRunner, IrodsEntityMapper, metaclass=ABCMeta):
@@ -22,7 +23,10 @@ class _BatonIrodsEntityMapper(BatonRunner, IrodsEntityMapper, metaclass=ABCMeta)
         if isinstance(metadata_search_criteria, SearchCriterion):
             metadata_search_criteria = SearchCriteria([metadata_search_criteria])
 
-        baton_json = search_criteria_to_baton_json(metadata_search_criteria)
+        # FIXME
+        # , "--zone", self._irods_query_zone
+
+        baton_json = SearchCriteriaJSONEncoder().default(metadata_search_criteria)
         arguments = self._create_entity_query_arguments(load_metadata)
 
         # TODO: "--obj" limits search to object metadata only and "--coll" for collections
@@ -38,7 +42,8 @@ class _BatonIrodsEntityMapper(BatonRunner, IrodsEntityMapper, metaclass=ABCMeta)
 
         baton_json = []
         for path in paths:
-            baton_json.append(self._path_to_baton_json(path))
+            path_json = self._path_to_baton_json(path)
+            baton_json.append(path_json)
         arguments = self._create_entity_query_arguments(load_metadata)
 
         baton_out_as_json = self.run_baton_query(BatonBinary.BATON_LIST, arguments, input_data=baton_json)
@@ -50,7 +55,7 @@ class _BatonIrodsEntityMapper(BatonRunner, IrodsEntityMapper, metaclass=ABCMeta)
         :param load_metadata: whether baton should load metadata
         :return: the arguments to use with baton
         """
-        arguments = ["--acl", "--replicate", "--zone", self._irods_query_zone]
+        arguments = ["--acl", "--replicate"]
         if load_metadata:
             arguments.append("--avu")
         return arguments
@@ -103,7 +108,8 @@ class BatonDataObjectMapper(_BatonIrodsEntityMapper, DataObjectMapper):
         baton_json = []
         for path in collection_paths:
             collection = Collection(path)
-            baton_json.append(collection_to_baton_json(collection))
+            collection_json = CollectionJSONEncoder().default(collection)
+            baton_json.append(collection_json)
         arguments = self._create_entity_query_arguments(load_metadata)
         arguments.append("--contents")
 
@@ -118,10 +124,10 @@ class BatonDataObjectMapper(_BatonIrodsEntityMapper, DataObjectMapper):
 
     def _path_to_baton_json(self, path: str) -> dict:
         data_object = DataObject(path)
-        return data_object_to_baton_json(data_object)
+        return DataObjectJSONEncoder().default(data_object)
 
     def _baton_json_to_irod_entity(self, entity_as_baton_json: dict) -> DataObject:
-        return baton_json_to_data_object(entity_as_baton_json)
+        return DataObjectJSONDecoder().decode_dict(entity_as_baton_json)
 
 
 class BatonCollectionMapper(_BatonIrodsEntityMapper, CollectionMapper):
@@ -130,10 +136,10 @@ class BatonCollectionMapper(_BatonIrodsEntityMapper, CollectionMapper):
     """
     def _path_to_baton_json(self, path: str) -> dict:
         collection = Collection(path)
-        return collection_to_baton_json(collection)
+        return CollectionJSONEncoder().default(collection)
 
     def _baton_json_to_irod_entity(self, entity_as_baton_json: dict) -> Collection:
-        return baton_json_to_collection(entity_as_baton_json)
+        return CollectionJSONDecoder().decode_dict(entity_as_baton_json)
 
 
 class BatonCustomObjectMapper(BatonRunner, CustomObjectMapper, metaclass=ABCMeta):
@@ -141,21 +147,23 @@ class BatonCustomObjectMapper(BatonRunner, CustomObjectMapper, metaclass=ABCMeta
     Mapper for custom objects, implemented using baton.
     """
     def _get_with_prepared_specific_query(self, specific_query: PreparedSpecificQuery) -> Sequence[CustomObjectType]:
-        specific_query_as_baton_json = prepared_specific_query_to_baton_json(specific_query)
+        specific_query_as_baton_json = {
+            BATON_SPECIFIC_QUERY_PROPERTY: PreparedSpecificQueryJSONEncoder().default(specific_query)
+        }
 
         custom_objects_as_baton_json = self.run_baton_query(
                 BatonBinary.BATON_SPECIFIC_QUERY, input_data=specific_query_as_baton_json)
 
-        custom_objects = [self._object_serialiser(custom_object_as_baton_json)
+        custom_objects = [self._object_deserialiser(custom_object_as_baton_json)
                           for custom_object_as_baton_json in custom_objects_as_baton_json]
 
         return custom_objects
 
     @abstractmethod
-    def _object_serialiser(self, object_as_json: dict) -> CustomObjectType:
+    def _object_deserialiser(self, object_as_json: dict) -> CustomObjectType:
         """
         Function used to take the JSON representation of the custom object returned by the specific query and produce a
-        model.
+        Python model.
         :param object_as_json: JSON representation of the custom object
         :return: Python model of the custom object
         """
@@ -167,12 +175,8 @@ class BatonSpecificQueryMapper(BatonCustomObjectMapper[SpecificQuery], SpecificQ
     Mapper for specific queries installed on iRODS, implemented using baton.
     """
     def get_all(self) -> Sequence[SpecificQuery]:
-        retrieve_query = PreparedSpecificQuery("ls")
+        retrieve_query = PreparedSpecificQuery(IRODS_SPECIFIC_QUERY_LS)
         return self._get_with_prepared_specific_query(retrieve_query)
 
-    def _object_serialiser(self, object_as_json: dict) -> SpecificQuery:
-        # TODO: Strings -> Constants (probably should move to _json_to_model.py)
-        return SpecificQuery(
-            object_as_json["alias"],
-            object_as_json["sqlStr"]
-        )
+    def _object_deserialiser(self, object_as_json: dict) -> SpecificQuery:
+        return SpecificQueryJSONDecoder().decode_dict(object_as_json)

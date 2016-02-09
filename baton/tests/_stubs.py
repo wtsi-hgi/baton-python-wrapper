@@ -12,5 +12,5 @@ class StubBatonCustomObjectMapper(BatonCustomObjectMapper[dict]):
     """
     Stub `BatonCustomObjectMapper`.
     """
-    def _object_serialiser(self, object_as_json: dict) -> dict:
+    def _object_deserialiser(self, object_as_json: dict) -> dict:
         return object_as_json

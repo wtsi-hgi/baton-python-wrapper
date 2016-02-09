@@ -5,6 +5,7 @@ import subprocess
 from abc import ABCMeta
 from datetime import timedelta
 from enum import Enum
+from time import sleep
 from typing import Any, List
 
 from baton._constants import BATON_ERROR_MESSAGE_KEY, BATON_FILE_DOES_NOT_EXIST_ERROR_CODE, BATON_ERROR_PROPERTY,\
@@ -64,7 +65,7 @@ class BatonRunner(metaclass=ABCMeta):
         baton_out = self._run_command(program_arguments, input_data=input_data)
         logging.debug("baton output: %s" % baton_out)
 
-        if baton_out[0] != '[':
+        if len(baton_out) > 0 and baton_out[0] != '[':
             # If information about multiple files is returned, baton does not return valid JSON - it returns a line
             # separated list of JSON, where each line corresponds to a different file
             baton_out = "[%s]" % baton_out.replace('\n', ',')
@@ -88,7 +89,6 @@ class BatonRunner(metaclass=ABCMeta):
         """
         process = subprocess.Popen(arguments, stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.PIPE)
 
-
         if isinstance(input_data, list):
             for to_write in input_data:
                 to_write_as_json = json.dumps(to_write)
@@ -99,8 +99,8 @@ class BatonRunner(metaclass=ABCMeta):
 
         out, error = process.communicate(input=input_data, timeout=self.timeout_queries_after)
 
-        if out == "" and error != "":
-            IOError(error)
+        if len(out) == 0 and len(error) > 0:
+            raise IOError(error)
 
         return out.decode(output_encoding).rstrip()
 
