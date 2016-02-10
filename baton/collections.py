@@ -3,6 +3,8 @@ from typing import Dict, Sequence, Union, Optional, Sized, Iterable, Any, Set
 
 from baton.models import DataObjectReplica
 from hgicommon.collections import Metadata
+from hgicommon.enums import ComparisonOperator
+from hgicommon.models import SearchCriterion
 
 
 class IrodsMetadata(Metadata):
@@ -157,3 +159,108 @@ class DataObjectReplicaCollection(Sized, Iterable):
 
     def __iter__(self) -> Iterable[DataObjectReplica]:
         return self._data.values().__iter__()
+
+
+
+# class SearchCriteria(Sequence):
+#     """
+#     A collection of `SearchCriterion`.
+#     """
+#     _DUPLICATE_ERROR_MESSAGE = "Search criterion based on the attribute `%s` already added"
+#     _SENTINEL = SearchCriterion("", "", ComparisonOperator.EQUALS)
+#
+#     def __init__(self, search_criterions: Iterable[SearchCriterion]=()):
+#         self._data = []
+#         for search_criterion in search_criterions:
+#             self.append(search_criterion)
+#
+#     def append(self, search_criterion: SearchCriterion):
+#         """
+#         Appends a search criterion to this collection.
+#         :param search_criterion: the search criterion to add
+#         """
+#         if self.find_by_attribute(search_criterion.attribute) is not None:
+#             raise ValueError(SearchCriteria._DUPLICATE_ERROR_MESSAGE)
+#         self._data.append(search_criterion)
+#
+#     def extend(self, search_criteria: Iterable[SearchCriterion]):
+#         """
+#         Extend this collection by appending search criterion from another search criteria.
+#         :param search_criteria: the search criteria to merge
+#         """
+#         for search_criteria in search_criteria:
+#             self.append(search_criteria)
+#
+#     def pop(self, index: int) -> SearchCriterion:
+#         """
+#         Removes the search criterion from this collection at the given index.
+#         :param index: index of the search criteria to remove
+#         """
+#         return self._data.pop(index)
+#
+#     def find_by_attribute(self, attribute: str) -> Optional[SearchCriterion]:
+#         """
+#         Find search criteria in this collection based on the attribute it searches on.
+#         :param attribute: the search criterion attribute to search on
+#         :return: the matched search criterion
+#         """
+#         for existing_search_criterion in self:
+#             if existing_search_criterion.attribute == attribute:
+#                 return existing_search_criterion
+#         return None
+#
+#     def remove_by_attribute(self, attribute: str):
+#         """
+#         Remove search criteria that uses the given attribute from this collection.
+#         :param attribute: the search criteria attribute to search on
+#         """
+#         if self.find_by_attribute(attribute) is None:
+#             raise ValueError("Search criteria with the given attribute was not found")
+#         deleted = False
+#         index = 0
+#         while not deleted:
+#             if self[index].attribute == attribute:
+#                 del self[index]
+#                 deleted = True
+#             index += 1
+#
+#     def __delitem__(self, index: int):
+#         del self._data[index]
+#
+#     def __eq__(self, other: Any) -> bool:
+#         if type(other) != type(self):
+#             return False
+#         return other._data == self._data
+#
+#     def __iter__(self) -> Iterable[SearchCriterion]:
+#         return self._data.__iter__()
+#
+#     def __len__(self) -> int:
+#         return len(self._data)
+#
+#     def __getitem__(self, index: int) -> Any:
+#         return self._data[index]
+#
+#     def __setitem__(self, index: int, search_criterion: SearchCriterion):
+#         if len(self._data) <= index:
+#             raise IndexError("Index out of range")
+#
+#         # Temp replace current so checking for search criteria with same attribute ignores the value at the replace
+#         # index
+#         current_value = self._data[index]
+#         self._data[index] = SearchCriteria._SENTINEL
+#
+#         if self.find_by_attribute(search_criterion.attribute):
+#             self._data[index] = current_value
+#             raise ValueError(SearchCriteria._DUPLICATE_ERROR_MESSAGE)
+#
+#         self._data[index] = search_criterion
+#
+#     def __contains__(self, value: SearchCriterion) -> bool:
+#         return value in self._data
+#
+#     def __str__(self):
+#         return str(self._data)
+#
+#     def __repr__(self) -> str:
+#         return "<%s object at %s: %s>" % (type(self), id(self), str(self))

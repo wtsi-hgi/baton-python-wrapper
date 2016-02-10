@@ -1,5 +1,7 @@
 from abc import ABCMeta, abstractmethod
-from typing import Union, Sequence, List
+from typing import Union, Sequence, List, Iterable
+
+import collections
 
 from baton._constants import BATON_SPECIFIC_QUERY_PROPERTY, IRODS_SPECIFIC_QUERY_LS
 
@@ -18,10 +20,13 @@ class _BatonIrodsEntityMapper(BatonRunner, IrodsEntityMapper, metaclass=ABCMeta)
     """
     Mapper for iRODS entities, implemented using baton.
     """
-    def get_by_metadata(self, metadata_search_criteria: Union[SearchCriterion, SearchCriteria],
+    def get_by_metadata(self, metadata_search_criteria: Union[SearchCriterion, Iterable[SearchCriterion]],
                     load_metadata: bool=True) -> Sequence[EntityType]:
-        if isinstance(metadata_search_criteria, SearchCriterion):
-            metadata_search_criteria = SearchCriteria([metadata_search_criteria])
+        if not isinstance(metadata_search_criteria, collections.Iterable):
+            metadata_search_criteria = [metadata_search_criteria]
+
+        # TODO: Check that criteria do not include duplicates
+        metadata_search_criteria = SearchCriteria([metadata_search_criteria])
 
         # FIXME
         # , "--zone", self._irods_query_zone

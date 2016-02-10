@@ -1,5 +1,5 @@
 from abc import ABCMeta, abstractmethod
-from typing import Generic, Union, Sequence
+from typing import Generic, Union, Sequence, Iterable
 
 from hgicommon.collections import SearchCriteria
 from hgicommon.models import SearchCriterion
@@ -13,7 +13,7 @@ class IrodsEntityMapper(Generic[EntityType], metaclass=ABCMeta):
     iRODS entity mapper.
     """
     @abstractmethod
-    def get_by_metadata(self, metadata_search_criteria: Union[SearchCriterion, SearchCriteria],
+    def get_by_metadata(self, metadata_search_criteria: Union[SearchCriterion, Iterable[SearchCriterion]],
                         load_metadata: bool=True) -> Sequence[EntityType]:
         """
         Gets files from iRODS that have metadata that matches the given search criteria.
