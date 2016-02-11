@@ -1,16 +1,16 @@
 from abc import ABCMeta, abstractmethod
-from typing import Union, Sequence, List
+from typing import Union, Sequence, List, Iterable
 
-from baton._constants import BATON_SPECIFIC_QUERY_PROPERTY, IRODS_SPECIFIC_QUERY_LS
+import collections
 
-from baton.baton_runner import BatonBinary, BatonRunner
-from baton.json import DataObjectJSONDecoder, CollectionJSONDecoder, DataObjectJSONEncoder, \
-    CollectionJSONEncoder, SearchCriteriaJSONEncoder, PreparedSpecificQueryJSONEncoder, \
-    SpecificQueryJSONDecoder
+from baton._constants import BATON_SPECIFIC_QUERY_PROPERTY, IRODS_SPECIFIC_QUERY_LS, BATON_AVU_PROPERTY
+
+from baton._baton_runner import BatonBinary, BatonRunner
+from baton.json import DataObjectJSONDecoder, CollectionJSONDecoder, DataObjectJSONEncoder, CollectionJSONEncoder, \
+    PreparedSpecificQueryJSONEncoder, SpecificQueryJSONDecoder, SearchCriterionJSONEncoder
 from baton.mappers import DataObjectMapper, CollectionMapper, IrodsEntityMapper, EntityType, CustomObjectType, \
     CustomObjectMapper, SpecificQueryMapper
 from baton.models import DataObject, Collection, PreparedSpecificQuery, SpecificQuery
-from hgicommon.collections import SearchCriteria
 from hgicommon.models import SearchCriterion
 
 
@@ -18,15 +18,22 @@ class _BatonIrodsEntityMapper(BatonRunner, IrodsEntityMapper, metaclass=ABCMeta)
     """
     Mapper for iRODS entities, implemented using baton.
     """
-    def get_by_metadata(self, metadata_search_criteria: Union[SearchCriterion, SearchCriteria],
+    def get_by_metadata(self, metadata_search_criteria: Union[SearchCriterion, Iterable[SearchCriterion]],
                     load_metadata: bool=True) -> Sequence[EntityType]:
-        if isinstance(metadata_search_criteria, SearchCriterion):
-            metadata_search_criteria = SearchCriteria([metadata_search_criteria])
+        if not isinstance(metadata_search_criteria, collections.Iterable):
+            metadata_search_criteria = [metadata_search_criteria]
 
-        # FIXME
-        # , "--zone", self._irods_query_zone
+        used_attributes = dict()
+        for search_criteria in metadata_search_criteria:    # type: SearchCriterion
+            attribute = search_criteria.attribute
+            if search_criteria.attribute in used_attributes:
+                raise ValueError("baton does not allow multiple constraints on the same attribute: \"%s\"" % attribute)
+            else:
+                used_attributes[attribute] = True
 
-        baton_json = SearchCriteriaJSONEncoder().default(metadata_search_criteria)
+        baton_json = {
+            BATON_AVU_PROPERTY: SearchCriterionJSONEncoder().default(metadata_search_criteria)
+        }
         arguments = self._create_entity_query_arguments(load_metadata)
 
         # TODO: "--obj" limits search to object metadata only and "--coll" for collections

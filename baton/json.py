@@ -8,18 +8,16 @@ from baton._constants import BATON_ACL_LEVELS, BATON_ACL_OWNER_PROPERTY, BATON_A
     BATON_COLLECTION_PROPERTY, BATON_DATA_OBJECT_PROPERTY, BATON_REPLICA_PROPERTY, \
     BATON_SEARCH_CRITERION_ATTRIBUTE_PROPERTY, BATON_SEARCH_CRITERION_VALUE_PROPERTY,\
     BATON_SEARCH_CRITERION_COMPARISON_OPERATOR_PROPERTY, BATON_SEARCH_CRITERION_COMPARISON_OPERATORS, \
-    BATON_SEARCH_CRITERIA_PROPERTY, BATON_SPECIFIC_QUERY_SQL_PROPERTY, BATON_SPECIFIC_QUERY_ARGUMENTS_PROPERTY, \
+    BATON_SPECIFIC_QUERY_SQL_PROPERTY, BATON_SPECIFIC_QUERY_ARGUMENTS_PROPERTY, \
     BATON_SPECIFIC_QUERY_ALIAS_PROPERTY
 from baton.collections import IrodsMetadata, DataObjectReplicaCollection
 from baton.models import AccessControl, DataObjectReplica, DataObject, IrodsEntity, Collection, PreparedSpecificQuery, \
     SpecificQuery
-from hgicommon.collections import SearchCriteria
 from hgicommon.enums import ComparisonOperator
 from hgicommon.models import SearchCriterion
 from hgijson.json.builders import MappingJSONEncoderClassBuilder, MappingJSONDecoderClassBuilder
 from hgijson.json.interfaces import DictJSONDecoder
 from hgijson.json.models import JsonPropertyMapping
-
 
 # JSON encoder/decoder for `AccessControl`
 from hgijson.types import PrimitiveJsonSerializableType
@@ -168,15 +166,6 @@ _search_criterion_json_mappings = [
 ]
 SearchCriterionJSONEncoder = MappingJSONEncoderClassBuilder(SearchCriterion, _search_criterion_json_mappings).build()
 SearchCriterionJSONDecoder = MappingJSONDecoderClassBuilder(SearchCriterion, _search_criterion_json_mappings).build()
-
-
-# JSON encoder for `SearchCriteria`
-_search_criteria_json_mappings = [
-    # FIXME: Access to internal variable here is bad - fix when `SearchCriteria` model has been changed
-    JsonPropertyMapping(BATON_SEARCH_CRITERIA_PROPERTY, "_data",
-                        encoder_cls=SearchCriterionJSONEncoder, decoder_cls=SearchCriterionJSONDecoder),
-]
-SearchCriteriaJSONEncoder = MappingJSONEncoderClassBuilder(SearchCriteria, _search_criteria_json_mappings).build()
 
 
 # JSON encoder/decoder for `SpecificQuery`

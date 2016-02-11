@@ -23,7 +23,7 @@ git+https://github.com/wtsi-hgi/common-python.git@master#egg=hgicommon
 ### API
 ```python
 from baton import connect_to_irods_with_baton, Connection, IrodsEntity, IrodsMetadata, DataObject, Collection, SpecificQuery
-from hgicommon import SearchCriteria, SearchCriterion, ComparisonOperator
+from hgicommon import SearchCriterion, ComparisonOperator
 
 # Setup connection to iRODS using baton
 irods = connect_to_irods_with_baton("/where/baton/binaries/are/installed/", "irods_query_zone") # type: Connection
@@ -35,10 +35,9 @@ irods.collection.get_by_path(["/collection", "/other_collection"])   # type: Lis
 # Setup search for data objects or collections based on their metadata
 search_criterion_1 = SearchCriterion("attribute", "match_value", ComparisonOperator.EQUALS)
 search_criterion_2 = SearchCriterion("other_attribute", "other_match_value", ComparisonOperator.LESS_THAN)
-search_criteria = SearchCriteria({search_criterion_1, search_criterion_2})  # Collection of `SearchCriterion`
 # Do search
-irods.data_object.get_by_metadata(search_criteria)   # type: List[DataObject]
-irods.collection.get_by_metadata(search_criteria)   # type: List[Collection]
+irods.data_object.get_by_metadata(search_criterion_1)   # type: List[DataObject]
+irods.collection.get_by_metadata([search_criterion_1, search_criterion_2])   # type: List[Collection]
 
 # Get data objects in a collection(s)
 irods.data_object.get_in_collection("/collection")    # type: List[DataObject]
