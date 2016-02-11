@@ -5,7 +5,6 @@ import subprocess
 from abc import ABCMeta
 from datetime import timedelta
 from enum import Enum
-from time import sleep
 from typing import Any, List
 
 from baton._constants import BATON_ERROR_MESSAGE_KEY, BATON_FILE_DOES_NOT_EXIST_ERROR_CODE, BATON_ERROR_PROPERTY,\

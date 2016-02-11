@@ -1,4 +1,3 @@
-import logging
 import unittest
 from abc import ABCMeta, abstractmethod
 from typing import Sequence
@@ -11,7 +10,6 @@ from baton.models import IrodsEntity, DataObject, Collection, PreparedSpecificQu
 from baton.tests._helpers import combine_metadata, create_data_object, create_collection
 from baton.tests._settings import BATON_DOCKER_BUILD
 from baton.tests._stubs import StubBatonCustomObjectMapper
-from hgicommon.collections import SearchCriteria
 from hgicommon.enums import ComparisonOperator
 from hgicommon.models import SearchCriterion
 from testwithbaton import TestWithBatonSetup
@@ -69,7 +67,7 @@ class _TestBatonIrodsEntityMapper(unittest.TestCase, metaclass=ABCMeta):
         self.assertEqual(retrieved_entities, [irods_entity_1])
 
     def test_get_by_metadata_when_multiple_criterions_match_single_entity(self):
-        search_criteria = SearchCriteria([self.search_criterion_1, self.search_criterion_2])
+        search_criteria = [self.search_criterion_1, self.search_criterion_2]
 
         irods_entity_1 = self.create_irods_entity(_NAMES[0], self.metadata_1_2)
         self.create_irods_entity(_NAMES[1], self.metadata_1)
@@ -88,7 +86,7 @@ class _TestBatonIrodsEntityMapper(unittest.TestCase, metaclass=ABCMeta):
         self.assertEqual(retrieved_entities, [irods_entity_1, irods_entity_2])
 
     def test_get_by_metadata_when_multiple_criterions_match_multiple_entities(self):
-        search_criteria = SearchCriteria([self.search_criterion_1, self.search_criterion_2])
+        search_criteria = [self.search_criterion_1, self.search_criterion_2]
 
         irods_entity_1 = self.create_irods_entity(_NAMES[0], self.metadata_1_2)
         irods_entity_2 = self.create_irods_entity(_NAMES[1], self.metadata_1_2)
