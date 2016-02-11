@@ -23,7 +23,7 @@ class IrodsEntityMapper(Generic[EntityType], metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def get_by_path(self, paths: Union[str, Sequence[str]], load_metadata: bool=True) -> Sequence[EntityType]:
+    def get_by_path(self, paths: Union[str, Iterable[str]], load_metadata: bool=True) -> Sequence[EntityType]:
         """
         Gets entities in the given paths from iRODS.
 
@@ -40,7 +40,7 @@ class DataObjectMapper(IrodsEntityMapper[DataObject], metaclass=ABCMeta):
     iRODS data object mapper.
     """
     @abstractmethod
-    def get_all_in_collection(self, collection_paths: Union[str, Sequence[str]], load_metadata: bool=True) \
+    def get_all_in_collection(self, collection_paths: Union[str, Iterable[str]], load_metadata: bool=True) \
             -> Sequence[DataObject]:
         """
         Gets data objects in the given iRODS collections.

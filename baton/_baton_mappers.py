@@ -41,7 +41,7 @@ class _BatonIrodsEntityMapper(BatonRunner, IrodsEntityMapper, metaclass=ABCMeta)
         baton_out_as_json = self.run_baton_query(BatonBinary.BATON_METAQUERY, arguments, input_data=baton_json)
         return self._baton_json_to_irods_entities(baton_out_as_json)
 
-    def get_by_path(self, paths: Union[str, Sequence[str]], load_metadata: bool=True) -> Sequence[EntityType]:
+    def get_by_path(self, paths: Union[str, Iterable[str]], load_metadata: bool=True) -> Sequence[EntityType]:
         if not isinstance(paths, list):
             paths = [paths]
         if len(paths) == 0:
@@ -105,7 +105,7 @@ class BatonDataObjectMapper(_BatonIrodsEntityMapper, DataObjectMapper):
     """
     iRODS data object mapper, implemented using baton.
     """
-    def get_all_in_collection(self, collection_paths: Union[str, Sequence[str]], load_metadata: bool=True) \
+    def get_all_in_collection(self, collection_paths: Union[str, Iterable[str]], load_metadata: bool=True) \
             -> Sequence[DataObject]:
         if not isinstance(collection_paths, list):
             collection_paths = [collection_paths]
