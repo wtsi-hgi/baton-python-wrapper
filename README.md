@@ -26,25 +26,25 @@ from baton import connect_to_irods_with_baton, Connection, IrodsEntity, IrodsMet
 from hgicommon import SearchCriterion, ComparisonOperator
 
 # Setup connection to iRODS using baton
-irods = connect_to_irods_with_baton("/where/baton/binaries/are/installed/", "irods_query_zone") # type: Connection
+irods = connect_to_irods_with_baton("/where/baton/binaries/are/installed/") # type: Connection
 
 # Get information about the data objects or collections at the given path(s) in iRODS
-irods.data_object.get_by_path("/collection/data_object")    # type: List[DataObject]:
-irods.collection.get_by_path(["/collection", "/other_collection"])   # type: List[Collection]:
+irods.data_object.get_by_path("/collection/data_object")    # type: Sequence[DataObject]:
+irods.collection.get_by_path(["/collection", "/other_collection"])   # type: Sequence[Collection]:
 
 # Setup search for data objects or collections based on their metadata
 search_criterion_1 = SearchCriterion("attribute", "match_value", ComparisonOperator.EQUALS)
 search_criterion_2 = SearchCriterion("other_attribute", "other_match_value", ComparisonOperator.LESS_THAN)
 # Do search
-irods.data_object.get_by_metadata(search_criterion_1)   # type: List[DataObject]
-irods.collection.get_by_metadata([search_criterion_1, search_criterion_2])   # type: List[Collection]
+irods.data_object.get_by_metadata(search_criterion_1, zone="OptionalZoneRestriction")   # type: Sequence[DataObject]
+irods.collection.get_by_metadata([search_criterion_1, search_criterion_2])   # type: Sequence[Collection]
 
 # Get data objects in a collection(s)
-irods.data_object.get_in_collection("/collection")    # type: List[DataObject]
-irods.data_object.get_in_collection(["/collection", "/other_collection"])   # type: List[DataObject]
+irods.data_object.get_in_collection("/collection")    # type: Sequence[DataObject]
+irods.data_object.get_in_collection(["/collection", "/other_collection"])   # type: Sequence[DataObject]
 
 # Get specific queries that have been installed on the iRODS server
-irods.specific_query.get_all()  # type: List[SpecificQuery]
+irods.specific_query.get_all()  # type: Sequence[SpecificQuery]
 ```
 
 

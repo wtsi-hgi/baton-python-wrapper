@@ -1,5 +1,6 @@
 import unittest
 from abc import ABCMeta, abstractmethod
+from copy import deepcopy
 from typing import Sequence
 from unittest.mock import MagicMock
 
@@ -104,6 +105,24 @@ class _TestBatonIrodsEntityMapper(unittest.TestCase, metaclass=ABCMeta):
         self.assertIsNone(retrieved_entities[0].metadata)
         irods_entity_1.metadata = None
         self.assertEqual(retrieved_entities[0], irods_entity_1)
+
+    @unittest.skip("Unable to setup a new zone in iRODS")
+    def test_get_by_metadata_when_zone_restricted(self):
+        new_zone = "newZone"
+        self.setup_helper.run_icommand(["iadmin", "mkzone %s remote" % new_zone])
+
+        irods_entity_1 = self.create_irods_entity(_NAMES[0], self.metadata_1)
+        irods_entity_2 = self.create_irods_entity(_NAMES[1], self.metadata_1)
+
+        self.setup_helper.run_icommand(["icp", "-r", "%s /%s" % (irods_entity_2.path, new_zone)])
+        irods_entity_3 = deepcopy(irods_entity_2)
+        irods_entity_3.path = "/%s/%s" % (new_zone, irods_entity_2.path.split("/")[-1])
+
+        mapper = self.create_mapper()
+        # Check gets both without specifying zone
+        self.assertEqual(mapper.get_by_metadata(self.search_criterion_1), [irods_entity_1, irods_entity_2])
+        # Check can zone restrict
+        self.assertEqual(mapper.get_by_metadata(self.search_criterion_1, zone=new_zone), [irods_entity_3])
 
     def test_get_by_path_when_no_paths_given(self):
         retrieved_entities = self.create_mapper().get_by_path([])

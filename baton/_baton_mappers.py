@@ -19,7 +19,7 @@ class _BatonIrodsEntityMapper(BatonRunner, IrodsEntityMapper, metaclass=ABCMeta)
     Mapper for iRODS entities, implemented using baton.
     """
     def get_by_metadata(self, metadata_search_criteria: Union[SearchCriterion, Iterable[SearchCriterion]],
-                        load_metadata: bool=True) -> Sequence[EntityType]:
+                       load_metadata: bool=True, zone: str=None) -> Sequence[EntityType]:
         if not isinstance(metadata_search_criteria, collections.Iterable):
             metadata_search_criteria = [metadata_search_criteria]
 
@@ -35,6 +35,9 @@ class _BatonIrodsEntityMapper(BatonRunner, IrodsEntityMapper, metaclass=ABCMeta)
             BATON_AVU_PROPERTY: SearchCriterionJSONEncoder().default(metadata_search_criteria)
         }
         arguments = self._create_entity_query_arguments(load_metadata)
+
+        if zone is not None:
+            arguments.append("--zone %s" % zone)
 
         # TODO: "--obj" limits search to object metadata only and "--coll" for collections
 

@@ -18,7 +18,7 @@ class IrodsEntityMapper(Generic[EntityType], metaclass=ABCMeta):
         Gets files from iRODS that have metadata that matches the given search criteria.
         :param metadata_search_criteria: the metadata search criteria
         :param load_metadata: whether the file's associated metadata should also be loaded
-        :param zone: limit query to specific zone
+        :param zone: limit query to specific zone in iRODS
         :return: the matched files in iRODS
         """
         pass
