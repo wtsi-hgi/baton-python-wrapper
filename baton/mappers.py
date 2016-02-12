@@ -1,7 +1,6 @@
 from abc import ABCMeta, abstractmethod
-from typing import Generic, Union, Sequence
+from typing import Generic, Union, Sequence, Iterable
 
-from hgicommon.collections import SearchCriteria
 from hgicommon.models import SearchCriterion
 
 from baton.models import Collection, DataObject, PreparedSpecificQuery, SpecificQuery
@@ -13,18 +12,19 @@ class IrodsEntityMapper(Generic[EntityType], metaclass=ABCMeta):
     iRODS entity mapper.
     """
     @abstractmethod
-    def get_by_metadata(self, metadata_search_criteria: Union[SearchCriterion, SearchCriteria],
-                        load_metadata: bool=True) -> Sequence[EntityType]:
+    def get_by_metadata(self, metadata_search_criteria: Union[SearchCriterion, Iterable[SearchCriterion]],
+                        load_metadata: bool=True, zone: str=None) -> Sequence[EntityType]:
         """
         Gets files from iRODS that have metadata that matches the given search criteria.
         :param metadata_search_criteria: the metadata search criteria
         :param load_metadata: whether the file's associated metadata should also be loaded
+        :param zone: limit query to specific zone in iRODS
         :return: the matched files in iRODS
         """
         pass
 
     @abstractmethod
-    def get_by_path(self, paths: Union[str, Sequence[str]], load_metadata: bool=True) -> Sequence[EntityType]:
+    def get_by_path(self, paths: Union[str, Iterable[str]], load_metadata: bool=True) -> Sequence[EntityType]:
         """
         Gets entities in the given paths from iRODS.
 
@@ -41,7 +41,7 @@ class DataObjectMapper(IrodsEntityMapper[DataObject], metaclass=ABCMeta):
     iRODS data object mapper.
     """
     @abstractmethod
-    def get_all_in_collection(self, collection_paths: Union[str, Sequence[str]], load_metadata: bool=True) \
+    def get_all_in_collection(self, collection_paths: Union[str, Iterable[str]], load_metadata: bool=True) \
             -> Sequence[DataObject]:
         """
         Gets data objects in the given iRODS collections.

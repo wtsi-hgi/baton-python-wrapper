@@ -3,7 +3,7 @@ from typing import Dict, Tuple
 
 from baton._constants import IRODS_SPECIFIC_QUERY_FIND_QUERY_BY_ALIAS, BATON_COLLECTION_PROPERTY, \
     BATON_DATA_OBJECT_PROPERTY, BATON_SPECIFIC_QUERY_SQL_PROPERTY
-from baton.baton_runner import BatonBinary, BatonRunner
+from baton._baton_runner import BatonBinary, BatonRunner
 from baton.models import PreparedSpecificQuery
 
 from baton.tests._helpers import create_data_object, create_collection
