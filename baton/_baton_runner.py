@@ -26,8 +26,8 @@ class BatonRunner(metaclass=ABCMeta):
     """
     Baton query runner.
     """
-    def __init__(self, baton_binaries_directory: str, irods_query_zone: str,
-                 skip_baton_binaries_validation: bool=False, timeout_queries_after: timedelta=None):
+    def __init__(self, baton_binaries_directory: str, skip_baton_binaries_validation: bool=False,
+                 timeout_queries_after: timedelta=None):
         """
         Constructor.
         :param baton_binaries_directory: the host of baton's binaries
@@ -42,7 +42,6 @@ class BatonRunner(metaclass=ABCMeta):
                     % (baton_binaries_directory, [name.value for name in BatonBinary]))
 
         self._baton_binaries_directory = baton_binaries_directory
-        self._irods_query_zone = irods_query_zone
         self.timeout_queries_after = timeout_queries_after
 
     def run_baton_query(self, baton_binary: BatonBinary, program_arguments: List[str]=None, input_data: Any=None) \

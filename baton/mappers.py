@@ -13,11 +13,12 @@ class IrodsEntityMapper(Generic[EntityType], metaclass=ABCMeta):
     """
     @abstractmethod
     def get_by_metadata(self, metadata_search_criteria: Union[SearchCriterion, Iterable[SearchCriterion]],
-                        load_metadata: bool=True) -> Sequence[EntityType]:
+                        load_metadata: bool=True, zone: str=None) -> Sequence[EntityType]:
         """
         Gets files from iRODS that have metadata that matches the given search criteria.
         :param metadata_search_criteria: the metadata search criteria
         :param load_metadata: whether the file's associated metadata should also be loaded
+        :param zone: limit query to specific zone
         :return: the matched files in iRODS
         """
         pass

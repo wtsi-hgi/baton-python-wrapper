@@ -19,7 +19,7 @@ class _BatonIrodsEntityMapper(BatonRunner, IrodsEntityMapper, metaclass=ABCMeta)
     Mapper for iRODS entities, implemented using baton.
     """
     def get_by_metadata(self, metadata_search_criteria: Union[SearchCriterion, Iterable[SearchCriterion]],
-                    load_metadata: bool=True) -> Sequence[EntityType]:
+                        load_metadata: bool=True) -> Sequence[EntityType]:
         if not isinstance(metadata_search_criteria, collections.Iterable):
             metadata_search_criteria = [metadata_search_criteria]
 
