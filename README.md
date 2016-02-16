@@ -1,3 +1,6 @@
+[![Build Status](https://travis-ci.org/wtsi-hgi/python-common.svg)](https://travis-ci.org/wtsi-hgi/python-baton-wrapper)
+[![codecov.io](https://codecov.io/github/wtsi-hgi/python-baton-wrapper/coverage.svg?branch=master)](https://codecov.io/github/wtsi-hgi/python-baton-wrapper?branch=master)
+
 # baton Python Wrapper
 
 

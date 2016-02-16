@@ -171,8 +171,7 @@ class TestBatonDataObjectMapper(_TestBatonIrodsEntityMapper):
     Tests for `BatonDataObjectMapper`.
     """
     def create_mapper(self) -> BatonDataObjectMapper:
-        return BatonDataObjectMapper(
-            self.test_with_baton.baton_location, self.test_with_baton.irods_test_server.users[0].zone)
+        return BatonDataObjectMapper(self.test_with_baton.baton_location)
 
     def create_irods_entity(self, name: str, metadata: IrodsMetadata()) -> DataObject:
         return create_data_object(self.test_with_baton, name, metadata)
@@ -238,8 +237,7 @@ class TestBatonCollectionMapper(_TestBatonIrodsEntityMapper):
     Tests for `BatonCollectionMapper`.
     """
     def create_mapper(self) -> BatonCollectionMapper:
-        return BatonCollectionMapper(
-            self.test_with_baton.baton_location, self.test_with_baton.irods_test_server.users[0].zone)
+        return BatonCollectionMapper(self.test_with_baton.baton_location)
 
     def create_irods_entity(self, name: str, metadata: IrodsMetadata()) -> Collection:
         return create_collection(self.test_with_baton, name, metadata)
@@ -253,8 +251,7 @@ class TestBatonCustomObjectMapper(unittest.TestCase):
         self.test_with_baton = TestWithBatonSetup(baton_docker_build=BATON_DOCKER_BUILD)
         self.test_with_baton.setup()
 
-        self.mapper = StubBatonCustomObjectMapper(
-                self.test_with_baton.baton_location, self.test_with_baton.irods_test_server.users[0].zone)
+        self.mapper = StubBatonCustomObjectMapper(self.test_with_baton.baton_location)
         self.mapper._object_deserialiser = MagicMock(wraps=self.mapper._object_deserialiser)
 
     def test_get_using_specific_query(self):
@@ -272,8 +269,7 @@ class TestBatonInstalledSpecificQueryMapper(unittest.TestCase):
         self.test_with_baton.setup()
         self.setup_helper = SetupHelper(self.test_with_baton.icommands_location)
 
-        self.mapper = BatonSpecificQueryMapper(
-                self.test_with_baton.baton_location, self.test_with_baton.irods_test_server.users[0].zone)
+        self.mapper = BatonSpecificQueryMapper(self.test_with_baton.baton_location)
 
     def test_get_all(self):
         iquest_ls_response = self.setup_helper.run_icommand(["iquest", "--sql", "ls"])
