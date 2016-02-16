@@ -18,7 +18,7 @@ def create_data_object(test_with_baton: TestWithBatonSetup, name: str, metadata:
     :param metadata: the metadata to give the file
     :return: the created iRODS file
     """
-    user = test_with_baton.irods_test_server.users[0]
+    user = test_with_baton.irods_server_container.users[0]
     setup_helper = SetupHelper(test_with_baton.icommands_location)
 
     path = setup_helper.create_data_object(name)
@@ -48,7 +48,7 @@ def create_collection(test_with_baton: TestWithBatonSetup, name: str, metadata: 
     :param metadata: the metadata to give the file
     :return: the created iRODS file
     """
-    user = test_with_baton.irods_test_server.users[0]
+    user = test_with_baton.irods_server_container.users[0]
     setup_helper = SetupHelper(test_with_baton.icommands_location)
 
     location = setup_helper.create_collection(name)
