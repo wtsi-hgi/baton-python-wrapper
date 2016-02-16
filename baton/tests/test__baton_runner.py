@@ -35,11 +35,11 @@ class TestBatonRunner(unittest.TestCase):
 
     def test_instantiate_with_valid_baton_directory(self):
         self.test_with_baton.setup()
-        StubBatonRunner(self.test_with_baton.baton_location, "")
+        StubBatonRunner(self.test_with_baton.baton_location)
 
     def test_run_baton_query(self):
         self.test_with_baton.setup()
-        baton_mapper = StubBatonRunner(self.test_with_baton.baton_location, "")
+        baton_mapper = StubBatonRunner(self.test_with_baton.baton_location)
 
         baton_out_as_json = baton_mapper.run_baton_query(BatonBinary.BATON)[0]
         self.assertIn("avus", baton_out_as_json)
