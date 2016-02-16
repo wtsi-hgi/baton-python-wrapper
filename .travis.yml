@@ -20,7 +20,6 @@ before_install:
 install:
   - pip install -r requirements.txt
   - pip install -r test_requirements.txt
-  - docker build -t agaveapi/irods:3.3.1 -f 3.3.1/Dockerfile github.com/wtsi-hgi/docker-icat.git
 
 script:
   - nosetests -v --with-coverage
