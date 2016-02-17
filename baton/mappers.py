@@ -21,7 +21,6 @@ class IrodsEntityMapper(Generic[EntityType], metaclass=ABCMeta):
         :param zone: limit query to specific zone in iRODS
         :return: the matched files in iRODS
         """
-        pass
 
     @abstractmethod
     def get_by_path(self, paths: Union[str, Iterable[str]], load_metadata: bool=True) -> Sequence[EntityType]:
@@ -33,7 +32,6 @@ class IrodsEntityMapper(Generic[EntityType], metaclass=ABCMeta):
         :param load_metadata: whether metadata associated to the paths should be loaded
         :return: the file information loaded from iRODS
         """
-        pass
 
 
 class DataObjectMapper(IrodsEntityMapper[DataObject], metaclass=ABCMeta):
@@ -51,14 +49,12 @@ class DataObjectMapper(IrodsEntityMapper[DataObject], metaclass=ABCMeta):
         :param load_metadata: whether metadata associated to the files should be loaded
         :return: the file information loaded from iRODS
         """
-        pass
 
 
 class CollectionMapper(IrodsEntityMapper[Collection], metaclass=ABCMeta):
     """
     iRODS collection mapper.
     """
-    pass
 
 
 class CustomObjectMapper(Generic[CustomObjectType], metaclass=ABCMeta):
@@ -72,7 +68,6 @@ class CustomObjectMapper(Generic[CustomObjectType], metaclass=ABCMeta):
         :param specific_query: the specific query to use
         :return: Python model of the object returned from iRODS using the specific query
         """
-        pass
 
 
 class SpecificQueryMapper(CustomObjectMapper[SpecificQuery], metaclass=ABCMeta):
@@ -85,4 +80,3 @@ class SpecificQueryMapper(CustomObjectMapper[SpecificQuery], metaclass=ABCMeta):
         Gets all of the specific queries installed on the iRODS server.
         :return: all of the installed queries
         """
-        pass
