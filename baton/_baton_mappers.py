@@ -74,7 +74,7 @@ class _BatonIrodsEntityMapper(BatonRunner, IrodsEntityMapper, metaclass=ABCMeta)
         :param load_metadata: whether baton should load metadata
         :return: the arguments to use with baton
         """
-        arguments = ["--acl", "--replicate"]
+        arguments = ["--acl", "--replicate", "--timestamps"]
         if load_metadata:
             arguments.append("--avu")
         return arguments
@@ -189,7 +189,6 @@ class BatonCustomObjectMapper(BatonRunner, CustomObjectMapper, metaclass=ABCMeta
         :param object_as_json: JSON representation of the custom object
         :return: Python model of the custom object
         """
-        pass
 
 
 class BatonSpecificQueryMapper(BatonCustomObjectMapper[SpecificQuery], SpecificQueryMapper):

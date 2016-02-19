@@ -1,6 +1,8 @@
 import json
 from json import JSONEncoder, JSONDecoder
 
+from dateutil.parser import parser
+
 from baton._constants import BATON_ACL_LEVELS, BATON_ACL_OWNER_PROPERTY, BATON_ACL_ZONE_PROPERTY, \
     BATON_ACL_LEVEL_PROPERTY, BATON_REPLICA_NUMBER_PROPERTY, BATON_REPLICA_VALID_PROPERTY, \
     BATON_REPLICA_CHECKSUM_PROPERTY, BATON_REPLICA_LOCATION_PROPERTY, BATON_REPLICA_RESOURCE_PROPERTY, \
@@ -12,7 +14,7 @@ from baton._constants import BATON_ACL_LEVELS, BATON_ACL_OWNER_PROPERTY, BATON_A
     BATON_SPECIFIC_QUERY_ALIAS_PROPERTY
 from baton.collections import IrodsMetadata, DataObjectReplicaCollection
 from baton.models import AccessControl, DataObjectReplica, DataObject, IrodsEntity, Collection, PreparedSpecificQuery, \
-    SpecificQuery
+    SpecificQuery, Timestamped
 from hgicommon.enums import ComparisonOperator
 from hgicommon.models import SearchCriterion
 from hgijson.json.builders import MappingJSONEncoderClassBuilder, MappingJSONDecoderClassBuilder
@@ -42,6 +44,25 @@ AccessControlJSONEncoder = MappingJSONEncoderClassBuilder(AccessControl, _access
 AccessControlJSONDecoder = MappingJSONDecoderClassBuilder(AccessControl, _access_control_json_mappings).build()
 
 
+# JSON encoder/decoder for `Timestamped`
+def _set_created_timestamp(timestamped: Timestamped, datetime_as_string: str):
+    timestamped.created = parser(datetime_as_string)
+
+def _set_last_modified_timestamp(timestamped: Timestamped, datetime_as_string: str):
+    timestamped.last_modified = parser(datetime_as_string)
+
+_timestamped_json_mappings = [
+    JsonPropertyMapping("created",
+                        object_property_getter=lambda timestamped: timestamped.created.isoformat(),
+                        object_property_setter=lambda timestamped, datetime_as_string: _set_created_timestamp(timestamped, datetime_as_string)),
+    JsonPropertyMapping("last_modified",
+                        object_property_getter=lambda timestamped: timestamped.last_modified.isoformat(),
+                        object_property_setter=lambda timestamped, datetime_as_string: _set_last_modified_timestamp(timestamped, datetime_as_string))
+]
+_TimestampedJSONEncoder = MappingJSONEncoderClassBuilder(Timestamped, _timestamped_json_mappings).build()
+_TimestampedJSONDecoder = MappingJSONDecoderClassBuilder(Timestamped, _timestamped_json_mappings).build()
+
+
 # JSON encoder/decoder for `DataObjectReplica`
 _data_object_replica_json_mappings = [
     JsonPropertyMapping(BATON_REPLICA_NUMBER_PROPERTY, "number", "number"),
@@ -50,8 +71,8 @@ _data_object_replica_json_mappings = [
     JsonPropertyMapping(BATON_REPLICA_RESOURCE_PROPERTY, "resource_name", "resource_name"),
     JsonPropertyMapping(BATON_REPLICA_VALID_PROPERTY, "up_to_date", "up_to_date")
 ]
-DataObjectReplicaJSONEncoder = MappingJSONEncoderClassBuilder(DataObjectReplica, _data_object_replica_json_mappings).build()
-DataObjectReplicaJSONDecoder = MappingJSONDecoderClassBuilder(DataObjectReplica, _data_object_replica_json_mappings).build()
+DataObjectReplicaJSONEncoder = MappingJSONEncoderClassBuilder(DataObjectReplica, _data_object_replica_json_mappings, _TimestampedJSONEncoder).build()
+DataObjectReplicaJSONDecoder = MappingJSONDecoderClassBuilder(DataObjectReplica, _data_object_replica_json_mappings, _TimestampedJSONDecoder).build()
 
 
 # JSON encoder/decoder for `DataObjectReplicaCollection`

@@ -1,15 +1,27 @@
 from abc import ABCMeta
+from datetime import datetime
 from enum import Enum, unique
-from typing import Iterable, List, Set
+from typing import Iterable, List
 
 from hgicommon.models import Model
 
 
-class DataObjectReplica(Model):
+class Timestamped(Model, metaclass=ABCMeta):
+    """
+    Model that has related timestamps.
+    """
+    def __init__(self, created: datetime=None, last_modified: datetime=None):
+        self.created = created
+        self.last_modified = last_modified
+
+
+class DataObjectReplica(Model, Timestamped):
     """
     Model of a file replicate in iRODS.
     """
-    def __init__(self, number: int, checksum: str, host: str=None, resource_name: str=None, up_to_date: bool=None):
+    def __init__(self, number: int, checksum: str, host: str=None, resource_name: str=None, up_to_date: bool=None,
+                 *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.number = number
         self.checksum = checksum
         self.host = host
@@ -51,9 +63,8 @@ class DataObject(IrodsEntity):
     """
     from baton.collections import IrodsMetadata
 
-    def __init__(self, path: str, access_control_list: Iterable[AccessControl]=None,
-                 metadata: Iterable[IrodsMetadata]=None, replicas: Iterable[DataObjectReplica]=()):
-        super().__init__(path, access_control_list, metadata)
+    def __init__(self, replicas: Iterable[DataObjectReplica]=(), *args, **kwargs):
+        super().__init__(*args, **kwargs)
         from baton.collections import DataObjectReplicaCollection
         self.replicas = DataObjectReplicaCollection(replicas)
 
@@ -72,11 +83,10 @@ class DataObject(IrodsEntity):
         return self.path.rsplit('/', 1)[-1]
 
 
-class Collection(IrodsEntity):
+class Collection(IrodsEntity, Timestamped):
     """
     Model of a collection in iRODS.
     """
-    pass
 
 
 class SpecificQuery(Model):
