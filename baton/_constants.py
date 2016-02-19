@@ -5,6 +5,8 @@ from baton.models import AccessControl
 BATON_DATA_OBJECT_PROPERTY = "data_object"
 BATON_COLLECTION_PROPERTY = "collection"
 
+BATON_COLLECTION_CONTENTS = "contents"
+
 BATON_REPLICA_PROPERTY = "replicates"
 BATON_REPLICA_NUMBER_PROPERTY = "number"
 BATON_REPLICA_VALID_PROPERTY = "valid"

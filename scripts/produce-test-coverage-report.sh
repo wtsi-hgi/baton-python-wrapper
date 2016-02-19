@@ -2,4 +2,4 @@
 pip install -q -r requirements.txt
 pip install -q -r test_requirements.txt
 
-nosetests --with-coverage --cover-package=baton --cover-html -v
+nosetests -v --with-coverage --cover-package=baton --cover-html -v
