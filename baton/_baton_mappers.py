@@ -3,7 +3,8 @@ from typing import Union, Sequence, List, Iterable
 
 import collections
 
-from baton._constants import BATON_SPECIFIC_QUERY_PROPERTY, IRODS_SPECIFIC_QUERY_LS, BATON_AVU_PROPERTY
+from baton._constants import BATON_SPECIFIC_QUERY_PROPERTY, IRODS_SPECIFIC_QUERY_LS, BATON_AVU_PROPERTY, \
+    BATON_COLLECTION_CONTENTS
 
 from baton._baton_runner import BatonBinary, BatonRunner
 from baton.json import DataObjectJSONDecoder, CollectionJSONDecoder, DataObjectJSONEncoder, CollectionJSONEncoder, \
@@ -127,8 +128,7 @@ class BatonDataObjectMapper(_BatonIrodsEntityMapper, DataObjectMapper):
 
         data_objects_as_baton_json = []
         for baton_item_as_json in baton_out_as_json:
-            # TODO: Remove hard-coded JSON property name
-            data_objects_as_baton_json += baton_item_as_json["contents"]
+            data_objects_as_baton_json += baton_item_as_json[BATON_COLLECTION_CONTENTS]
 
         return self._baton_json_to_irods_entities(data_objects_as_baton_json)
 

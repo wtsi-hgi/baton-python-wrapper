@@ -10,7 +10,7 @@ class IrodsMetadata(Metadata):
     iRODS metadata is in the form of "AVUs" (attribute-value-unit tuples). Attributes may have many values therefore all
     attributes are sets.
 
-    Units are no currently considered.
+    Units are not currently considered.
     """
     def __init__(self, seq: Dict=None):
         super().__init__()
