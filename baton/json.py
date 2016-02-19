@@ -71,8 +71,10 @@ _data_object_replica_json_mappings = [
     JsonPropertyMapping(BATON_REPLICA_RESOURCE_PROPERTY, "resource_name", "resource_name"),
     JsonPropertyMapping(BATON_REPLICA_VALID_PROPERTY, "up_to_date", "up_to_date")
 ]
-DataObjectReplicaJSONEncoder = MappingJSONEncoderClassBuilder(DataObjectReplica, _data_object_replica_json_mappings, _TimestampedJSONEncoder).build()
-DataObjectReplicaJSONDecoder = MappingJSONDecoderClassBuilder(DataObjectReplica, _data_object_replica_json_mappings, _TimestampedJSONDecoder).build()
+DataObjectReplicaJSONEncoder = MappingJSONEncoderClassBuilder(
+    DataObjectReplica, _data_object_replica_json_mappings, (_TimestampedJSONEncoder, )).build()
+DataObjectReplicaJSONDecoder = MappingJSONDecoderClassBuilder(
+    DataObjectReplica, _data_object_replica_json_mappings, (_TimestampedJSONDecoder, )).build()
 
 
 # JSON encoder/decoder for `DataObjectReplicaCollection`
@@ -156,16 +158,20 @@ _data_object_json_mappings = [
                         encoder_cls=DataObjectReplicaCollectionJSONEncoder,
                         decoder_cls=DataObjectReplicaCollectionJSONDecoder)
 ]
-DataObjectJSONEncoder = MappingJSONEncoderClassBuilder(DataObject, _data_object_json_mappings, _IrodsEntityJSONEncoder).build()
-DataObjectJSONDecoder = MappingJSONDecoderClassBuilder(DataObject, _data_object_json_mappings, _IrodsEntityJSONDecoder).build()
+DataObjectJSONEncoder = MappingJSONEncoderClassBuilder(
+    DataObject, _data_object_json_mappings, (_IrodsEntityJSONEncoder, )).build()
+DataObjectJSONDecoder = MappingJSONDecoderClassBuilder(
+    DataObject, _data_object_json_mappings, (_IrodsEntityJSONDecoder, )).build()
 
 
 # JSON encoder/decoder for `Collection`
 _collection_json_mappings = [
     JsonPropertyMapping(BATON_COLLECTION_PROPERTY, "path", "path")
 ]
-CollectionJSONEncoder = MappingJSONEncoderClassBuilder(Collection, _collection_json_mappings, _IrodsEntityJSONEncoder).build()
-CollectionJSONDecoder = MappingJSONDecoderClassBuilder(Collection, _collection_json_mappings, _IrodsEntityJSONDecoder).build()
+CollectionJSONEncoder = MappingJSONEncoderClassBuilder(
+    Collection, _collection_json_mappings, (_IrodsEntityJSONEncoder, _TimestampedJSONEncoder)).build()
+CollectionJSONDecoder = MappingJSONDecoderClassBuilder(
+    Collection, _collection_json_mappings, (_IrodsEntityJSONDecoder, _TimestampedJSONDecoder)).build()
 
 
 # JSON encoder/decoder for `SearchCriterion`
@@ -204,4 +210,5 @@ _prepared_specific_query_json_mappings = [
     JsonPropertyMapping("sql", "alias", "alias"),
     JsonPropertyMapping(BATON_SPECIFIC_QUERY_ARGUMENTS_PROPERTY, "query_arguments", "query_arguments")
 ]
-PreparedSpecificQueryJSONEncoder = MappingJSONEncoderClassBuilder(PreparedSpecificQuery, _prepared_specific_query_json_mappings).build()
+PreparedSpecificQueryJSONEncoder = MappingJSONEncoderClassBuilder(
+    PreparedSpecificQuery, _prepared_specific_query_json_mappings).build()

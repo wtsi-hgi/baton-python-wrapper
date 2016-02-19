@@ -15,7 +15,7 @@ class Timestamped(Model, metaclass=ABCMeta):
         self.last_modified = last_modified
 
 
-class DataObjectReplica(Model, Timestamped):
+class DataObjectReplica(Timestamped):
     """
     Model of a file replicate in iRODS.
     """

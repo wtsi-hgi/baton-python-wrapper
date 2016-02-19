@@ -1,2 +1,2 @@
 git+https://github.com/wtsi-hgi/python-common.git@b2ea5807efc9ec640a4cd024ea78442120801767#egg=hgicommon
-git+https://github.com/wtsi-hgi/python-json.git@2347efb7384f33747dab805e849245d76faf7f83#egg=hgijson
+git+https://github.com/wtsi-hgi/python-json.git@5ec1f95bb6c456689cead38f956de9a181f0fb27#egg=hgijson

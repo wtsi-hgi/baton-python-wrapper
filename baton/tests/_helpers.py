@@ -1,13 +1,9 @@
-from copy import deepcopy
-from typing import Iterable, Tuple, Dict
-
-from baton._baton_runner import BatonRunner, BatonBinary
+from typing import Iterable
 
 from baton.collections import IrodsMetadata
+from baton.models import DataObject, DataObjectReplica, AccessControl, Collection
 from testwithbaton.api import TestWithBatonSetup
 from testwithbaton.helpers import SetupHelper
-
-from baton.models import DataObject, DataObjectReplica, AccessControl, Collection
 
 
 def create_data_object(test_with_baton: TestWithBatonSetup, name: str, metadata: IrodsMetadata()) -> DataObject:
@@ -37,7 +33,7 @@ def create_data_object(test_with_baton: TestWithBatonSetup, name: str, metadata:
 
     acl = [AccessControl(user.username, user.zone, AccessControl.Level.OWN)]
 
-    return DataObject(path, acl, metadata, replicas)
+    return DataObject(path=path, access_control_list=acl, metadata=metadata, replicas=replicas)
 
 
 def create_collection(test_with_baton: TestWithBatonSetup, name: str, metadata: IrodsMetadata()) -> Collection:
@@ -51,13 +47,13 @@ def create_collection(test_with_baton: TestWithBatonSetup, name: str, metadata: 
     user = test_with_baton.irods_server.users[0]
     setup_helper = SetupHelper(test_with_baton.icommands_location)
 
-    location = setup_helper.create_collection(name)
+    path = setup_helper.create_collection(name)
 
-    setup_helper.add_metadata_to(location, metadata)
+    setup_helper.add_metadata_to(path, metadata)
 
     acl = [AccessControl(user.username, user.zone, AccessControl.Level.OWN)]
 
-    return Collection(location, acl, metadata)
+    return Collection(path=path, access_control_list=acl, metadata=metadata)
 
 
 def combine_metadata(metadata_collection: Iterable[IrodsMetadata]) -> IrodsMetadata:
