@@ -19,6 +19,14 @@ class _BatonIrodsEntityMapper(BatonRunner, IrodsEntityMapper, metaclass=ABCMeta)
     """
     Mapper for iRODS entities, implemented using baton.
     """
+    def __init__(self, additional_metadata_query_arguments: List[str], *args, **kwargs):
+        """
+        Constructor.
+        :param additional_metadata_query_arguments: additional arguments to use in baton metadata query
+        """
+        super().__init__(*args, **kwargs)
+        self._additional_metadata_query_arguments = additional_metadata_query_arguments
+
     def get_by_metadata(self, metadata_search_criteria: Union[SearchCriterion, Iterable[SearchCriterion]],
                        load_metadata: bool=True, zone: str=None) -> Sequence[EntityType]:
         if not isinstance(metadata_search_criteria, collections.Iterable):
@@ -39,8 +47,8 @@ class _BatonIrodsEntityMapper(BatonRunner, IrodsEntityMapper, metaclass=ABCMeta)
 
         if zone is not None:
             arguments.append("--zone %s" % zone)
-
-        # TODO: "--obj" limits search to object metadata only and "--coll" for collections
+        # Fixes #6.
+        arguments.extend(self._additional_metadata_query_arguments)
 
         baton_out_as_json = self.run_baton_query(BatonBinary.BATON_METAQUERY, arguments, input_data=baton_json)
         return self._baton_json_to_irods_entities(baton_out_as_json)
@@ -93,7 +101,6 @@ class _BatonIrodsEntityMapper(BatonRunner, IrodsEntityMapper, metaclass=ABCMeta)
         :param path: the path to convert
         :return: the JSON representation of the path
         """
-        pass
 
     @abstractmethod
     def _baton_json_to_irod_entity(self, entity_as_baton_json: dict) -> EntityType:
@@ -102,13 +109,15 @@ class _BatonIrodsEntityMapper(BatonRunner, IrodsEntityMapper, metaclass=ABCMeta)
         :param entity_as_baton_json: the baton serialization representation of the entity
         :return: the equivalent models
         """
-        pass
 
 
 class BatonDataObjectMapper(_BatonIrodsEntityMapper, DataObjectMapper):
     """
     iRODS data object mapper, implemented using baton.
     """
+    def __init__(self, *args, **kwargs):
+        super().__init__(["--obj"], *args, **kwargs)
+
     def get_all_in_collection(self, collection_paths: Union[str, Iterable[str]], load_metadata: bool=True) \
             -> Sequence[DataObject]:
         if not isinstance(collection_paths, list):
@@ -144,6 +153,9 @@ class BatonCollectionMapper(_BatonIrodsEntityMapper, CollectionMapper):
     """
     iRODS collection mapper, implemented using baton.
     """
+    def __init__(self, *args, **kwargs):
+        super().__init__(["--coll"], *args, **kwargs)
+
     def _path_to_baton_json(self, path: str) -> dict:
         collection = Collection(path)
         return CollectionJSONEncoder().default(collection)
