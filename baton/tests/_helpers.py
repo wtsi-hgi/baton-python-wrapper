@@ -24,6 +24,7 @@ def create_data_object(test_with_baton: TestWithBatonSetup, name: str, metadata:
     for i in range(2):
         replica_storage = setup_helper.create_replica_storage()
         setup_helper.replicate_data_object(path, replica_storage)
+        # FIXME: Use baton call to get timestamp of replica?
         replica = DataObjectReplica(i + 1, checksum, replica_storage.host, replica_storage.name, True)
         replicas.append(replica)
     setup_helper.update_checksums(path)
@@ -33,7 +34,7 @@ def create_data_object(test_with_baton: TestWithBatonSetup, name: str, metadata:
 
     acl = [AccessControl(user.username, user.zone, AccessControl.Level.OWN)]
 
-    return DataObject(path=path, access_control_list=acl, metadata=metadata, replicas=replicas)
+    return DataObject(path, acl, metadata, replicas)
 
 
 def create_collection(test_with_baton: TestWithBatonSetup, name: str, metadata: IrodsMetadata()) -> Collection:

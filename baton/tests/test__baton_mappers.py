@@ -43,7 +43,6 @@ class _TestBatonIrodsEntityMapper(unittest.TestCase, metaclass=ABCMeta):
         Creates a mapper to test with.
         :return: the created mapper
         """
-        pass
 
     @abstractmethod
     def create_irods_entity(self, name: str, metadata: IrodsMetadata()) -> IrodsEntity:
@@ -53,7 +52,6 @@ class _TestBatonIrodsEntityMapper(unittest.TestCase, metaclass=ABCMeta):
         :param metadata: the metadata to give to the entity
         :return: the created entity
         """
-        pass
 
     def test_get_by_metadata_when_no_metadata(self):
         retrieved_entities = self.create_mapper().get_by_metadata(
