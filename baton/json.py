@@ -1,5 +1,6 @@
 import json
 from json import JSONEncoder, JSONDecoder
+from typing import Dict, List, Optional
 
 from dateutil.parser import parser
 
@@ -20,10 +21,10 @@ from hgicommon.models import SearchCriterion
 from hgijson.json.builders import MappingJSONEncoderClassBuilder, MappingJSONDecoderClassBuilder
 from hgijson.json.interfaces import DictJSONDecoder
 from hgijson.json.models import JsonPropertyMapping
-
-# JSON encoder/decoder for `AccessControl`
 from hgijson.types import PrimitiveJsonSerializableType
 
+
+# JSON encoder/decoder for `AccessControl`
 def access_control_level_to_string(level: AccessControl.Level):
     assert level in BATON_ACL_LEVELS
     return BATON_ACL_LEVELS[level]
@@ -44,27 +45,6 @@ AccessControlJSONEncoder = MappingJSONEncoderClassBuilder(AccessControl, _access
 AccessControlJSONDecoder = MappingJSONDecoderClassBuilder(AccessControl, _access_control_json_mappings).build()
 
 
-# JSON encoder/decoder for `Timestamped`
-def _set_created_timestamp(timestamped: Timestamped, datetime_as_string: str):
-    timestamped.created = parser(datetime_as_string)
-
-def _set_last_modified_timestamp(timestamped: Timestamped, datetime_as_string: str):
-    timestamped.last_modified = parser(datetime_as_string)
-
-_timestamped_json_mappings = [
-    JsonPropertyMapping("created",
-                        object_property_getter=lambda timestamped: timestamped.created.isoformat(),
-                        object_property_setter=lambda timestamped, datetime_as_string: _set_created_timestamp(
-                            timestamped, datetime_as_string)),
-    JsonPropertyMapping("modified", optional=True,
-                        object_property_getter=lambda timestamped: timestamped.last_modified.isoformat(),
-                        object_property_setter=lambda timestamped, datetime_as_string: _set_last_modified_timestamp(
-                            timestamped, datetime_as_string))
-]
-_TimestampedJSONEncoder = MappingJSONEncoderClassBuilder(Timestamped, _timestamped_json_mappings).build()
-_TimestampedJSONDecoder = MappingJSONDecoderClassBuilder(Timestamped, _timestamped_json_mappings).build()
-
-
 # JSON encoder/decoder for `DataObjectReplica`
 _data_object_replica_json_mappings = [
     JsonPropertyMapping(BATON_REPLICA_NUMBER_PROPERTY, "number", "number"),
@@ -74,9 +54,9 @@ _data_object_replica_json_mappings = [
     JsonPropertyMapping(BATON_REPLICA_VALID_PROPERTY, "up_to_date", "up_to_date")
 ]
 DataObjectReplicaJSONEncoder = MappingJSONEncoderClassBuilder(
-    DataObjectReplica, _data_object_replica_json_mappings, (_TimestampedJSONEncoder, )).build()
+    DataObjectReplica, _data_object_replica_json_mappings).build()
 DataObjectReplicaJSONDecoder = MappingJSONDecoderClassBuilder(
-    DataObjectReplica, _data_object_replica_json_mappings, (_TimestampedJSONDecoder, )).build()
+    DataObjectReplica, _data_object_replica_json_mappings).build()
 
 
 # JSON encoder/decoder for `DataObjectReplicaCollection`
@@ -100,7 +80,7 @@ class DataObjectReplicaCollectionJSONDecoder(JSONDecoder, DictJSONDecoder):
         return self.decode_dict(json_as_dict)
 
     def decode_dict(self, json_as_dict: dict) -> DataObjectReplicaCollection:
-        if not isinstance(json_as_dict, list):
+        if not isinstance(json_as_dict, List):
             return super().decode(json_as_dict)
         return DataObjectReplicaCollection([self._replica_decoder.decode(json.dumps(item)) for item in json_as_dict])
 
@@ -125,7 +105,7 @@ class IrodsMetadataJSONDecoder(JSONDecoder, DictJSONDecoder):
         return self.decode_dict(json_as_dict)
 
     def decode_dict(self, json_as_dict: dict) -> IrodsMetadata:
-        if not isinstance(json_as_dict, list):
+        if not isinstance(json_as_dict, List):
             return super().decode(json_as_dict)
         irods_metadata = IrodsMetadata()
         for item in json_as_dict:
@@ -160,10 +140,48 @@ _data_object_json_mappings = [
                         encoder_cls=DataObjectReplicaCollectionJSONEncoder,
                         decoder_cls=DataObjectReplicaCollectionJSONDecoder)
 ]
-DataObjectJSONEncoder = MappingJSONEncoderClassBuilder(
+_DataObjectJSONEncoder = MappingJSONEncoderClassBuilder(
     DataObject, _data_object_json_mappings, (_IrodsEntityJSONEncoder, )).build()
-DataObjectJSONDecoder = MappingJSONDecoderClassBuilder(
+_DataObjectJSONDecoder = MappingJSONDecoderClassBuilder(
     DataObject, _data_object_json_mappings, (_IrodsEntityJSONDecoder, )).build()
+
+class DataObjectJSONEncoder(_DataObjectJSONEncoder):
+    def default(self, serializable: DataObject):
+        data_object_as_json = super().default(serializable)
+        DataObjectJSONEncoder._serialize_timestamps(data_object_as_json, serializable)
+        return data_object_as_json
+
+    @staticmethod
+    def _serialize_timestamps(data_object_as_json: Dict, data_object: DataObject):
+        data_object_as_json["timestamps"] = []
+        timestamps_as_json = data_object_as_json["timestamps"]
+        for replica in data_object.replicas:
+            timestamps_as_json.append({
+                "created": replica.created.isoformat(),
+                "replicate": replica.number
+            })
+            timestamps_as_json.append({
+                "modified": replica.last_modified.isoformat(),
+                "replicate": replica.number
+            })
+
+class DataObjectJSONDecoder(_DataObjectJSONEncoder):
+    def decode_dict(self, json_as_dict: Dict):
+        data_object = super().decode_dict(json_as_dict)
+        timestamps_as_json = json_as_dict["timestamps"]
+        DataObjectJSONDecoder._deserialize_timestamps_as_json(data_object, timestamps_as_json)
+        return data_object
+
+    @staticmethod
+    def _deserialize_timestamps_as_json(data_object: DataObject, timestamps_as_json: Dict):
+        for timestamp_as_json in timestamps_as_json:
+            replica_number = timestamp_as_json["replicate"]
+            replica = data_object.replicas.get_by_number(replica_number)
+            assert replica is not None
+            if "created" in timestamp_as_json:
+                replica.created = parser(timestamp_as_json["created"])
+            elif "modified" in timestamp_as_json:
+                replica.last_modified = parser(timestamp_as_json["modified"])
 
 
 # JSON encoder/decoder for `Collection`
