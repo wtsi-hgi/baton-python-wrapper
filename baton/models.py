@@ -63,8 +63,9 @@ class DataObject(IrodsEntity):
     """
     from baton.collections import IrodsMetadata
 
-    def __init__(self, replicas: Iterable[DataObjectReplica]=(), *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, path: str, access_control_list: Iterable[AccessControl]=None, metadata: IrodsMetadata=None,
+                 replicas: Iterable[DataObjectReplica]=()):
+        super().__init__(path, access_control_list, metadata)
         from baton.collections import DataObjectReplicaCollection
         self.replicas = DataObjectReplicaCollection(replicas)
 

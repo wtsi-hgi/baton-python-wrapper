@@ -54,10 +54,12 @@ def _set_last_modified_timestamp(timestamped: Timestamped, datetime_as_string: s
 _timestamped_json_mappings = [
     JsonPropertyMapping("created",
                         object_property_getter=lambda timestamped: timestamped.created.isoformat(),
-                        object_property_setter=lambda timestamped, datetime_as_string: _set_created_timestamp(timestamped, datetime_as_string)),
-    JsonPropertyMapping("last_modified",
+                        object_property_setter=lambda timestamped, datetime_as_string: _set_created_timestamp(
+                            timestamped, datetime_as_string)),
+    JsonPropertyMapping("modified", optional=True,
                         object_property_getter=lambda timestamped: timestamped.last_modified.isoformat(),
-                        object_property_setter=lambda timestamped, datetime_as_string: _set_last_modified_timestamp(timestamped, datetime_as_string))
+                        object_property_setter=lambda timestamped, datetime_as_string: _set_last_modified_timestamp(
+                            timestamped, datetime_as_string))
 ]
 _TimestampedJSONEncoder = MappingJSONEncoderClassBuilder(Timestamped, _timestamped_json_mappings).build()
 _TimestampedJSONDecoder = MappingJSONDecoderClassBuilder(Timestamped, _timestamped_json_mappings).build()
@@ -169,9 +171,9 @@ _collection_json_mappings = [
     JsonPropertyMapping(BATON_COLLECTION_PROPERTY, "path", "path")
 ]
 CollectionJSONEncoder = MappingJSONEncoderClassBuilder(
-    Collection, _collection_json_mappings, (_IrodsEntityJSONEncoder, _TimestampedJSONEncoder)).build()
+    Collection, _collection_json_mappings, (_IrodsEntityJSONEncoder,)).build()
 CollectionJSONDecoder = MappingJSONDecoderClassBuilder(
-    Collection, _collection_json_mappings, (_IrodsEntityJSONDecoder, _TimestampedJSONDecoder)).build()
+    Collection, _collection_json_mappings, (_IrodsEntityJSONDecoder, )).build()
 
 
 # JSON encoder/decoder for `SearchCriterion`
