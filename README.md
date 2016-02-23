@@ -9,7 +9,7 @@ Python 3 Wrapper for [baton](https://github.com/wtsi-npg/baton), superseding a
 [previous implementation in meta-datacheck]
 (https://github.com/wtsi-hgi/metadata-check/blob/9cd5c41b0f2e254fc1d6249a14752bd428587bb7/irods_baton/baton_wrapper.py).
 
-The wrapper does not currently provide access to all of baton's functionality.
+The wrapper provides access to most, but not all, of baton's functionality.
 
 
 ## How to use in your project
@@ -48,6 +48,23 @@ irods.data_object.get_in_collection(["/collection", "/other_collection"])   # ty
 
 # Get specific queries that have been installed on the iRODS server
 irods.specific_query.get_all()  # type: Sequence[SpecificQuery]
+```
+
+### JSON Serialization/Deserialization
+There are JSON encoders and decoders for nearly all iRODS object models in this library. These can be used to convert 
+models to/from their baton defined JSON representations. All serializers/deserializers extend `JSONEncoder` and
+`JSONDecoder` (most through use of the [hgijson](https://github.com/wtsi-hgi/python-json/) library) meaning that they 
+can be used with [Python's built in `json` package](https://docs.python.org/3/library/json.html):
+```python
+import json
+from baton.json import DataObjectJSONEncoder, DataObjectJSONDecoder, CollectionJSONEncoder, CollectionJSONDecoder
+
+json.dumps(data_object, cls=DataObjectJSONEncoder)
+json.loads(data_object_as_json_string, cls=DataObjectJSONDecoder)
+
+json.dumps(collection, cls=CollectionJSONEncoder)
+json.loads(collection_as_json_string, cls=CollectionJSONDecoder)
+
 ```
 
 
