@@ -62,8 +62,8 @@ from baton.json import DataObjectJSONEncoder, DataObjectJSONDecoder, CollectionJ
 data_object_as_json_string = json.dumps(data_object, cls=DataObjectJSONEncoder)
 data_object = json.loads(data_object_as_json_string, cls=DataObjectJSONDecoder)
 
-collection = json.dumps(collection, cls=CollectionJSONEncoder)
-collection_as_json_string = json.loads(collection_as_json_string, cls=CollectionJSONDecoder)
+collection_as_json_string = json.dumps(collection, cls=CollectionJSONEncoder)
+collection = json.loads(collection_as_json_string, cls=CollectionJSONDecoder)
 
 ```
 
