@@ -74,7 +74,7 @@ class _BatonIrodsEntityMapper(BatonRunner, IrodsEntityMapper, metaclass=ABCMeta)
         :param load_metadata: whether baton should load metadata
         :return: the arguments to use with baton
         """
-        arguments = ["--acl", "--replicate", "--timestamps"]
+        arguments = ["--acl", "--replicate", "--timestamp"]
         if load_metadata:
             arguments.append("--avu")
         return arguments

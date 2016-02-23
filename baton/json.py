@@ -1,6 +1,6 @@
 import json
 from json import JSONEncoder, JSONDecoder
-from typing import Dict, List, Optional
+from typing import Dict, List
 
 from dateutil.parser import parser
 
@@ -15,7 +15,7 @@ from baton._constants import BATON_ACL_LEVELS, BATON_ACL_OWNER_PROPERTY, BATON_A
     BATON_SPECIFIC_QUERY_ALIAS_PROPERTY
 from baton.collections import IrodsMetadata, DataObjectReplicaCollection
 from baton.models import AccessControl, DataObjectReplica, DataObject, IrodsEntity, Collection, PreparedSpecificQuery, \
-    SpecificQuery, Timestamped
+    SpecificQuery
 from hgicommon.enums import ComparisonOperator
 from hgicommon.models import SearchCriterion
 from hgijson.json.builders import MappingJSONEncoderClassBuilder, MappingJSONDecoderClassBuilder
@@ -145,6 +145,7 @@ _DataObjectJSONEncoder = MappingJSONEncoderClassBuilder(
 _DataObjectJSONDecoder = MappingJSONDecoderClassBuilder(
     DataObject, _data_object_json_mappings, (_IrodsEntityJSONDecoder, )).build()
 
+# Issue with baton https://github.com/wtsi-npg/baton/issues/146 makes dealing with timestamps a pain
 class DataObjectJSONEncoder(_DataObjectJSONEncoder):
     def default(self, serializable: DataObject):
         data_object_as_json = super().default(serializable)
@@ -156,16 +157,20 @@ class DataObjectJSONEncoder(_DataObjectJSONEncoder):
         data_object_as_json["timestamps"] = []
         timestamps_as_json = data_object_as_json["timestamps"]
         for replica in data_object.replicas:
-            timestamps_as_json.append({
-                "created": replica.created.isoformat(),
-                "replicate": replica.number
-            })
-            timestamps_as_json.append({
-                "modified": replica.last_modified.isoformat(),
-                "replicate": replica.number
-            })
+            if replica.created is not None:
+                timestamps_as_json.append({
+                    "created": replica.created.isoformat(),
+                    "replicates": replica.number
+                })
+            if replica.last_modified is not None:
+                timestamps_as_json.append({
+                    "modified": replica.last_modified.isoformat(),
+                    "replicates": replica.number
+                })
 
-class DataObjectJSONDecoder(_DataObjectJSONEncoder):
+class DataObjectJSONDecoder(_DataObjectJSONDecoder):
+    _DATE_PARSER = parser()
+
     def decode_dict(self, json_as_dict: Dict):
         data_object = super().decode_dict(json_as_dict)
         timestamps_as_json = json_as_dict["timestamps"]
@@ -175,13 +180,13 @@ class DataObjectJSONDecoder(_DataObjectJSONEncoder):
     @staticmethod
     def _deserialize_timestamps_as_json(data_object: DataObject, timestamps_as_json: Dict):
         for timestamp_as_json in timestamps_as_json:
-            replica_number = timestamp_as_json["replicate"]
+            replica_number = timestamp_as_json["replicates"]
             replica = data_object.replicas.get_by_number(replica_number)
             assert replica is not None
             if "created" in timestamp_as_json:
-                replica.created = parser(timestamp_as_json["created"])
+                replica.created = DataObjectJSONDecoder._DATE_PARSER.parse(timestamp_as_json["created"])
             elif "modified" in timestamp_as_json:
-                replica.last_modified = parser(timestamp_as_json["modified"])
+                replica.last_modified = DataObjectJSONDecoder._DATE_PARSER.parse(timestamp_as_json["modified"])
 
 
 # JSON encoder/decoder for `Collection`
