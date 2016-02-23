@@ -1,16 +1,13 @@
 from copy import deepcopy
 from typing import Dict, Tuple
 
+from baton import DataObject, Collection, SpecificQuery
+from baton._baton_runner import BatonBinary, BatonRunner
 from baton._constants import IRODS_SPECIFIC_QUERY_FIND_QUERY_BY_ALIAS, BATON_COLLECTION_PROPERTY, \
     BATON_DATA_OBJECT_PROPERTY, BATON_SPECIFIC_QUERY_SQL_PROPERTY
-from baton._baton_runner import BatonBinary, BatonRunner
-from baton.models import PreparedSpecificQuery
-
-from baton.tests._helpers import create_data_object, create_collection
-
-from baton import DataObject, Collection, SpecificQuery
 from baton.collections import IrodsMetadata
-from testwithbaton import TestWithBatonSetup, SetupHelper
+from baton.tests._helpers import create_data_object, create_collection
+from testwithbaton import TestWithBatonSetup
 
 _data_object = None
 _data_object_as_json = None
@@ -44,11 +41,10 @@ def create_data_object_with_baton_json_representation() -> Tuple[DataObject, Dic
             BATON_COLLECTION_PROPERTY: _data_object.get_collection_path(),
             BATON_DATA_OBJECT_PROPERTY: _data_object.get_name()
         }
-        baton_runner = BatonRunner(
-                test_with_baton.baton_location, test_with_baton.irods_server.users[0].zone, True)
+        baton_runner = BatonRunner(test_with_baton.baton_location, test_with_baton.irods_server.users[0].zone)
 
         _data_object_as_json = baton_runner.run_baton_query(
-                BatonBinary.BATON_LIST, ["--acl", "--avu", "--replicate"], input_data=baton_query)[0]
+                BatonBinary.BATON_LIST, ["--acl", "--avu", "--replicate", "--timestamp"], input_data=baton_query)[0]
 
     return deepcopy(_data_object), deepcopy(_data_object_as_json)
 
@@ -67,8 +63,7 @@ def create_collection_with_baton_json_representation() -> Tuple[Collection, Dict
         baton_query = {
             BATON_COLLECTION_PROPERTY: _collection.path
         }
-        baton_runner = BatonRunner(
-                test_with_baton.baton_location, test_with_baton.irods_server.users[0].zone, True)
+        baton_runner = BatonRunner(test_with_baton.baton_location, test_with_baton.irods_server.users[0].zone)
 
         _collection_as_json = baton_runner.run_baton_query(
                 BatonBinary.BATON_LIST, ["--acl", "--avu", "--replicate"], input_data=baton_query)[0]
@@ -84,8 +79,7 @@ def create_specific_query_with_baton_json_representation() -> Tuple[SpecificQuer
         test_with_baton = TestWithBatonSetup()
         test_with_baton.setup()
 
-        baton_runner = BatonRunner(
-                test_with_baton.baton_location, test_with_baton.irods_server.users[0].zone, True)
+        baton_runner = BatonRunner(test_with_baton.baton_location, test_with_baton.irods_server.users[0].zone)
 
         baton_query = baton_runner.run_baton_query(BatonBinary.BATON, ["-s", IRODS_SPECIFIC_QUERY_FIND_QUERY_BY_ALIAS,
                                                                        "-b", IRODS_SPECIFIC_QUERY_FIND_QUERY_BY_ALIAS])

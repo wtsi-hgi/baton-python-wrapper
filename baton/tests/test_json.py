@@ -75,6 +75,11 @@ class TestDataObjectReplicaJSONDecoder(unittest.TestCase):
         self.replica = self.data_object.replicas.get_by_number(1)
         self.replica_as_json_string = json.dumps(self.data_object_as_json["replicates"][0])
 
+        # Hack to cope with https://github.com/wtsi-npg/baton/issues/146
+        self.replica.created = None
+        self.replica.last_modified = None
+
+
     def test_decode(self):
         decoded = DataObjectReplicaJSONDecoder().decode(self.replica_as_json_string)
         self.assertEqual(decoded, self.replica)
@@ -93,6 +98,11 @@ class TestDataObjectReplicaCollectionJSONEncoder(unittest.TestCase):
         self.replicas = self.data_object.replicas
         self.replicas_as_json = self.data_object_as_json["replicates"]
 
+        # Hack to cope with https://github.com/wtsi-npg/baton/issues/146
+        for replica in self.replicas:
+            replica.created = None
+            replica.last_modified = None
+
     def test_default(self):
         encoded = DataObjectReplicaCollectionJSONEncoder().default(self.replicas)
         self.assertEqual(encoded, self.replicas_as_json)
@@ -110,6 +120,11 @@ class TestDataObjectReplicaCollectionJSONDecoder(unittest.TestCase):
         self.data_object, self.data_object_as_json = create_data_object_with_baton_json_representation()
         self.replicas = self.data_object.replicas
         self.replicas_as_json_as_string = json.dumps(self.data_object_as_json["replicates"])
+
+        # Hack to cope with https://github.com/wtsi-npg/baton/issues/146
+        for replica in self.replicas:
+            replica.created = None
+            replica.last_modified = None
 
     def test_decode(self):
         decoded = DataObjectReplicaCollectionJSONDecoder().decode(self.replicas_as_json_as_string)

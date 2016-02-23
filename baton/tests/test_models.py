@@ -13,7 +13,7 @@ class TestDataObject(unittest.TestCase):
     Tests for `DataObject`.
     """
     def setUp(self):
-        self.data_object = DataObject(path="%s/%s" % (_COLLECTION, _FILE_NAME), checksum=_CHECKSUMS[0])
+        self.data_object = DataObject("%s/%s" % (_COLLECTION, _FILE_NAME))
 
     def test_get_collection_path(self):
         self.assertEquals(self.data_object.get_collection_path(), _COLLECTION)

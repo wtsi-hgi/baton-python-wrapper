@@ -8,7 +8,7 @@ from baton._baton_mappers import BatonDataObjectMapper, BatonCollectionMapper, _
     BatonSpecificQueryMapper
 from baton.collections import IrodsMetadata
 from baton.models import IrodsEntity, DataObject, Collection, PreparedSpecificQuery, SpecificQuery
-from baton.tests._helpers import combine_metadata, create_data_object, create_collection
+from baton.tests._helpers import combine_metadata, create_data_object, create_collection, synchronise_timestamps
 from baton.tests._settings import BATON_DOCKER_BUILD
 from baton.tests._stubs import StubBatonCustomObjectMapper
 from hgicommon.enums import ComparisonOperator
@@ -213,6 +213,7 @@ class TestBatonDataObjectMapper(_TestBatonIrodsEntityMapper):
                 moved_path = "%s/%s" % (collection, data_object.get_name())
                 self.setup_helper.run_icommand(["imv", data_object.path, moved_path])
                 data_object.path = moved_path
+                synchronise_timestamps(self.test_with_baton, data_object)
                 data_objects.append(data_object)
 
             collections.append(collection)
