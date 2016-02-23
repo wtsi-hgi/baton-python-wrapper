@@ -59,11 +59,11 @@ can be used with [Python's built in `json` package](https://docs.python.org/3/li
 import json
 from baton.json import DataObjectJSONEncoder, DataObjectJSONDecoder, CollectionJSONEncoder, CollectionJSONDecoder
 
-json.dumps(data_object, cls=DataObjectJSONEncoder)
-json.loads(data_object_as_json_string, cls=DataObjectJSONDecoder)
+data_object_as_json_string = json.dumps(data_object, cls=DataObjectJSONEncoder)
+data_object = json.loads(data_object_as_json_string, cls=DataObjectJSONDecoder)
 
-json.dumps(collection, cls=CollectionJSONEncoder)
-json.loads(collection_as_json_string, cls=CollectionJSONDecoder)
+collection = json.dumps(collection, cls=CollectionJSONEncoder)
+collection_as_json_string = json.loads(collection_as_json_string, cls=CollectionJSONDecoder)
 
 ```
 
