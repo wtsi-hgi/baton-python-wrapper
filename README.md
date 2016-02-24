@@ -47,7 +47,7 @@ irods.data_object.get_in_collection("/collection")    # type: Sequence[DataObjec
 irods.data_object.get_in_collection(["/collection", "/other_collection"])   # type: Sequence[DataObject]
 
 # Get specific queries that have been installed on the iRODS server
-irods.specific_query.get_all()  # type: Sequence[SpecificQuery]
+irods.specific_query.get_all(zone="OptionalZoneRestriction")  # type: Sequence[SpecificQuery]
 ```
 
 ### JSON Serialization/Deserialization

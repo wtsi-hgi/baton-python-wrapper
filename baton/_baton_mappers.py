@@ -200,9 +200,9 @@ class BatonSpecificQueryMapper(BatonCustomObjectMapper[SpecificQuery], SpecificQ
     """
     Mapper for specific queries installed on iRODS, implemented using baton.
     """
-    def get_all(self) -> Sequence[SpecificQuery]:
+    def get_all(self, zone: str=None) -> Sequence[SpecificQuery]:
         retrieve_query = PreparedSpecificQuery(IRODS_SPECIFIC_QUERY_LS)
-        return self._get_with_prepared_specific_query(retrieve_query)
+        return self._get_with_prepared_specific_query(retrieve_query, zone)
 
     def _object_deserialiser(self, object_as_json: dict) -> SpecificQuery:
         return SpecificQueryJSONDecoder().decode_dict(object_as_json)
