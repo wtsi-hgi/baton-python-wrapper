@@ -168,13 +168,18 @@ class BatonCustomObjectMapper(BatonRunner, CustomObjectMapper, metaclass=ABCMeta
     """
     Mapper for custom objects, implemented using baton.
     """
-    def _get_with_prepared_specific_query(self, specific_query: PreparedSpecificQuery) -> Sequence[CustomObjectType]:
+    def _get_with_prepared_specific_query(self, specific_query: PreparedSpecificQuery, zone: str=None) \
+            -> Sequence[CustomObjectType]:
         specific_query_as_baton_json = {
             BATON_SPECIFIC_QUERY_PROPERTY: PreparedSpecificQueryJSONEncoder().default(specific_query)
         }
 
+        arguments = []
+        if zone is not None:
+            arguments.append("--zone %s" % zone)
+
         custom_objects_as_baton_json = self.run_baton_query(
-                BatonBinary.BATON_SPECIFIC_QUERY, input_data=specific_query_as_baton_json)
+                BatonBinary.BATON_SPECIFIC_QUERY, arguments, input_data=specific_query_as_baton_json)
 
         custom_objects = [self._object_deserialiser(custom_object_as_baton_json)
                           for custom_object_as_baton_json in custom_objects_as_baton_json]
