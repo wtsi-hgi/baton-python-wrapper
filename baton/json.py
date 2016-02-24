@@ -49,8 +49,8 @@ AccessControlJSONDecoder = MappingJSONDecoderClassBuilder(AccessControl, _access
 _data_object_replica_json_mappings = [
     JsonPropertyMapping(BATON_REPLICA_NUMBER_PROPERTY, "number", "number"),
     JsonPropertyMapping(BATON_REPLICA_CHECKSUM_PROPERTY, "checksum", "checksum"),
-    JsonPropertyMapping(BATON_REPLICA_LOCATION_PROPERTY, "host", "host"),
-    JsonPropertyMapping(BATON_REPLICA_RESOURCE_PROPERTY, "resource_name", "resource_name"),
+    JsonPropertyMapping(BATON_REPLICA_LOCATION_PROPERTY, "host", "host", optional=True),
+    JsonPropertyMapping(BATON_REPLICA_RESOURCE_PROPERTY, "resource_name", "resource_name", optional=True),
     JsonPropertyMapping(BATON_REPLICA_VALID_PROPERTY, "up_to_date", "up_to_date")
 ]
 DataObjectReplicaJSONEncoder = MappingJSONEncoderClassBuilder(
