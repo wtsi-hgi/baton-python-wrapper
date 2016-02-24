@@ -62,10 +62,12 @@ class CustomObjectMapper(Generic[CustomObjectType], metaclass=ABCMeta):
     Mapper for a custom object, retrieved from iRODS using a pre-installed specific query.
     """
     @abstractmethod
-    def _get_with_prepared_specific_query(self, specific_query: PreparedSpecificQuery) -> Sequence[CustomObjectType]:
+    def _get_with_prepared_specific_query(self, specific_query: PreparedSpecificQuery, zone: str=None) \
+            -> Sequence[CustomObjectType]:
         """
         Gets an object from iRODS using a specific query.
         :param specific_query: the specific query to use
+        :param zone: limit query to specific zone in iRODS
         :return: Python model of the object returned from iRODS using the specific query
         """
 
