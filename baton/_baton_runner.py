@@ -6,6 +6,7 @@ from abc import ABCMeta
 from datetime import timedelta
 from enum import Enum
 from typing import Any, List
+import time
 
 from baton._constants import BATON_ERROR_MESSAGE_KEY, BATON_FILE_DOES_NOT_EXIST_ERROR_CODE, BATON_ERROR_PROPERTY,\
     BATON_ERROR_CODE_KEY
@@ -59,9 +60,11 @@ class BatonRunner(metaclass=ABCMeta):
         baton_binary_location = os.path.join(self._baton_binaries_directory, baton_binary.value)
         program_arguments = [baton_binary_location] + program_arguments
 
-        logging.debug("Running baton command: '%s' with data '%s'" % (program_arguments, input_data))
+        logging.info("Running baton command: '%s' with data '%s'" % (program_arguments, input_data))
+        start_at = time.monotonic()
         baton_out = self._run_command(program_arguments, input_data=input_data)
-        logging.debug("baton output: %s" % baton_out)
+        time_taken_to_run_query = time.monotonic() - start_at
+        logging.debug("baton output (took %s): %s" % (time_taken_to_run_query, baton_out))
 
         if len(baton_out) > 0 and baton_out[0] != '[':
             # If information about multiple files is returned, baton does not return valid JSON - it returns a line
