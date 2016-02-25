@@ -176,7 +176,7 @@ class BatonCustomObjectMapper(BatonRunner, CustomObjectMapper, metaclass=ABCMeta
 
         arguments = []
         if zone is not None:
-            arguments.append("--zone %s" % zone)
+            arguments.extend(["--zone", "%s" % zone])
 
         custom_objects_as_baton_json = self.run_baton_query(
                 BatonBinary.BATON_SPECIFIC_QUERY, arguments, input_data=specific_query_as_baton_json)
