@@ -38,7 +38,7 @@ class BatonRunner(metaclass=ABCMeta):
         if not skip_baton_binaries_validation:
             if not BatonRunner.validate_baton_binaries_location(baton_binaries_directory):
                 raise ValueError(
-                    "Given baton binary direcory (%s) did not contain all of the required binaries with executable "
+                    "Given baton binary directory (%s) did not contain all of the required binaries with executable "
                     "permissions (%s)"
                     % (baton_binaries_directory, [name.value for name in BatonBinary]))
 
@@ -64,7 +64,7 @@ class BatonRunner(metaclass=ABCMeta):
         start_at = time.monotonic()
         baton_out = self._run_command(program_arguments, input_data=input_data)
         time_taken_to_run_query = time.monotonic() - start_at
-        logging.debug("baton output (took %s): %s" % (time_taken_to_run_query, baton_out))
+        logging.debug("baton output (took %s seconds, wall time): %s" % (time_taken_to_run_query, baton_out))
 
         if len(baton_out) > 0 and baton_out[0] != '[':
             # If information about multiple files is returned, baton does not return valid JSON - it returns a line
