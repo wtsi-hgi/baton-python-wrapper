@@ -17,7 +17,6 @@ The wrapper provides access to most, but not all, of baton's functionality.
 In ``/requirements.txt`` or in your ``/setup.py`` script:
 ```
 git+https://github.com/wtsi-hgi/baton-python-wrapper.git@master#egg=baton
-git+https://github.com/wtsi-hgi/common-python.git@master#egg=hgicommon
 ```
 *See more about using libraries for git repositories in the 
 [pip documentation](https://pip.readthedocs.org/en/1.1/requirements.html#git).*
@@ -25,8 +24,9 @@ git+https://github.com/wtsi-hgi/common-python.git@master#egg=hgicommon
 
 ### API
 ```python
-from baton import connect_to_irods_with_baton, Connection, IrodsEntity, IrodsMetadata, DataObject, Collection, SpecificQuery
-from hgicommon import SearchCriterion, ComparisonOperator
+from baton.api import connect_to_irods_with_baton, Connection
+from baton.models import IrodsEntity, DataObject, Collection, SpecificQuery, SearchCriterion, ComparisonOperator
+from baton.collections import IrodsMetadata
 
 # Setup connection to iRODS using baton
 irods = connect_to_irods_with_baton("/where/baton/binaries/are/installed/") # type: Connection

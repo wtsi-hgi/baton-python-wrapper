@@ -3,6 +3,7 @@ from datetime import datetime
 from enum import Enum, unique
 from typing import Iterable, List
 
+import hgicommon
 from hgicommon.models import Model
 
 
@@ -113,3 +114,10 @@ class PreparedSpecificQuery(SpecificQuery):
     def __init__(self, alias: str, query_arguments: List[str]=None, sql: str= "(unknown)"):
         super().__init__(alias, sql)
         self.query_arguments = query_arguments if query_arguments is not None else []
+
+
+# Expose `SearchCriterion` from HGI common library
+SearchCriterion = hgicommon.models.SearchCriterion
+
+# Expose `ComparisonOperator` from HGI common library
+ComparisonOperator = hgicommon.models.ComparisonOperator
