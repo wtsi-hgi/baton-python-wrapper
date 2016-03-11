@@ -1,9 +1,7 @@
 from abc import ABCMeta, abstractmethod
 from typing import Generic, Union, Sequence, Iterable
 
-from hgicommon.models import SearchCriterion
-
-from baton.models import Collection, DataObject, PreparedSpecificQuery, SpecificQuery
+from baton.models import Collection, DataObject, PreparedSpecificQuery, SpecificQuery, SearchCriterion
 from baton.types import EntityType, CustomObjectType
 
 

@@ -1,3 +1,3 @@
 python-dateutil==2.5.0
 git+https://github.com/wtsi-hgi/python-common.git@b2ea5807efc9ec640a4cd024ea78442120801767#egg=hgicommon
-git+https://github.com/wtsi-hgi/python-json.git@1011307dff82a8438059cf2f51130a7b05a4cf6d#egg=hgijson
+git+https://github.com/wtsi-hgi/python-json.git@d743cd4a0d141e2ab24dd5cdce34b7e7329482a6#egg=hgijson

@@ -116,8 +116,8 @@ class PreparedSpecificQuery(SpecificQuery):
         self.query_arguments = query_arguments if query_arguments is not None else []
 
 
-# Expose `SearchCriterion` from HGI common library
+# Use `SearchCriterion` from HGI common library
 SearchCriterion = hgicommon.models.SearchCriterion
 
-# Expose `ComparisonOperator` from HGI common library
+# Use `ComparisonOperator` from HGI common library
 ComparisonOperator = hgicommon.models.ComparisonOperator

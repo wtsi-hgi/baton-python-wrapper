@@ -7,12 +7,11 @@ from unittest.mock import MagicMock
 from baton._baton_mappers import BatonDataObjectMapper, BatonCollectionMapper, _BatonIrodsEntityMapper, \
     BatonSpecificQueryMapper
 from baton.collections import IrodsMetadata
-from baton.models import IrodsEntity, DataObject, Collection, PreparedSpecificQuery, SpecificQuery
+from baton.models import IrodsEntity, DataObject, Collection, PreparedSpecificQuery, SpecificQuery, SearchCriterion
 from baton.tests._helpers import combine_metadata, create_data_object, create_collection, synchronise_timestamps
 from baton.tests._settings import BATON_DOCKER_BUILD
 from baton.tests._stubs import StubBatonCustomObjectMapper
 from hgicommon.enums import ComparisonOperator
-from hgicommon.models import SearchCriterion
 from testwithbaton import TestWithBatonSetup
 from testwithbaton.helpers import SetupHelper
 

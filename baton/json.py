@@ -15,9 +15,8 @@ from baton._constants import BATON_ACL_LEVELS, BATON_ACL_OWNER_PROPERTY, BATON_A
     BATON_SPECIFIC_QUERY_ALIAS_PROPERTY
 from baton.collections import IrodsMetadata, DataObjectReplicaCollection
 from baton.models import AccessControl, DataObjectReplica, DataObject, IrodsEntity, Collection, PreparedSpecificQuery, \
-    SpecificQuery
+    SpecificQuery, SearchCriterion
 from hgicommon.enums import ComparisonOperator
-from hgicommon.models import SearchCriterion
 from hgijson.json.builders import MappingJSONEncoderClassBuilder, MappingJSONDecoderClassBuilder
 from hgijson.json.interfaces import DictJSONDecoder
 from hgijson.json.models import JsonPropertyMapping

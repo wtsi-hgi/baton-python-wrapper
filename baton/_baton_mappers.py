@@ -11,8 +11,7 @@ from baton.json import DataObjectJSONDecoder, CollectionJSONDecoder, DataObjectJ
     PreparedSpecificQueryJSONEncoder, SpecificQueryJSONDecoder, SearchCriterionJSONEncoder
 from baton.mappers import DataObjectMapper, CollectionMapper, IrodsEntityMapper, EntityType, CustomObjectType, \
     CustomObjectMapper, SpecificQueryMapper
-from baton.models import DataObject, Collection, PreparedSpecificQuery, SpecificQuery
-from hgicommon.models import SearchCriterion
+from baton.models import DataObject, Collection, PreparedSpecificQuery, SpecificQuery, SearchCriterion
 
 
 class _BatonIrodsEntityMapper(BatonRunner, IrodsEntityMapper, metaclass=ABCMeta):
