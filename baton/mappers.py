@@ -2,8 +2,7 @@ from abc import ABCMeta, abstractmethod, abstractproperty
 from typing import Generic, Union, Sequence, Iterable
 
 from baton.collections import IrodsMetadata
-
-from baton.models import Collection, DataObject, PreparedSpecificQuery, SpecificQuery, SearchCriterion, IrodsEntity
+from baton.models import Collection, DataObject, PreparedSpecificQuery, SpecificQuery, SearchCriterion, AccessControl
 from baton.types import EntityType, CustomObjectType
 
 
@@ -68,6 +67,42 @@ class IrodsMetadataMapper(Generic[EntityType], metaclass=ABCMeta):
         """
 
 
+class AccessControlMapper(Generic[EntityType], metaclass=ABCMeta):
+    """
+    Access control mapper.
+    """
+    @abstractmethod
+    def get_all(self, path: str) -> Sequence[AccessControl]:
+        """
+        Gets all the access controls for the entity with the given path.
+        :param path: the path of the entity to find access controls for
+        :return:
+        """
+
+    @abstractmethod
+    def set(self, paths: Union[str, Iterable[str]], access_control: Union[AccessControl, Iterable[AccessControl]]):
+        """
+        Set the access controls associated to a give path or collection of paths.
+        :param paths: the paths to set the access controls for
+        :param access_control: the access controls to set
+        """
+
+
+class CollectionAccessControlMapper(AccessControlMapper[Collection], metaclass=ABCMeta):
+    """
+    Access control mapper for controls relating to collections.
+    """
+    @abstractmethod
+    def set(self, paths: Union[str, Iterable[str]], access_control: Union[AccessControl, Iterable[AccessControl]],
+            recursive: bool=False):
+        """
+        See `AccessControlMapper.set`.
+        :param paths: see `AccessControlMapper.set`
+        :param access_control: see `AccessControlMapper.set`
+        :param recursive: whether the access control list should be set recursively for all nested collections
+        """
+
+
 class IrodsEntityMapper(Generic[EntityType], metaclass=ABCMeta):
     """
     iRODS entity mapper.
@@ -77,6 +112,13 @@ class IrodsEntityMapper(Generic[EntityType], metaclass=ABCMeta):
         """
         Property to access a mapper for metadata that can be assocaited to the iRODS entity that this mapper deals with.
         :return: mapper for metadata
+        """
+
+    @abstractproperty
+    def access_control(self) -> AccessControlMapper[EntityType]:
+        """
+        Property to access a mapper for access controls related the entities that this mapper deals with.
+        :return: the entity access control mapper
         """
 
     @abstractmethod
@@ -125,6 +167,12 @@ class CollectionMapper(IrodsEntityMapper[Collection], metaclass=ABCMeta):
     """
     iRODS collection mapper.
     """
+    @abstractproperty
+    def access_control(self) -> CollectionAccessControlMapper:
+        """
+        Mapper for access controls related the the collections that this mapper deals with.
+        :return: the collection access control mapper
+        """
 
 
 class CustomObjectMapper(Generic[CustomObjectType], metaclass=ABCMeta):
