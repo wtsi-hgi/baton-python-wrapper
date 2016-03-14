@@ -55,7 +55,7 @@ irods.collection.get_all_in_collection("/collection", load_metadata=False)    # 
 irods.data_object.get_all_in_collection(["/collection", "/other_collection"])   # type: Sequence[DataObject]
 ```
 
-#### Metadata
+#### Metadata (AVUs)
 The API provides the ability to both retrieve and manipulate the custom metadata (AVUs) associated with data objects and
 collections.
 
@@ -84,6 +84,31 @@ irods.collection.metadata.remove("/collection", metadata_examples[1])
 
 irods.data_object.metadata.remove_all("/collection/data_object")
 irods.collection.metadata.remove_all("/collection")
+```
+
+#### Access control lists (ACLs)
+The API provides the ability to both retrieve and manipulate the access control lists (ACLs) associated with data 
+objects and collections.
+```python
+from baton.models import AccessControl
+
+# ACLs
+acl_examples = [
+    AccessControl("owner", "zone", AccessControl.READ),
+    AccessControl("another_owner", "another_zone", AccessControl.WRITE)
+]
+
+irods.data_object.access_control.get_all("/collection/data_object") # type: Sequence[AccessControl]
+irods.collection.access_control.get_all("/collection")  # type: Sequence[AccessControl]
+
+irods.data_object.access_control.add("/collection/data_object", acl_examples[0])
+irods.collection.access_control.add("/collection", acl_examples, recursive=True)
+
+irods.data_object.access_control.set("/collection/data_object", acl_examples[1])
+irods.collection.access_control.set("/collection", acl_examples[0], recursive=True)
+
+irods.data_object.access_control.remove("/collection/data_object", acl_examples)
+irods.collection.access_control.remove("/collection", acl_examples[1], recursive=True)
 ```
 
 #### Custom objects via specific queries
