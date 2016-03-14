@@ -1,14 +1,63 @@
-from abc import ABCMeta, abstractmethod
+from abc import ABCMeta, abstractmethod, abstractproperty
 from typing import Generic, Union, Sequence, Iterable
 
-from baton.models import Collection, DataObject, PreparedSpecificQuery, SpecificQuery, SearchCriterion
+from baton.collections import IrodsMetadata
+
+from baton.models import Collection, DataObject, PreparedSpecificQuery, SpecificQuery, SearchCriterion, IrodsEntity
 from baton.types import EntityType, CustomObjectType
+
+
+class IrodsMetadataMapper(Generic[EntityType], metaclass=ABCMeta):
+    """
+    iRODS metadata mapper.
+    """
+    def add(self, irods_entity: EntityType, metadata: Union[IrodsMetadata, Iterable[IrodsMetadata]]):
+        """
+        Adds the given metadata or collection of metadata to the given iRODS entity.
+        :param irods_entity: the entity to add the metadata to
+        :param metadata: the metadata to write
+        """
+
+    def set(self, irods_entity: EntityType, metadata: Iterable[IrodsMetadata]):
+        """
+        Sets the given metadata or collection of metadata on the given iRODS entity.
+
+        Similar to `add` although pre-existing metadata with matching keys will be overwritten.
+        :param irods_entity: the entity to set the metadata for
+        :param metadata: the metadata to set
+        """
+
+    def remove(self, irods_entity: Iterable[IrodsMetadata], metadata: Iterable[IrodsMetadata]):
+        """
+        Removes the given metadata or collection of metadata from the given iRODS entity.
+
+        An exception will be raised if the entity does not have metadata with the given key and value. If this exception
+        is raised part-way through the removal of multiple pieces of metadata, a rollback will not occur - it would be
+        necessary to get the metadata for the entity to determine what metadata in the collection was removed
+        successfully.
+        :param irods_entity: the entity to remove metadata from
+        :param metadata: the metadata to remove
+        """
+
+    def get_all(self, irods_entity: EntityType) -> Sequence[IrodsMetadata]:
+        """
+        Gets all of the metadata for the given entity.
+        :param irods_entity: the entity to getr the metadata for
+        :return: metadata for the given entity
+        """
 
 
 class IrodsEntityMapper(Generic[EntityType], metaclass=ABCMeta):
     """
     iRODS entity mapper.
     """
+    @abstractproperty
+    def metadata(self) -> IrodsMetadataMapper[EntityType]:
+        """
+        TODO
+        :return:
+        """
+
     @abstractmethod
     def get_by_metadata(self, metadata_search_criteria: Union[SearchCriterion, Iterable[SearchCriterion]],
                         load_metadata: bool=True, zone: str=None) -> Sequence[EntityType]:
