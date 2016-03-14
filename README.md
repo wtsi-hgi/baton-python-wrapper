@@ -24,8 +24,10 @@ git+https://github.com/wtsi-hgi/baton-python-wrapper.git@master#egg=baton
 ### API
 ```python
 from baton.api import connect_to_irods_with_baton, Connection
-from baton.models import IrodsEntity, DataObject, Collection, SpecificQuery, SearchCriterion, ComparisonOperator
+from baton.models import IrodsEntity, DataObject, Collection, SpecificQuery
 from baton.collections import IrodsMetadata
+from hgicommon.models import SearchCriterion, ComparisonOperator
+
 
 # Setup connection to iRODS using baton
 irods = connect_to_irods_with_baton("/where/baton/binaries/are/installed/") # type: Connection
