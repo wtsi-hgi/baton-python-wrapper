@@ -80,11 +80,27 @@ class AccessControlMapper(Generic[EntityType], metaclass=ABCMeta):
         """
 
     @abstractmethod
-    def set(self, paths: Union[str, Iterable[str]], access_control: Union[AccessControl, Iterable[AccessControl]]):
+    def add(self, paths: Union[str, Iterable[str]], access_controls: Union[AccessControl, Iterable[AccessControl]]):
         """
-        Set the access controls associated to a give path or collection of paths.
+        Adds the given access controls to those associated with the given path or collection of paths.
+        :param paths: the paths to add the access controls
+        :param access_controls: the access controls to add
+        """
+
+    @abstractmethod
+    def set(self, paths: Union[str, Iterable[str]], access_controls: Union[AccessControl, Iterable[AccessControl]]):
+        """
+        Sets the access controls associated to a give path or collection of paths to those given.
         :param paths: the paths to set the access controls for
-        :param access_control: the access controls to set
+        :param access_controls: the access controls to set
+        """
+
+    @abstractmethod
+    def remove(self, paths: Union[str, Iterable[str]], access_controls: Union[AccessControl, Iterable[AccessControl]]):
+        """
+        Remove the given access controls that are associated to the given path or collection of paths.
+        :param paths: the paths to remove access controls on
+        :param access_controls: the access controls to remove
         """
 
 
@@ -93,13 +109,33 @@ class CollectionAccessControlMapper(AccessControlMapper[Collection], metaclass=A
     Access control mapper for controls relating to collections.
     """
     @abstractmethod
-    def set(self, paths: Union[str, Iterable[str]], access_control: Union[AccessControl, Iterable[AccessControl]],
+    def add(self, paths: Union[str, Iterable[str]], access_controls: Union[AccessControl, Iterable[AccessControl]],
+            recursive: bool=False):
+        """
+        See `AccessControlMapper.add`.
+        :param paths: see `AccessControlMapper.add`
+        :param access_controls: see `AccessControlMapper.add`
+        :param recursive: whether the access control list should be changed recursively for all nested collections
+        """
+
+    @abstractmethod
+    def set(self, paths: Union[str, Iterable[str]], access_controls: Union[AccessControl, Iterable[AccessControl]],
             recursive: bool=False):
         """
         See `AccessControlMapper.set`.
         :param paths: see `AccessControlMapper.set`
-        :param access_control: see `AccessControlMapper.set`
-        :param recursive: whether the access control list should be set recursively for all nested collections
+        :param access_controls: see `AccessControlMapper.set`
+        :param recursive: whether the access control list should be changed recursively for all nested collections
+        """
+
+    @abstractmethod
+    def remove(self, paths: Union[str, Iterable[str]], access_controls: Union[AccessControl, Iterable[AccessControl]],
+               recursive: bool=False):
+        """
+        See `AccessControlMapper.remove`.
+        :param paths: see `AccessControlMapper.remove`
+        :param access_controls: see `AccessControlMapper.remove`
+        :param recursive: whether the access control list should be changed recursively for all nested collections
         """
 
 
