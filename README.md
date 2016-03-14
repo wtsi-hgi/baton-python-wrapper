@@ -32,7 +32,7 @@ from hgicommon.models import SearchCriterion, ComparisonOperator
 # Setup connection to iRODS using baton
 irods = connect_to_irods_with_baton("/where/baton/binaries/are/installed/", skip_baton_binaries_validation=False) # type: Connection
 
-# Get information about the data objects or collections at the given path(s) in iRODS
+# Get all information about the data objects or collections at the given path(s) in iRODS
 irods.data_object.get_by_path("/collection/data_object")    # type: Sequence[DataObject]:
 irods.collection.get_by_path(["/collection", "/other_collection"])   # type: Sequence[Collection]:
 
@@ -49,6 +49,24 @@ irods.data_object.get_all_in_collection(["/collection", "/other_collection"])   
 
 # Get specific queries that have been installed on the iRODS server
 irods.specific_query.get_all(zone="OptionalZoneRestriction")  # type: Sequence[SpecificQuery]
+
+# Metadata (methods available for both `data_object` and `collection`)
+metadata_examples = [
+    IrodsMetadata({"key", (value, )}),
+    IrodsMetadata({"another_key", (value_1, value_2)}),
+]
+
+irods.data_object.metadata.get_all("/collection/data_object")   # type: Sequence[IrodsMetadata]
+irods.collection.metadata.get_all("/collection")   # type: Sequence[IrodsMetadata]
+
+irods.data_object.metadata.add("/collection/data_object", metadata_examples[0])
+irods.collection.metadata.add("/collection", metadata_examples)
+
+irods.data_object.metadata.set("/collection/data_object", metadata_examples)
+irods.collection.metadata.set("/collection", metadata_examples[1])
+
+irods.data_object.metadata.remove("/collection/data_object", metadata_examples)
+irods.collection.metadata.remove("/collection", metadata_examples[1])
 ```
 
 ### JSON Serialization/Deserialization

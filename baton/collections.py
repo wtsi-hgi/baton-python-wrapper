@@ -15,7 +15,7 @@ class IrodsMetadata(Metadata):
     superclass, which allows keys to be associated to any value. The current implementation is essentially
     `Dict[str, Set[Any]]` (with convenience methods).
     """
-    def __init__(self, seq: Dict=None):
+    def __init__(self, seq: Dict[Any, Set]=None):
         super().__init__()
         if seq is not None:
             for key, value in seq.items():
