@@ -7,7 +7,7 @@ from baton._constants import IRODS_SPECIFIC_QUERY_FIND_QUERY_BY_ALIAS, BATON_COL
     BATON_DATA_OBJECT_PROPERTY, BATON_SPECIFIC_QUERY_SQL_PROPERTY
 from baton.collections import IrodsMetadata
 from baton.tests._helpers import create_data_object, create_collection
-from testwithbaton import TestWithBatonSetup
+from testwithbaton.api import TestWithBatonSetup
 
 _data_object = None
 _data_object_as_json = None

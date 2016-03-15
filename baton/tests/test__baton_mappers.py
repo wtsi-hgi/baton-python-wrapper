@@ -12,7 +12,7 @@ from baton.tests._helpers import combine_metadata, create_data_object, create_co
 from baton.tests._settings import BATON_DOCKER_BUILD
 from baton.tests._stubs import StubBatonCustomObjectMapper
 from hgicommon.enums import ComparisonOperator
-from testwithbaton import TestWithBatonSetup
+from testwithbaton.api import TestWithBatonSetup
 from testwithbaton.helpers import SetupHelper
 
 _NAMES = ["name_1", "name_2", "name_3"]
