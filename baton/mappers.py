@@ -11,30 +11,34 @@ class IrodsMetadataMapper(Generic[EntityType], metaclass=ABCMeta):
     """
     iRODS metadata mapper.
     """
-    def get_all(self, irods_entity_path: str) -> Sequence[IrodsMetadata]:
+    @abstractmethod
+    def get_all(self, path: str) -> Sequence[IrodsMetadata]:
         """
         Gets all of the metadata for the given entity.
-        :param irods_entity_path: the path of the entity to getr the metadata for
+        :param path: the path of the entity to getr the metadata for
         :return: metadata for the given entity
         """
 
-    def add(self, irods_entity_path: str, metadata: Union[IrodsMetadata, Iterable[IrodsMetadata]]):
+    @abstractmethod
+    def add(self, path: str, metadata: Union[IrodsMetadata, Union[IrodsMetadata, Iterable[IrodsMetadata]]]):
         """
         Adds the given metadata or collection of metadata to the given iRODS entity.
-        :param irods_entity_path: the path of the entity to add the metadata to
+        :param path: the path of the entity to add the metadata to
         :param metadata: the metadata to write
         """
 
-    def set(self, irods_entity_path: str, metadata: Iterable[IrodsMetadata]):
+    @abstractmethod
+    def set(self, path: str, metadata: Union[IrodsMetadata, Iterable[IrodsMetadata]]):
         """
         Sets the given metadata or collection of metadata on the given iRODS entity.
 
         Similar to `add` although pre-existing metadata with matching keys will be overwritten.
-        :param irods_entity_path: the path of the entity to set the metadata for
+        :param path: the path of the entity to set the metadata for
         :param metadata: the metadata to set
         """
 
-    def remove(self, irods_entity_path: str, metadata: Iterable[IrodsMetadata]):
+    @abstractmethod
+    def remove(self, path: str, metadata: Union[IrodsMetadata, Iterable[IrodsMetadata]]):
         """
         Removes the given metadata or collection of metadata from the given iRODS entity.
 
@@ -42,7 +46,7 @@ class IrodsMetadataMapper(Generic[EntityType], metaclass=ABCMeta):
         is raised part-way through the removal of multiple pieces of metadata, a rollback will not occur - it would be
         necessary to get the metadata for the entity to determine what metadata in the collection was removed
         successfully.
-        :param irods_entity_path: the path of the entity to remove metadata from
+        :param path: the path of the entity to remove metadata from
         :param metadata: the metadata to remove
         """
 
