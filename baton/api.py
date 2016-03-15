@@ -3,7 +3,7 @@ from baton._baton_mappers import BatonDataObjectMapper, BatonCollectionMapper, B
 
 class Connection:
     """
-    TODO
+    Pseudo connection to iRODS.
     """
     def __init__(self, baton_binaries_directory: str, skip_baton_binaries_validation: bool=False):
         """
@@ -17,13 +17,14 @@ class Connection:
         self.specific_query = BatonSpecificQueryMapper(baton_binaries_directory, skip_baton_binaries_validation)
 
 
-def connect_to_irods_with_baton(baton_binaries_directory: str) -> Connection:
+def connect_to_irods_with_baton(baton_binaries_directory: str, skip_baton_binaries_validation: bool=False) \
+        -> Connection:
     """
-    TODO
-    :param baton_binaries_directory:
-    :param irods_query_zone:
-    :return:
+    Convenience method to create a pseudo connection to iRODS.
+    :param baton_binaries_directory: see `Connection.__init__`
+    :param skip_baton_binaries_validation: see `Connection.__init__`
+    :return: pseudo connection to iRODS
     """
-    return Connection(baton_binaries_directory)
+    return Connection(baton_binaries_directory, skip_baton_binaries_validation)
 
 
