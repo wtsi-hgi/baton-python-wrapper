@@ -28,7 +28,7 @@ from baton.models import IrodsEntity, DataObject, Collection, SpecificQuery, Sea
 from baton.collections import IrodsMetadata
 
 # Setup connection to iRODS using baton
-irods = connect_to_irods_with_baton("/where/baton/binaries/are/installed/") # type: Connection
+irods = connect_to_irods_with_baton("/where/baton/binaries/are/installed/", skip_baton_binaries_validation=False) # type: Connection
 
 # Get information about the data objects or collections at the given path(s) in iRODS
 irods.data_object.get_by_path("/collection/data_object")    # type: Sequence[DataObject]:
