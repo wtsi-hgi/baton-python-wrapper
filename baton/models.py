@@ -52,9 +52,9 @@ class IrodsEntity(Model, metaclass=ABCMeta):
     """
     from baton.collections import IrodsMetadata
 
-    def __init__(self, path: str, access_control_list: Iterable[AccessControl]=(), metadata: IrodsMetadata=None):
+    def __init__(self, path: str, access_control_list: Iterable[AccessControl]=None, metadata: IrodsMetadata=None):
         self.path = path
-        self.acl = access_control_list
+        self.acl = access_control_list if access_control_list else []
         self.metadata = metadata
 
 
@@ -64,8 +64,9 @@ class DataObject(IrodsEntity):
     """
     from baton.collections import IrodsMetadata
 
-    def __init__(self, path: str, access_control_list: Iterable[AccessControl]=(), metadata: IrodsMetadata=None,
+    def __init__(self, path: str, access_control_list: Iterable[AccessControl]=None, metadata: IrodsMetadata=None,
                  replicas: Iterable[DataObjectReplica]=()):
+        access_control_list = access_control_list if access_control_list else []
         super().__init__(path, access_control_list, metadata)
         from baton.collections import DataObjectReplicaCollection
         self.replicas = DataObjectReplicaCollection(replicas)
