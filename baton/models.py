@@ -112,7 +112,7 @@ class PreparedSpecificQuery(SpecificQuery):
     """
     Model of a prepared specific query.
     """
-    def __init__(self, alias: str, query_arguments: List[str]=None, sql: str= "(unknown)"):
+    def __init__(self, alias: str, query_arguments: List[str]=None, sql: str="(unknown)"):
         super().__init__(alias, sql)
         self.query_arguments = query_arguments if query_arguments is not None else []
 

@@ -1,5 +1,5 @@
-from copy import copy
-from typing import Dict, Sequence, Union, Optional, Sized, Iterable, Any, Set
+import collections
+from typing import Dict, Sequence, Union, Optional, Sized, Iterable, Any, Set, Container
 
 from baton.models import DataObjectReplica
 from hgicommon.collections import Metadata
@@ -20,7 +20,7 @@ class IrodsMetadata(Metadata):
 
     def get(self, key: str, default=None) -> Set[str]:
         value = super().get(key, default)
-        assert isinstance(value, set)
+        assert isinstance(value, collections.Set)
         return value
 
     def add(self, key: str, value: str):
@@ -37,12 +37,11 @@ class IrodsMetadata(Metadata):
 
     def __getitem__(self, key: str) -> Set[str]:
         value = super().__getitem__(key)
-        assert isinstance(value, set)
-        # Return copy to keep underlying data immutable
-        return copy(value)
+        assert isinstance(value, collections.Set)
+        return value
 
     def __setitem__(self, key: str, value: Set[str]):
-        assert isinstance(value, set)
+        assert isinstance(value, collections.Set)
         super().__setitem__(key, value)
 
     @staticmethod
@@ -58,7 +57,7 @@ class IrodsMetadata(Metadata):
         return irods_metadata
 
 
-class DataObjectReplicaCollection(Sized, Iterable):
+class DataObjectReplicaCollection(Sized, Iterable, Container):
     """
     Collection of data object replicas.
     """
@@ -157,3 +156,6 @@ class DataObjectReplicaCollection(Sized, Iterable):
 
     def __iter__(self) -> Iterable[DataObjectReplica]:
         return self._data.values().__iter__()
+
+    def __contains__(self, item: Any) -> bool:
+        return item in self._data.values()
