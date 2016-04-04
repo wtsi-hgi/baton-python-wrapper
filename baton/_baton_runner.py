@@ -99,9 +99,7 @@ class BatonRunner(metaclass=ABCMeta):
             input_data = str.encode(json.dumps(input_data))
 
         out, error = process.communicate(input=input_data, timeout=self.timeout_queries_after)
-        if len(error) > 0:
-            raise IOError(error)
-        if len(out) == 0:
+        if len(out) == 0 and len(error) > 0:
             raise IOError(error)
 
         return out.decode(output_encoding).rstrip()
