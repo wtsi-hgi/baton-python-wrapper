@@ -45,7 +45,8 @@ class _BatonIrodsEntityMapper(BatonRunner, IrodsEntityMapper, metaclass=ABCMeta)
         arguments = self._create_entity_query_arguments(load_metadata)
 
         if zone is not None:
-            arguments.append("--zone %s" % zone)
+            arguments.append("--zone")
+            arguments.append(zone)
         # Fixes #6.
         arguments.extend(self._additional_metadata_query_arguments)
 

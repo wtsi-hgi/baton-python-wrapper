@@ -24,8 +24,10 @@ git+https://github.com/wtsi-hgi/baton-python-wrapper.git@master#egg=baton
 ### API
 ```python
 from baton.api import connect_to_irods_with_baton, Connection
-from baton.models import IrodsEntity, DataObject, Collection, SpecificQuery, SearchCriterion, ComparisonOperator
+from baton.models import IrodsEntity, DataObject, Collection, SpecificQuery
 from baton.collections import IrodsMetadata
+from hgicommon.models import SearchCriterion, ComparisonOperator
+
 
 # Setup connection to iRODS using baton
 irods = connect_to_irods_with_baton("/where/baton/binaries/are/installed/", skip_baton_binaries_validation=False) # type: Connection
@@ -42,8 +44,8 @@ irods.data_object.get_by_metadata(search_criterion_1, zone="OptionalZoneRestrict
 irods.collection.get_by_metadata([search_criterion_1, search_criterion_2])   # type: Sequence[Collection]
 
 # Get data objects in a collection(s)
-irods.data_object.get_in_collection("/collection")    # type: Sequence[DataObject]
-irods.data_object.get_in_collection(["/collection", "/other_collection"])   # type: Sequence[DataObject]
+irods.data_object.get_all_in_collection("/collection")    # type: Sequence[DataObject]
+irods.data_object.get_all_in_collection(["/collection", "/other_collection"])   # type: Sequence[DataObject]
 
 # Get specific queries that have been installed on the iRODS server
 irods.specific_query.get_all(zone="OptionalZoneRestriction")  # type: Sequence[SpecificQuery]
