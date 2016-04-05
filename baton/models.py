@@ -13,6 +13,7 @@ class Timestamped(Model, metaclass=ABCMeta):
     Model that has related timestamps.
     """
     def __init__(self, created: datetime=None, last_modified: datetime=None):
+        super().__init__()
         self.created = created
         self.last_modified = last_modified
 

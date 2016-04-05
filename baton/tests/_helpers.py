@@ -4,8 +4,8 @@ from dateutil.parser import parser
 from baton._baton_runner import BatonRunner, BatonBinary
 
 from baton.collections import IrodsMetadata
-from baton.json import DataObjectJSONEncoder
-from baton.models import DataObject, DataObjectReplica, AccessControl, Collection
+from baton.json import DataObjectJSONEncoder, CollectionJSONEncoder
+from baton.models import DataObject, DataObjectReplica, AccessControl, Collection, IrodsEntity
 from testwithbaton.api import TestWithBatonSetup
 from testwithbaton.helpers import SetupHelper
 
@@ -63,9 +63,23 @@ def create_collection(test_with_baton: TestWithBatonSetup, name: str, metadata: 
     return Collection(path=path, access_control_list=acl, metadata=metadata)
 
 
-def synchronise_timestamps(test_with_baton: TestWithBatonSetup, data_object: DataObject):
+def synchronise_timestamps(test_with_baton: TestWithBatonSetup, irods_entity: IrodsEntity):
     """
-    This is not great as it essentially just replicates what `DataObjectJSONDecoder` does.
+    Synchronises the timestamps of the given entity to align with the timestamps recorded on iRODS.
+    :param test_with_baton: framework to allow testing with baton
+    :param irods_entity: entity to synchronise timestamps for
+    """
+    if type(irods_entity) == DataObject:
+        synchronise_data_object_timestamps(test_with_baton, irods_entity)
+    elif type(irods_entity) == Collection:
+        synchronise_collection_timestamps(test_with_baton, irods_entity)
+    else:
+        raise ValueError("Unsupported type: `%s`" % type(irods_entity))
+
+
+def synchronise_data_object_timestamps(test_with_baton: TestWithBatonSetup, data_object: DataObject):
+    """
+    Synchronises the timestamps of the given data object to align with the timestamps recorded on iRODS.
     :param test_with_baton: framework to allow testing with baton
     :param data_object: data object to synchronise timestamps for
     """
@@ -80,6 +94,23 @@ def synchronise_timestamps(test_with_baton: TestWithBatonSetup, data_object: Dat
             replica.created = date_parser.parse(timestamp_as_json["created"])
         else:
             replica.last_modified = date_parser.parse(timestamp_as_json["modified"])
+
+
+def synchronise_collection_timestamps(test_with_baton: TestWithBatonSetup, collection: Collection):
+    """
+    Synchronises the timestamps of the given data object to align with the timestamps recorded on iRODS.
+    :param test_with_baton: framework to allow testing with baton
+    :param data_object: data object to synchronise timestamps for
+    """
+    baton_runner = BatonRunner(test_with_baton.baton_location)
+    query_input = CollectionJSONEncoder().default(collection)
+    query_return = baton_runner.run_baton_query(BatonBinary.BATON_LIST, ["--timestamp"], query_input)
+    date_parser = parser()
+    for timestamp_as_json in query_return[0]["timestamps"]:
+        if "created" in timestamp_as_json:
+            collection.created = date_parser.parse(timestamp_as_json["created"])
+        else:
+            collection.last_modified = date_parser.parse(timestamp_as_json["modified"])
 
 
 def combine_metadata(metadata_collection: Iterable[IrodsMetadata]) -> IrodsMetadata:

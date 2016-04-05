@@ -23,7 +23,7 @@ _UNUSED_VALUE = "value_4"
 
 class _TestBatonIrodsEntityMapper(unittest.TestCase, metaclass=ABCMeta):
     """
-    Tests for `_BatonIrodsEntityMapper`.
+    Tests for subclasses of `_BatonIrodsEntityMapper`.
     """
     def setUp(self):
         self.test_with_baton = TestWithBatonSetup(baton_docker_build=BATON_DOCKER_BUILD)
@@ -44,7 +44,7 @@ class _TestBatonIrodsEntityMapper(unittest.TestCase, metaclass=ABCMeta):
         """
 
     @abstractmethod
-    def create_irods_entity(self, name: str, metadata: IrodsMetadata()) -> IrodsEntity:
+    def create_irods_entity(self, name: str, metadata: IrodsMetadata=IrodsMetadata()) -> IrodsEntity:
         """
         Creates an iRODS entity to test with
         :param name: the name of the entity to create
@@ -158,6 +158,71 @@ class _TestBatonIrodsEntityMapper(unittest.TestCase, metaclass=ABCMeta):
         irods_entity_1.metadata = None
         self.assertEqual(retrieved_entities, [irods_entity_1])
 
+    def test_get_all_in_collection_when_collection_does_not_exist(self):
+        self.assertRaises(FileNotFoundError, self.create_mapper().get_all_in_collection, "/invalid")
+
+    def test_get_all_in_collection_when_one_of_multiple_collections_does_not_exist(self):
+        collection_paths = [self.setup_helper.create_collection("collection"), "/invalid"]
+        self.assertRaises(FileNotFoundError, self.create_mapper().get_all_in_collection, collection_paths)
+
+    def test_get_all_in_collection_when_no_paths_given(self):
+        retrieved = self.create_mapper().get_all_in_collection([])
+        self.assertEqual(len(retrieved), 0)
+
+    def test_get_all_in_collection_with_single_collection_containing_one_entity(self):
+        entity = self.create_irods_entity(_NAMES[0], self.metadata_1)
+
+        retrieved_entities = self.create_mapper().get_all_in_collection(entity.get_collection_path())
+        self.assertEqual(retrieved_entities, [entity])
+
+    def test_get_all_in_collection_with_single_collection_containing_multiple_entities(self):
+        entity_1 = self.create_irods_entity(_NAMES[0], self.metadata_1)
+        entity_2 = self.create_irods_entity(_NAMES[1], self.metadata_2)
+        assert entity_1.get_collection_path() == entity_2.get_collection_path()
+
+        retrieved_entities = self.create_mapper().get_all_in_collection(entity_1.get_collection_path())
+        self.assertEqual(retrieved_entities, [entity_1, entity_2])
+
+    def test_get_all_in_collection_with_multiple_collections(self):
+        collections = []
+        entities = []
+
+        for i in range(3):
+            collection = self.setup_helper.create_collection("collection_%d" % i)
+
+            for j in range(len(_NAMES)):
+                entity = self.create_irods_entity(_NAMES[j], self.metadata_1)
+                moved_path = "%s/%s" % (collection, entity.get_name())
+                self.setup_helper.run_icommand(["imv", entity.path, moved_path])
+                entity.path = moved_path
+                synchronise_timestamps(self.test_with_baton, entity)
+                entities.append(entity)
+
+            collections.append(collection)
+
+        retrieved_entities = self.create_mapper().get_all_in_collection(collections)
+        self.assertEqual(retrieved_entities, entities)
+
+    def test_get_all_in_collection_when_metadata_not_required(self):
+        entity = self.create_irods_entity(_NAMES[0], self.metadata_1)
+        self.create_irods_entity(_NAMES[1], self.metadata_1)
+
+        retrieved_entities = self.create_mapper().get_all_in_collection(
+            entity.get_collection_path(), load_metadata=False)
+
+        self.assertIsNone(retrieved_entities[0].metadata)
+        entity.metadata = None
+        self.assertEqual(retrieved_entities[0], entity)
+
+    def test_get_all_in_collection_when_collection_contains_data_objects_and_collections(self):
+        data_object = create_data_object(self.test_with_baton, _NAMES[0], self.metadata_1)
+        collection = create_collection(self.test_with_baton, _NAMES[1], self.metadata_2)
+
+        retrieved_entities = self.create_mapper().get_all_in_collection(data_object.get_collection_path())
+
+        self.assertEqual(len(retrieved_entities), 1)
+        self.assertIsInstance(retrieved_entities[0], type(self.create_irods_entity(_NAMES[2])))
+
     def tearDown(self):
         self.test_with_baton.tear_down()
 
@@ -169,7 +234,7 @@ class TestBatonDataObjectMapper(_TestBatonIrodsEntityMapper):
     def create_mapper(self) -> BatonDataObjectMapper:
         return BatonDataObjectMapper(self.test_with_baton.baton_location)
 
-    def create_irods_entity(self, name: str, metadata: IrodsMetadata()) -> DataObject:
+    def create_irods_entity(self, name: str, metadata: IrodsMetadata=IrodsMetadata()) -> DataObject:
         return create_data_object(self.test_with_baton, name, metadata)
 
     def test_get_by_metadata_when_collection_with_matching_metadata(self):
@@ -177,70 +242,6 @@ class TestBatonDataObjectMapper(_TestBatonIrodsEntityMapper):
         create_collection(self.test_with_baton, _NAMES[1], self.metadata_1_2)
 
         retrieved_entities = self.create_mapper().get_by_metadata(self.search_criterion_1)
-        self.assertEqual(retrieved_entities, [data_object])
-
-    def test_get_all_in_collection_when_collection_does_not_exist(self):
-        self.assertRaises(FileNotFoundError, self.create_mapper().get_all_in_collection, "/invalid")
-
-    def test_get_all_in_collection_when_no_paths_given(self):
-        retrieved = self.create_mapper().get_all_in_collection([])
-        self.assertEqual(len(retrieved), 0)
-
-    def test_get_all_in_collection_with_single_collection_containing_one_data_object(self):
-        data_object_1 = self.create_irods_entity(_NAMES[0], self.metadata_1)
-
-        retrieved_entities = self.create_mapper().get_all_in_collection(data_object_1.get_collection_path())
-        self.assertEqual(retrieved_entities, [data_object_1])
-
-    def test_get_all_in_collection_with_single_collection_containing_multiple_data_objects(self):
-        data_object_1 = self.create_irods_entity(_NAMES[0], self.metadata_1)
-        data_object_2 = self.create_irods_entity(_NAMES[1], self.metadata_2)
-        assert data_object_1.get_collection_path() == data_object_2.get_collection_path()
-
-        retrieved_entities = self.create_mapper().get_all_in_collection(data_object_1.get_collection_path())
-        self.assertEqual(retrieved_entities, [data_object_1, data_object_2])
-
-    def test_get_all_in_collection_with_multiple_collections(self):
-        collections = []
-        data_objects = []
-
-        for i in range(3):
-            collection = self.setup_helper.create_collection("collection_%d" % i)
-
-            for j in range(len(_NAMES)):
-                data_object = self.create_irods_entity(_NAMES[j], self.metadata_1)
-                moved_path = "%s/%s" % (collection, data_object.get_name())
-                self.setup_helper.run_icommand(["imv", data_object.path, moved_path])
-                data_object.path = moved_path
-                synchronise_timestamps(self.test_with_baton, data_object)
-                data_objects.append(data_object)
-
-            collections.append(collection)
-
-        retrieved_entities = self.create_mapper().get_all_in_collection(collections)
-        self.assertEqual(retrieved_entities, data_objects)
-
-    def test_get_all_in_collection_when_one_of_multiple_collections_does_not_exist(self):
-        collection_paths = [self.setup_helper.create_collection("collection"), "/invalid"]
-        self.assertRaises(FileNotFoundError, self.create_mapper().get_all_in_collection, collection_paths)
-
-    def test_get_all_in_collection_when_metadata_not_required(self):
-        data_object_1 = self.create_irods_entity(_NAMES[0], self.metadata_1)
-        self.create_irods_entity(_NAMES[1], self.metadata_1)
-
-        retrieved_entities = self.create_mapper().get_all_in_collection(
-                data_object_1.get_collection_path(), load_metadata=False)
-
-        self.assertIsNone(retrieved_entities[0].metadata)
-        data_object_1.metadata = None
-        self.assertEqual(retrieved_entities[0], data_object_1)
-
-    def test_get_all_in_collection_when_collection_contains_data_objects_and_collections(self):
-        data_object = self.create_irods_entity(_NAMES[0], self.metadata_1)
-        collection = create_collection(self.test_with_baton, _NAMES[1], self.metadata_2)
-
-        retrieved_entities = self.create_mapper().get_all_in_collection(data_object.get_collection_path())
-
         self.assertEqual(retrieved_entities, [data_object])
 
 
@@ -251,7 +252,7 @@ class TestBatonCollectionMapper(_TestBatonIrodsEntityMapper):
     def create_mapper(self) -> BatonCollectionMapper:
         return BatonCollectionMapper(self.test_with_baton.baton_location)
 
-    def create_irods_entity(self, name: str, metadata: IrodsMetadata()) -> Collection:
+    def create_irods_entity(self, name: str, metadata: IrodsMetadata=IrodsMetadata()) -> Collection:
         return create_collection(self.test_with_baton, name, metadata)
 
     def test_get_by_metadata_when_data_object_with_matching_metadata(self):
