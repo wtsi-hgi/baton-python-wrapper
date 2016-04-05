@@ -91,14 +91,15 @@ class IrodsEntityMapper(Generic[EntityType], metaclass=ABCMeta):
         """
 
     @abstractmethod
-    def get_by_path(self, paths: Union[str, Iterable[str]], load_metadata: bool=True) -> Sequence[EntityType]:
+    def get_by_path(self, paths: Union[str, Iterable[str]], load_metadata: bool=True) \
+            -> Union[EntityType, Sequence[EntityType]]:
         """
-        Gets entities with the given paths from iRODS.
+        Gets the entity or entities with the given path or paths from iRODS.
 
         If one or more of the entities does not exist, a `FileNotFound` exception will be raised.
         :param paths: the paths of the entities to get from iRODS
         :param load_metadata: whether metadata associated to the entities should be loaded
-        :return: the entities loaded from iRODS
+        :return: the single entity retrieved from iRODS if a single path is given, else a sequence of retrieved entities
         """
 
     @abstractmethod
