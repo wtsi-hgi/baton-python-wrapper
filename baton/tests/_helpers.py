@@ -65,7 +65,7 @@ def create_collection(test_with_baton: TestWithBatonSetup, name: str, metadata: 
 
 def synchronise_timestamps(test_with_baton: TestWithBatonSetup, data_object: DataObject):
     """
-    This is not great as it essentially just replicates what `DataObjectJSONDecoder` does.
+    Synchronises the timestamps of the given entity to align with the timestamps recorded on iRODS.
     :param test_with_baton: framework to allow testing with baton
     :param data_object: data object to synchronise timestamps for
     """
