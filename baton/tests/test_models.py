@@ -1,7 +1,7 @@
 import copy
 import unittest
 
-from baton.models import DataObject, SpecificQuery
+from baton.models import DataObject, SpecificQuery, Collection
 
 _COLLECTION = "/collection/sub_collection"
 _FILE_NAME = "file_name"
@@ -13,17 +13,45 @@ class TestDataObject(unittest.TestCase):
     Tests for `DataObject`.
     """
     def setUp(self):
-        self.data_object = DataObject("%s/%s" % (_COLLECTION, _FILE_NAME))
+        self.entity = DataObject("%s/%s" % (_COLLECTION, _FILE_NAME))
+
+    def test_cannot_create_entity_with_relative_path(self):
+        self.assertRaises(ValueError, type(self.entity), "../data_object")
 
     def test_get_collection_path(self):
-        self.assertEquals(self.data_object.get_collection_path(), _COLLECTION)
+        self.assertEquals(self.entity.get_collection_path(), _COLLECTION)
 
     def test_get_name(self):
-        self.assertEquals(self.data_object.get_name(), _FILE_NAME)
+        self.assertEquals(self.entity.get_name(), _FILE_NAME)
 
     def test_equality(self):
-        data_object_2 = copy.deepcopy(self.data_object)
-        self.assertEqual(data_object_2, self.data_object)
+        data_object_2 = copy.deepcopy(self.entity)
+        self.assertEqual(data_object_2, self.entity)
+
+
+class TestCollection(unittest.TestCase):
+    """
+    Tests for `Collection`.
+    """
+    def setUp(self):
+        self.entity = Collection(_COLLECTION)
+
+    def test_cannot_create_entity_with_relative_path(self):
+        self.assertRaises(ValueError, type(self.entity), "../collection")
+
+    def test_get_collection_path(self):
+        self.assertEquals(self.entity.get_collection_path(), "/collection")
+
+    def test_get_name(self):
+        self.assertEquals(self.entity.get_name(), "sub_collection")
+
+    def test_equality(self):
+        data_object_2 = copy.deepcopy(self.entity)
+        self.assertEqual(data_object_2, self.entity)
+
+    def test_strips_trailing_slash_from_path(self):
+        collection = Collection("/the/path/")
+        self.assertEquals(collection.path, "/the/path")
 
 
 class TestSpecificQuery(unittest.TestCase):

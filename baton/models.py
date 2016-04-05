@@ -2,6 +2,7 @@ from abc import ABCMeta
 from datetime import datetime
 from enum import Enum, unique
 from typing import Iterable, List
+import re
 
 import hgicommon
 from hgicommon.models import Model
@@ -51,11 +52,28 @@ class IrodsEntity(Model, metaclass=ABCMeta):
     Model of an entity in iRODS.
     """
     from baton.collections import IrodsMetadata
+    _ABSOLUTE_PATH_REGEX = re.compile("^/.+")
 
     def __init__(self, path: str, access_control_list: Iterable[AccessControl]=None, metadata: IrodsMetadata=None):
+        if not re.match(IrodsEntity._ABSOLUTE_PATH_REGEX, path):
+            raise ValueError("baton does not support relatives paths: \"%s\"" % path)
         self.path = path
         self.acl = access_control_list if access_control_list else []
         self.metadata = metadata
+
+    def get_collection_path(self) -> str:
+        """
+        Gets the path of the collection in which this entity resides.
+        :return: the path of the collection that this entity is in
+        """
+        return self.path.rsplit('/', 1)[0]
+
+    def get_name(self) -> str:
+        """
+        Gets the name of this entity.
+        :return: the name of this entity
+        """
+        return self.path.rsplit('/', 1)[-1]
 
 
 class DataObject(IrodsEntity):
@@ -66,30 +84,19 @@ class DataObject(IrodsEntity):
 
     def __init__(self, path: str, access_control_list: Iterable[AccessControl]=None, metadata: IrodsMetadata=None,
                  replicas: Iterable[DataObjectReplica]=()):
+        from baton.collections import DataObjectReplicaCollection
         access_control_list = access_control_list if access_control_list else []
         super().__init__(path, access_control_list, metadata)
-        from baton.collections import DataObjectReplicaCollection
         self.replicas = DataObjectReplicaCollection(replicas)
-
-    def get_collection_path(self) -> str:
-        """
-        Gets the path of the collection in which this data object resides.
-        :return: the path of the collection that the data object is in
-        """
-        return self.path.rsplit('/', 1)[0]
-
-    def get_name(self) -> str:
-        """
-        Gets the name of this data object.
-        :return: the name of the data object
-        """
-        return self.path.rsplit('/', 1)[-1]
 
 
 class Collection(IrodsEntity, Timestamped):
     """
     Model of a collection in iRODS.
     """
+    def __init__(self, path, *args, **kwargs):
+        path = path.rstrip("/")
+        super().__init__(path, *args, **kwargs)
 
 
 class SpecificQuery(Model):
