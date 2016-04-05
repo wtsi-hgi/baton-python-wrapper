@@ -43,8 +43,8 @@ search_criterion_2 = SearchCriterion("other_attribute", "other_match_value", Com
 irods.data_object.get_by_metadata(search_criterion_1, zone="OptionalZoneRestriction")   # type: Sequence[DataObject]
 irods.collection.get_by_metadata([search_criterion_1, search_criterion_2])   # type: Sequence[Collection]
 
-# Get data objects in a collection(s)
-irods.data_object.get_all_in_collection("/collection")    # type: Sequence[DataObject]
+# Get data objects or collections contained within a collection(s)
+irods.collection.get_all_in_collection("/collection")    # type: Sequence[Collection]
 irods.data_object.get_all_in_collection(["/collection", "/other_collection"])   # type: Sequence[DataObject]
 
 # Get specific queries that have been installed on the iRODS server
