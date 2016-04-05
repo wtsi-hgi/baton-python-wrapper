@@ -186,13 +186,13 @@ class TestBatonDataObjectMapper(_TestBatonIrodsEntityMapper):
         retrieved = self.create_mapper().get_all_in_collection([])
         self.assertEqual(len(retrieved), 0)
 
-    def test_get_all_in_collection_with_single_collection_containing_one_entity(self):
+    def test_get_all_in_collection_with_single_collection_containing_one_data_object(self):
         data_object_1 = self.create_irods_entity(_NAMES[0], self.metadata_1)
 
         retrieved_entities = self.create_mapper().get_all_in_collection(data_object_1.get_collection_path())
         self.assertEqual(retrieved_entities, [data_object_1])
 
-    def test_get_all_in_collection_with_single_collection_containing_multiple_entities(self):
+    def test_get_all_in_collection_with_single_collection_containing_multiple_data_objects(self):
         data_object_1 = self.create_irods_entity(_NAMES[0], self.metadata_1)
         data_object_2 = self.create_irods_entity(_NAMES[1], self.metadata_2)
         assert data_object_1.get_collection_path() == data_object_2.get_collection_path()
@@ -234,6 +234,14 @@ class TestBatonDataObjectMapper(_TestBatonIrodsEntityMapper):
         self.assertIsNone(retrieved_entities[0].metadata)
         data_object_1.metadata = None
         self.assertEqual(retrieved_entities[0], data_object_1)
+
+    def test_get_all_in_collection_when_collection_contains_data_objects_and_collections(self):
+        data_object = self.create_irods_entity(_NAMES[0], self.metadata_1)
+        collection = create_collection(self.test_with_baton, _NAMES[1], self.metadata_2)
+
+        retrieved_entities = self.create_mapper().get_all_in_collection(data_object.get_collection_path())
+
+        self.assertEqual(retrieved_entities, [data_object])
 
 
 class TestBatonCollectionMapper(_TestBatonIrodsEntityMapper):

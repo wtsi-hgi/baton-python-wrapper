@@ -12,7 +12,7 @@ from testwithbaton.helpers import SetupHelper
 
 def create_data_object(test_with_baton: TestWithBatonSetup, name: str, metadata: IrodsMetadata()) -> DataObject:
     """
-    Factory method to create an iRODS data object that has metadata, an ACL and replicas.
+    Factory method to create an iRODS data object that has metadata, an ACL and replicas. Creates in current directory.
     :param test_with_baton: framework to allow testing with baton
     :param name: the name given to the created data object
     :param metadata: the metadata to give the file
@@ -45,7 +45,7 @@ def create_data_object(test_with_baton: TestWithBatonSetup, name: str, metadata:
 
 def create_collection(test_with_baton: TestWithBatonSetup, name: str, metadata: IrodsMetadata()) -> Collection:
     """
-    Factory method to create an iRODS collection that has metadata and an ACL.
+    Factory method to create an iRODS collection that has metadata and an ACL. Creates in current directory.
     :param test_with_baton: framework to allow testing with baton
     :param name: the name given to the created collection
     :param metadata: the metadata to give the file
