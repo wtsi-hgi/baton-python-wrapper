@@ -222,12 +222,14 @@ class _TestBatonIrodsEntityMapper(unittest.TestCase, metaclass=ABCMeta):
         self.assertEqual(retrieved_entities[0], entity)
 
     def test_get_all_in_collection_when_collection_contains_data_objects_and_collections(self):
-        data_object = self.create_irods_entity(_NAMES[0], self.metadata_1)
+        data_object = create_data_object(self.test_with_baton, _NAMES[0], self.metadata_1)
         collection = create_collection(self.test_with_baton, _NAMES[1], self.metadata_2)
 
         retrieved_entities = self.create_mapper().get_all_in_collection(data_object.get_collection_path())
 
-        self.assertEqual(retrieved_entities, [data_object])
+        self.assertEqual(len(retrieved_entities), 1)
+        self.assertIsInstance(retrieved_entities[0], type(self.create_irods_entity(_NAMES[0])))
+
 
     def tearDown(self):
         self.test_with_baton.tear_down()
