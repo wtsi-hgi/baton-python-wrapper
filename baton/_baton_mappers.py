@@ -1,10 +1,10 @@
 from abc import ABCMeta, abstractmethod
-from typing import Union, Sequence, List, Iterable
+from typing import Union, Sequence, List, Iterable, Dict
 
 import collections
 
 from baton._constants import BATON_SPECIFIC_QUERY_PROPERTY, IRODS_SPECIFIC_QUERY_LS, BATON_AVU_PROPERTY, \
-    BATON_COLLECTION_CONTENTS
+    BATON_COLLECTION_CONTENTS, BATON_DATA_OBJECT_PROPERTY
 
 from baton._baton_runner import BatonBinary, BatonRunner
 from baton.json import DataObjectJSONDecoder, CollectionJSONDecoder, DataObjectJSONEncoder, CollectionJSONEncoder, \
@@ -135,9 +135,11 @@ class BatonDataObjectMapper(_BatonIrodsEntityMapper, DataObjectMapper):
 
         baton_out_as_json = self.run_baton_query(BatonBinary.BATON_LIST, arguments, input_data=baton_json)
 
-        data_objects_as_baton_json = []
+        entities_as_baton_json = []
         for baton_item_as_json in baton_out_as_json:
-            data_objects_as_baton_json += baton_item_as_json[BATON_COLLECTION_CONTENTS]
+            entities_as_baton_json += baton_item_as_json[BATON_COLLECTION_CONTENTS]
+
+        data_objects_as_baton_json = BatonDataObjectMapper._extract_data_objects_from_baton_json(entities_as_baton_json)
 
         return self._baton_json_to_irods_entities(data_objects_as_baton_json)
 
@@ -147,6 +149,19 @@ class BatonDataObjectMapper(_BatonIrodsEntityMapper, DataObjectMapper):
 
     def _baton_json_to_irod_entity(self, entity_as_baton_json: dict) -> DataObject:
         return DataObjectJSONDecoder().decode_dict(entity_as_baton_json)
+
+    @staticmethod
+    def _extract_data_objects_from_baton_json(entities_as_baton_json: List[Dict]) -> List[Dict]:
+        """
+        Extract data objects as JSON from list of entities as JSON.
+        :param entities_as_baton_json: iRODS entities encoded as baton JSON
+        :return: filtered JSON
+        """
+        data_objects_as_baton_json = []
+        for entity_as_baton_json in entities_as_baton_json:
+            if BATON_DATA_OBJECT_PROPERTY in entity_as_baton_json:
+                data_objects_as_baton_json.append(entity_as_baton_json)
+        return data_objects_as_baton_json
 
 
 class BatonCollectionMapper(_BatonIrodsEntityMapper, CollectionMapper):

@@ -230,7 +230,6 @@ SpecificQueryJSONDecoder = MappingJSONDecoderClassBuilder(SpecificQuery, _specif
 
 # JSON encoder for `PreparedSpecificQuery`
 _prepared_specific_query_json_mappings = [
-    # TODO: It is odd that in baton specific query that "alias" is called "sql"
     JsonPropertyMapping("sql", "alias", "alias"),
     JsonPropertyMapping(BATON_SPECIFIC_QUERY_ARGUMENTS_PROPERTY, "query_arguments", "query_arguments")
 ]
