@@ -56,7 +56,7 @@ class IrodsEntity(Model, metaclass=ABCMeta):
 
     def __init__(self, path: str, access_control_list: Iterable[AccessControl]=None, metadata: IrodsMetadata=None):
         if not re.match(IrodsEntity._ABSOLUTE_PATH_REGEX, path):
-            raise ValueError("baton does not support relatives paths: \"%s\"" % path)
+            raise ValueError("baton does not support the given type of relative path: \"%s\"" % path)
         self.path = path
         self.acl = access_control_list if access_control_list else []
         self.metadata = metadata
@@ -94,7 +94,7 @@ class Collection(IrodsEntity, Timestamped):
     """
     Model of a collection in iRODS.
     """
-    def __init__(self, path, *args, **kwargs):
+    def __init__(self, path: str, *args, **kwargs):
         path = path.rstrip("/")
         super().__init__(path, *args, **kwargs)
 
