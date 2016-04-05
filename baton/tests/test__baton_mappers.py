@@ -23,7 +23,7 @@ _UNUSED_VALUE = "value_4"
 
 class _TestBatonIrodsEntityMapper(unittest.TestCase, metaclass=ABCMeta):
     """
-    Tests for `_BatonIrodsEntityMapper`.
+    Tests for subclasses of `_BatonIrodsEntityMapper`.
     """
     def setUp(self):
         self.test_with_baton = TestWithBatonSetup(baton_docker_build=BATON_DOCKER_BUILD)
@@ -158,13 +158,6 @@ class _TestBatonIrodsEntityMapper(unittest.TestCase, metaclass=ABCMeta):
         irods_entity_1.metadata = None
         self.assertEqual(retrieved_entities, [irods_entity_1])
 
-    def test_get_by_metadata_when_collection_with_matching_metadata(self):
-        data_object = self.create_irods_entity(_NAMES[0], self.metadata_1)
-        create_collection(self.test_with_baton, _NAMES[1], self.metadata_1_2)
-
-        retrieved_entities = self.create_mapper().get_by_metadata(self.search_criterion_1)
-        self.assertEqual(retrieved_entities, [data_object])
-
     def test_get_all_in_collection_when_collection_does_not_exist(self):
         self.assertRaises(FileNotFoundError, self.create_mapper().get_all_in_collection, "/invalid")
 
@@ -244,6 +237,13 @@ class TestBatonDataObjectMapper(_TestBatonIrodsEntityMapper):
     def create_irods_entity(self, name: str, metadata: IrodsMetadata=IrodsMetadata()) -> DataObject:
         return create_data_object(self.test_with_baton, name, metadata)
 
+    def test_get_by_metadata_when_collection_with_matching_metadata(self):
+        data_object = self.create_irods_entity(_NAMES[0], self.metadata_1)
+        create_collection(self.test_with_baton, _NAMES[1], self.metadata_1_2)
+
+        retrieved_entities = self.create_mapper().get_by_metadata(self.search_criterion_1)
+        self.assertEqual(retrieved_entities, [data_object])
+
 
 class TestBatonCollectionMapper(_TestBatonIrodsEntityMapper):
     """
@@ -255,7 +255,6 @@ class TestBatonCollectionMapper(_TestBatonIrodsEntityMapper):
     def create_irods_entity(self, name: str, metadata: IrodsMetadata=IrodsMetadata()) -> Collection:
         return create_collection(self.test_with_baton, name, metadata)
 
-    # TODO: Check if this should be in superclass?
     def test_get_by_metadata_when_data_object_with_matching_metadata(self):
         collection = self.create_irods_entity(_NAMES[0], self.metadata_1)
         create_data_object(self.test_with_baton, _NAMES[1], self.metadata_1_2)
