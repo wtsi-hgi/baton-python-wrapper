@@ -8,9 +8,12 @@ from hgicommon.collections import Metadata
 class IrodsMetadata(Metadata):
     """
     iRODS metadata is in the form of "AVUs" (attribute-value-unit tuples). Attributes may have many values therefore all
-    attributes are sets.
+    attributes are sets. Units are not currently considered.
 
-    Units are not currently considered.
+    The difference between `Metadata` and `IrodsMetadata` is that the latter ensures that keys are associated to sets of
+    values, reflecting what is allowed in iRODS. The methods are subsequently more restrictive than that of the
+    superclass, which allows keys to be associated to any value. The current implementation is essentially
+    `Dict[str, Set[Any]]` (with convenience methods).
     """
     def __init__(self, seq: Dict=None):
         super().__init__()
