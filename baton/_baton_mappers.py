@@ -70,7 +70,7 @@ class _BatonIrodsEntityMapper(BatonRunner, IrodsEntityMapper, metaclass=ABCMeta)
 
     def get_all_in_collection(self, collection_paths: Union[str, Iterable[str]], load_metadata: bool = True) \
             -> Sequence[EntityType]:
-        if not isinstance(collection_paths, collections.Iterable):
+        if isinstance(collection_paths, str):
             collection_paths = [collection_paths]
         if len(collection_paths) == 0:
             return []

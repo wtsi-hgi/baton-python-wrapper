@@ -44,7 +44,7 @@ class _TestBatonIrodsEntityMapper(unittest.TestCase, metaclass=ABCMeta):
         """
 
     @abstractmethod
-    def create_irods_entity(self, name: str, metadata: IrodsMetadata()) -> IrodsEntity:
+    def create_irods_entity(self, name: str, metadata: IrodsMetadata=IrodsMetadata()) -> IrodsEntity:
         """
         Creates an iRODS entity to test with
         :param name: the name of the entity to create
@@ -228,8 +228,7 @@ class _TestBatonIrodsEntityMapper(unittest.TestCase, metaclass=ABCMeta):
         retrieved_entities = self.create_mapper().get_all_in_collection(data_object.get_collection_path())
 
         self.assertEqual(len(retrieved_entities), 1)
-        self.assertIsInstance(retrieved_entities[0], type(self.create_irods_entity(_NAMES[0])))
-
+        self.assertIsInstance(retrieved_entities[0], type(self.create_irods_entity(_NAMES[2])))
 
     def tearDown(self):
         self.test_with_baton.tear_down()
@@ -242,7 +241,7 @@ class TestBatonDataObjectMapper(_TestBatonIrodsEntityMapper):
     def create_mapper(self) -> BatonDataObjectMapper:
         return BatonDataObjectMapper(self.test_with_baton.baton_location)
 
-    def create_irods_entity(self, name: str, metadata: IrodsMetadata()) -> DataObject:
+    def create_irods_entity(self, name: str, metadata: IrodsMetadata=IrodsMetadata()) -> DataObject:
         return create_data_object(self.test_with_baton, name, metadata)
 
 
@@ -253,7 +252,7 @@ class TestBatonCollectionMapper(_TestBatonIrodsEntityMapper):
     def create_mapper(self) -> BatonCollectionMapper:
         return BatonCollectionMapper(self.test_with_baton.baton_location)
 
-    def create_irods_entity(self, name: str, metadata: IrodsMetadata()) -> Collection:
+    def create_irods_entity(self, name: str, metadata: IrodsMetadata=IrodsMetadata()) -> Collection:
         return create_collection(self.test_with_baton, name, metadata)
 
     # TODO: Check if this should be in superclass?
