@@ -1,9 +1,9 @@
 import unittest
 
-from baton._baton_mappers import BatonBinary
-from baton._baton_runner import BatonRunner
-from baton.tests._settings import BATON_DOCKER_BUILD
 from baton.tests._stubs import StubBatonRunner
+
+from baton._baton._baton_runner import BatonRunner, BatonBinary
+from baton.tests._baton._settings import BATON_DOCKER_BUILD
 from testwithbaton.api import TestWithBatonSetup
 
 _NAMES = ["name_1", "name_2", "name_3"]

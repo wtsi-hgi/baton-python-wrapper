@@ -3,11 +3,11 @@ import unittest
 
 from frozendict import frozendict
 
-from baton.json import DataObjectReplicaJSONEncoder, AccessControlJSONEncoder, DataObjectJSONEncoder, \
+from baton._baton.json import DataObjectReplicaJSONEncoder, AccessControlJSONEncoder, DataObjectJSONEncoder, \
     IrodsMetadataJSONEncoder, AccessControlJSONDecoder, DataObjectReplicaJSONDecoder, IrodsMetadataJSONDecoder, \
     DataObjectJSONDecoder, DataObjectReplicaCollectionJSONEncoder, DataObjectReplicaCollectionJSONDecoder, \
     CollectionJSONEncoder, CollectionJSONDecoder
-from baton.tests._json_helpers import create_collection_with_baton_json_representation, \
+from baton.tests._baton._json_helpers import create_collection_with_baton_json_representation, \
     create_data_object_with_baton_json_representation
 
 

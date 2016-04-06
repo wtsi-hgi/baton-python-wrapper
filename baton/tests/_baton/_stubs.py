@@ -1,4 +1,6 @@
-from baton._baton_mappers import BatonRunner, BatonCustomObjectMapper
+from baton._baton_metadata_mappers import BatonRunner
+
+from baton._baton.baton_custom_object_mappers import BatonCustomObjectMapper
 
 
 class StubBatonRunner(BatonRunner):

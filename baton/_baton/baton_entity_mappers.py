@@ -1,35 +1,16 @@
-from abc import ABCMeta, abstractmethod
-from typing import Union, Sequence, List, Iterable, Dict
-
 import collections
+from abc import ABCMeta, abstractmethod
+from typing import List, Union, Iterable, Sequence, Dict
 
-from baton._constants import BATON_SPECIFIC_QUERY_PROPERTY, IRODS_SPECIFIC_QUERY_LS, BATON_AVU_PROPERTY, \
-    BATON_COLLECTION_CONTENTS, BATON_DATA_OBJECT_PROPERTY
+from baton._constants import BATON_AVU_PROPERTY, BATON_COLLECTION_CONTENTS, BATON_DATA_OBJECT_PROPERTY
 
-from baton._baton_runner import BatonBinary, BatonRunner
-from baton.collections import IrodsMetadata
-from baton.json import DataObjectJSONDecoder, CollectionJSONDecoder, DataObjectJSONEncoder, CollectionJSONEncoder, \
-    PreparedSpecificQueryJSONEncoder, SpecificQueryJSONDecoder, SearchCriterionJSONEncoder
-from baton.mappers import DataObjectMapper, CollectionMapper, IrodsEntityMapper, EntityType, CustomObjectType, \
-    CustomObjectMapper, SpecificQueryMapper, IrodsMetadataMapper
-from baton.models import DataObject, Collection, PreparedSpecificQuery, SpecificQuery, SearchCriterion
-
-
-class BatonIrodsMetadataMapper(BatonRunner, IrodsMetadataMapper):
-    """
-    iRODS metadata mapper, implemented using baton.
-    """
-    def get_all(self, path: str) -> IrodsMetadata:
-        pass
-
-    def set(self, path: str, metadata: IrodsMetadata):
-        pass
-
-    def add(self, path: str, metadata: IrodsMetadata):
-        pass
-
-    def remove(self, path: str, metadata: IrodsMetadata):
-        pass
+from baton import Collection, DataObject
+from baton._baton._baton_runner import BatonRunner, BatonBinary
+from baton._baton.json import SearchCriterionJSONEncoder, CollectionJSONEncoder, DataObjectJSONEncoder, \
+    DataObjectJSONDecoder, CollectionJSONDecoder
+from baton.mappers import IrodsEntityMapper, IrodsMetadataMapper, DataObjectMapper, CollectionMapper
+from baton.models import SearchCriterion
+from baton.types import EntityType
 
 
 class _BatonIrodsEntityMapper(BatonRunner, IrodsEntityMapper, metaclass=ABCMeta):
@@ -207,47 +188,3 @@ class BatonCollectionMapper(_BatonIrodsEntityMapper, CollectionMapper):
             if BATON_DATA_OBJECT_PROPERTY not in entity_as_baton_json:
                 collections_as_baton_json.append(entity_as_baton_json)
         return collections_as_baton_json
-
-
-class BatonCustomObjectMapper(BatonRunner, CustomObjectMapper, metaclass=ABCMeta):
-    """
-    Mapper for custom objects, implemented using baton.
-    """
-    def _get_with_prepared_specific_query(self, specific_query: PreparedSpecificQuery, zone: str=None) \
-            -> Sequence[CustomObjectType]:
-        specific_query_as_baton_json = {
-            BATON_SPECIFIC_QUERY_PROPERTY: PreparedSpecificQueryJSONEncoder().default(specific_query)
-        }
-
-        arguments = []
-        if zone is not None:
-            arguments.extend(["--zone", "%s" % zone])
-
-        custom_objects_as_baton_json = self.run_baton_query(
-                BatonBinary.BATON_SPECIFIC_QUERY, arguments, input_data=specific_query_as_baton_json)
-
-        custom_objects = [self._object_deserialiser(custom_object_as_baton_json)
-                          for custom_object_as_baton_json in custom_objects_as_baton_json]
-
-        return custom_objects
-
-    @abstractmethod
-    def _object_deserialiser(self, object_as_json: dict) -> CustomObjectType:
-        """
-        Function used to take the JSON representation of the custom object returned by the specific query and produce a
-        Python model.
-        :param object_as_json: JSON representation of the custom object
-        :return: Python model of the custom object
-        """
-
-
-class BatonSpecificQueryMapper(BatonCustomObjectMapper[SpecificQuery], SpecificQueryMapper):
-    """
-    Mapper for specific queries installed on iRODS, implemented using baton.
-    """
-    def get_all(self, zone: str=None) -> Sequence[SpecificQuery]:
-        retrieve_query = PreparedSpecificQuery(IRODS_SPECIFIC_QUERY_LS)
-        return self._get_with_prepared_specific_query(retrieve_query, zone)
-
-    def _object_deserialiser(self, object_as_json: dict) -> SpecificQuery:
-        return SpecificQueryJSONDecoder().decode_dict(object_as_json)

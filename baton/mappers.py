@@ -66,8 +66,8 @@ class IrodsEntityMapper(Generic[EntityType], metaclass=ABCMeta):
     @abstractproperty
     def metadata(self) -> IrodsMetadataMapper[EntityType]:
         """
-        TODO
-        :return:
+        Property to access a mapper for metadata that can be assocaited to the iRODS entity that this mapper deals with.
+        :return: mapper for metadata
         """
 
     @abstractmethod

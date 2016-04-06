@@ -1,13 +1,18 @@
 from typing import Iterable
+
 from dateutil.parser import parser
 
-from baton._baton_runner import BatonRunner, BatonBinary
-
+from baton._baton._baton_runner import BatonRunner, BatonBinary
+from baton._baton.json import DataObjectJSONEncoder, CollectionJSONEncoder
 from baton.collections import IrodsMetadata
-from baton.json import DataObjectJSONEncoder, CollectionJSONEncoder
 from baton.models import DataObject, DataObjectReplica, AccessControl, Collection, IrodsEntity
 from testwithbaton.api import TestWithBatonSetup
 from testwithbaton.helpers import SetupHelper
+
+NAMES = ["name_1", "name_2", "name_3"]
+ATTRIBUTES = ["attribute_1", "attribute_2"]
+VALUES = ["value_1", "value_2", "value_3"]
+UNUSED_VALUE = "value_4"
 
 
 def create_data_object(test_with_baton: TestWithBatonSetup, name: str, metadata: IrodsMetadata()) -> DataObject:

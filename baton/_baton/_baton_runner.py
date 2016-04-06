@@ -2,13 +2,13 @@ import json
 import logging
 import os
 import subprocess
+import time
 from abc import ABCMeta
 from datetime import timedelta
 from enum import Enum
-from typing import Any, List
-import time
+from typing import Any, List, Dict
 
-from baton._constants import BATON_ERROR_MESSAGE_KEY, BATON_FILE_DOES_NOT_EXIST_ERROR_CODE, BATON_ERROR_PROPERTY,\
+from baton._baton._constants import BATON_ERROR_MESSAGE_KEY, BATON_FILE_DOES_NOT_EXIST_ERROR_CODE, BATON_ERROR_PROPERTY,\
     BATON_ERROR_CODE_KEY
 
 
@@ -46,7 +46,7 @@ class BatonRunner(metaclass=ABCMeta):
         self.timeout_queries_after = timeout_queries_after
 
     def run_baton_query(self, baton_binary: BatonBinary, program_arguments: List[str]=None, input_data: Any=None) \
-            -> List[dict]:
+            -> List[Dict]:
         """
         Runs a baton query.
         :param baton_binary: the baton binary to use
@@ -118,7 +118,7 @@ class BatonRunner(metaclass=ABCMeta):
         return True
 
     @staticmethod
-    def _raise_any_errors_given_in_baton_out(baton_out_as_json: List[dict]):
+    def _raise_any_errors_given_in_baton_out(baton_out_as_json: List[Dict]):
         """
         Raises any errors that baton has expressed in its output.
         :param baton_out_as_json: the output baton gave as parsed serialization

@@ -1,97 +1,18 @@
 import unittest
 from abc import ABCMeta, abstractmethod
 from copy import deepcopy
-from typing import Sequence
-from unittest.mock import MagicMock
 
-from baton._baton_mappers import BatonDataObjectMapper, BatonCollectionMapper, _BatonIrodsEntityMapper, \
-    BatonSpecificQueryMapper, BatonIrodsMetadataMapper
-from baton.collections import IrodsMetadata
-from baton.models import IrodsEntity, DataObject, Collection, PreparedSpecificQuery, SpecificQuery, SearchCriterion
-from baton.tests._helpers import combine_metadata, create_data_object, create_collection, synchronise_timestamps
 from baton.tests._settings import BATON_DOCKER_BUILD
-from baton.tests._stubs import StubBatonCustomObjectMapper
+
+from baton import IrodsEntity, DataObject, Collection
+from baton._baton.baton_entity_mappers import _BatonIrodsEntityMapper, BatonDataObjectMapper, BatonCollectionMapper
+from baton.collections import IrodsMetadata
+from baton.models import SearchCriterion
+from baton.tests._baton._helpers import combine_metadata, synchronise_timestamps, create_data_object, create_collection, \
+    NAMES, ATTRIBUTES, VALUES, UNUSED_VALUE
 from hgicommon.enums import ComparisonOperator
 from testwithbaton.api import TestWithBatonSetup
 from testwithbaton.helpers import SetupHelper
-
-_NAMES = ["name_1", "name_2", "name_3"]
-_ATTRIBUTES = ["attribute_1", "attribute_2"]
-_VALUES = ["value_1", "value_2", "value_3"]
-_UNUSED_VALUE = "value_4"
-
-
-class TestBatonIrodsMetadataMapper(unittest.TestCase):
-    """
-    Tests for `BatonIrodsMetadataMapper`.
-    """
-    def setUp(self):
-        self.test_with_baton = TestWithBatonSetup(baton_docker_build=BATON_DOCKER_BUILD)
-        self.test_with_baton.setup()
-        self.setup_helper = SetupHelper(self.test_with_baton.icommands_location)
-        self.mapper = BatonIrodsMetadataMapper(self.test_with_baton.baton_location)
-        self.metadata = IrodsMetadata({"key_1": {"value_1", "value_2"}, "key_2": {"value_3"}})
-
-    def test_get_all_when_invalid_path(self):
-        self.assertRaises(ValueError, self.mapper.get_all, "/invalid")
-
-    def test_get_all(self):
-        entity = create_data_object(self.test_with_baton, _NAMES[0], self.metadata)
-        self.assertEqual(self.mapper.get_all(entity.path), self.metadata)
-
-    def test_add_when_invalid_path(self):
-        self.assertRaises(ValueError, self.mapper.add, "/invalid", self.metadata)
-
-    def test_add(self):
-        entity = create_data_object(self.test_with_baton, _NAMES[0], IrodsMetadata())
-        self.mapper.add(entity.path, self.metadata)
-        self.assertEqual(self.mapper.get_all(entity.path), self.metadata)
-
-    def test_add_metadata_with_same_key(self):
-        entity = create_data_object(self.test_with_baton, _NAMES[0], self.metadata)
-        del self.metadata["key_1"]
-        self.assertRaises(ValueError, self.mapper.add, entity.path, self.metadata)
-
-    def test_set_when_invalid_path(self):
-        self.assertRaises(ValueError, self.mapper.set, "/invalid", self.metadata)
-
-    def test_set_when_no_existing_metadata(self):
-        entity = create_data_object(self.test_with_baton, _NAMES[0], IrodsMetadata())
-        self.mapper.set(entity.path, self.metadata)
-        self.assertEqual(self.mapper.get_all(entity.path), self.metadata)
-
-    def test_set_when_existing_non_duplicate_metadata(self):
-        entity = create_data_object(self.test_with_baton, _NAMES[0], IrodsMetadata({"another": {"value"}}))
-        self.mapper.set(entity.path, self.metadata)
-        self.assertEqual(self.mapper.get_all(entity.path), self.metadata)
-
-    def test_set_when_existing_duplicate_metadata(self):
-        entity = create_data_object(self.test_with_baton, _NAMES[0], self.metadata)
-        self.mapper.set(entity.path, self.metadata)
-        self.assertEqual(self.mapper.get_all(entity.path), self.metadata)
-
-    def test_remove_when_invalid_path(self):
-        self.assertRaises(ValueError, self.mapper.remove, "/invalid", self.metadata)
-
-    def test_remove_unset_metadata(self):
-        entity = create_data_object(self.test_with_baton, _NAMES[0], IrodsMetadata())
-        self.assertRaises(KeyError, self.mapper.remove, entity.path, self.metadata)
-
-    def test_remove_partially_unset_metadata(self):
-        partial_metadata = deepcopy(self.metadata)
-        del partial_metadata["key_1"]
-        entity = create_data_object(self.test_with_baton, _NAMES[0], partial_metadata)
-        self.assertRaises(KeyError, self.mapper.remove, entity.path, self.metadata)
-
-    def test_remove(self):
-        entity = create_data_object(self.test_with_baton, _NAMES[0], self.metadata)
-        assert len(self.metadata) == 2
-        partial_metadata_1 = deepcopy(self.metadata)
-        del partial_metadata_1["key_1"]
-        partial_metadata_2 = deepcopy(self.metadata)
-        del partial_metadata_2["key_2"]
-        self.mapper.remove(entity.path, partial_metadata_1)
-        self.assertEqual(self.mapper.get_all(entity.path), partial_metadata_2)
 
 
 class _TestBatonIrodsEntityMapper(unittest.TestCase, metaclass=ABCMeta):
@@ -103,11 +24,11 @@ class _TestBatonIrodsEntityMapper(unittest.TestCase, metaclass=ABCMeta):
         self.test_with_baton.setup()
         self.setup_helper = SetupHelper(self.test_with_baton.icommands_location)
 
-        self.metadata_1 = IrodsMetadata({_ATTRIBUTES[0]: {"something_else", _VALUES[0]}})
-        self.metadata_2 = IrodsMetadata({_ATTRIBUTES[1]: {_VALUES[1]}})
+        self.metadata_1 = IrodsMetadata({ATTRIBUTES[0]: {"something_else", VALUES[0]}})
+        self.metadata_2 = IrodsMetadata({ATTRIBUTES[1]: {VALUES[1]}})
         self.metadata_1_2 = combine_metadata([self.metadata_1, self.metadata_2])
-        self.search_criterion_1 = SearchCriterion(_ATTRIBUTES[0], _VALUES[0], ComparisonOperator.EQUALS)
-        self.search_criterion_2 = SearchCriterion(_ATTRIBUTES[1], _VALUES[1], ComparisonOperator.EQUALS)
+        self.search_criterion_1 = SearchCriterion(ATTRIBUTES[0], VALUES[0], ComparisonOperator.EQUALS)
+        self.search_criterion_2 = SearchCriterion(ATTRIBUTES[1], VALUES[1], ComparisonOperator.EQUALS)
 
     @abstractmethod
     def create_mapper(self) -> _BatonIrodsEntityMapper:
@@ -127,11 +48,11 @@ class _TestBatonIrodsEntityMapper(unittest.TestCase, metaclass=ABCMeta):
 
     def test_get_by_metadata_when_no_metadata(self):
         retrieved_entities = self.create_mapper().get_by_metadata(
-            SearchCriterion(_ATTRIBUTES[0], _UNUSED_VALUE, ComparisonOperator.EQUALS))
+            SearchCriterion(ATTRIBUTES[0], UNUSED_VALUE, ComparisonOperator.EQUALS))
         self.assertEqual(len(retrieved_entities), 0)
 
     def test_get_by_metadata_when_single_criterion_match_single_file(self):
-        irods_entity_1 = self.create_irods_entity(_NAMES[0], self.metadata_1)
+        irods_entity_1 = self.create_irods_entity(NAMES[0], self.metadata_1)
 
         retrieved_entities = self.create_mapper().get_by_metadata(self.search_criterion_1)
         self.assertEqual(retrieved_entities, [irods_entity_1])
@@ -139,17 +60,17 @@ class _TestBatonIrodsEntityMapper(unittest.TestCase, metaclass=ABCMeta):
     def test_get_by_metadata_when_multiple_criterions_match_single_entity(self):
         search_criteria = [self.search_criterion_1, self.search_criterion_2]
 
-        irods_entity_1 = self.create_irods_entity(_NAMES[0], self.metadata_1_2)
-        self.create_irods_entity(_NAMES[1], self.metadata_1)
+        irods_entity_1 = self.create_irods_entity(NAMES[0], self.metadata_1_2)
+        self.create_irods_entity(NAMES[1], self.metadata_1)
 
         retrieved_entities = self.create_mapper().get_by_metadata(search_criteria)
         self.maxDiff = None
         self.assertEqual(retrieved_entities, [irods_entity_1])
 
     def test_get_by_metadata_when_single_criterion_match_multiple_entities(self):
-        irods_entity_1 = self.create_irods_entity(_NAMES[0], self.metadata_1_2)
-        irods_entity_2 = self.create_irods_entity(_NAMES[1], self.metadata_1)
-        self.create_irods_entity(_NAMES[2], IrodsMetadata())
+        irods_entity_1 = self.create_irods_entity(NAMES[0], self.metadata_1_2)
+        irods_entity_2 = self.create_irods_entity(NAMES[1], self.metadata_1)
+        self.create_irods_entity(NAMES[2], IrodsMetadata())
 
         retrieved_entities = self.create_mapper().get_by_metadata(self.search_criterion_1)
         self.maxDiff = None
@@ -158,16 +79,16 @@ class _TestBatonIrodsEntityMapper(unittest.TestCase, metaclass=ABCMeta):
     def test_get_by_metadata_when_multiple_criterions_match_multiple_entities(self):
         search_criteria = [self.search_criterion_1, self.search_criterion_2]
 
-        irods_entity_1 = self.create_irods_entity(_NAMES[0], self.metadata_1_2)
-        irods_entity_2 = self.create_irods_entity(_NAMES[1], self.metadata_1_2)
-        self.create_irods_entity(_NAMES[2], IrodsMetadata())
+        irods_entity_1 = self.create_irods_entity(NAMES[0], self.metadata_1_2)
+        irods_entity_2 = self.create_irods_entity(NAMES[1], self.metadata_1_2)
+        self.create_irods_entity(NAMES[2], IrodsMetadata())
 
         retrieved_entities = self.create_mapper().get_by_metadata(search_criteria)
         self.maxDiff = None
         self.assertEqual(retrieved_entities, [irods_entity_1, irods_entity_2])
 
     def test_get_by_metadata_when_metadata_not_required_for_entities(self):
-        irods_entity_1 = self.create_irods_entity(_NAMES[0], self.metadata_1)
+        irods_entity_1 = self.create_irods_entity(NAMES[0], self.metadata_1)
 
         retrieved_entities = self.create_mapper().get_by_metadata(self.search_criterion_1, load_metadata=False)
 
@@ -180,8 +101,8 @@ class _TestBatonIrodsEntityMapper(unittest.TestCase, metaclass=ABCMeta):
         new_zone = "newZone"
         self.setup_helper.run_icommand(["iadmin", "mkzone %s remote" % new_zone])
 
-        irods_entity_1 = self.create_irods_entity(_NAMES[0], self.metadata_1)
-        irods_entity_2 = self.create_irods_entity(_NAMES[1], self.metadata_1)
+        irods_entity_1 = self.create_irods_entity(NAMES[0], self.metadata_1)
+        irods_entity_2 = self.create_irods_entity(NAMES[1], self.metadata_1)
 
         self.setup_helper.run_icommand(["icp", "-r", "%s /%s" % (irods_entity_2.path, new_zone)])
         irods_entity_3 = deepcopy(irods_entity_2)
@@ -201,14 +122,14 @@ class _TestBatonIrodsEntityMapper(unittest.TestCase, metaclass=ABCMeta):
         self.assertRaises(FileNotFoundError, self.create_mapper().get_by_path, "/invalid/name")
 
     def test_get_by_path_with_single_entity(self):
-        irods_entity_1 = self.create_irods_entity(_NAMES[0], self.metadata_1)
+        irods_entity_1 = self.create_irods_entity(NAMES[0], self.metadata_1)
 
         retrieved_entities = self.create_mapper().get_by_path(irods_entity_1.path)
         self.assertEqual(retrieved_entities, [irods_entity_1])
 
     def test_get_by_path_with_multiple_entities(self):
         irods_entities = [
-            self.create_irods_entity(_NAMES[i], self.metadata_1) for i in range(len(_NAMES))]
+            self.create_irods_entity(NAMES[i], self.metadata_1) for i in range(len(NAMES))]
         paths = [irods_entity.path for irods_entity in irods_entities]
 
         retrieved_entities = self.create_mapper().get_by_path(paths)
@@ -216,14 +137,14 @@ class _TestBatonIrodsEntityMapper(unittest.TestCase, metaclass=ABCMeta):
 
     def test_get_by_path_with_multiple_files_when_some_do_not_exist(self):
         irods_entities = [
-            self.create_irods_entity(_NAMES[i], self.metadata_1) for i in range(len(_NAMES))]
+            self.create_irods_entity(NAMES[i], self.metadata_1) for i in range(len(NAMES))]
         paths = [irods_entity.path for irods_entity in irods_entities]
 
         self.assertRaises(
             FileNotFoundError, self.create_mapper().get_by_path, paths + ["/invalid/name"])
 
     def test_get_by_path_when_metadata_not_required(self):
-        irods_entity_1 = self.create_irods_entity(_NAMES[0], self.metadata_1)
+        irods_entity_1 = self.create_irods_entity(NAMES[0], self.metadata_1)
 
         retrieved_entities = self.create_mapper().get_by_path(irods_entity_1.path, load_metadata=False)
 
@@ -243,14 +164,14 @@ class _TestBatonIrodsEntityMapper(unittest.TestCase, metaclass=ABCMeta):
         self.assertEqual(len(retrieved), 0)
 
     def test_get_all_in_collection_with_single_collection_containing_one_entity(self):
-        entity = self.create_irods_entity(_NAMES[0], self.metadata_1)
+        entity = self.create_irods_entity(NAMES[0], self.metadata_1)
 
         retrieved_entities = self.create_mapper().get_all_in_collection(entity.get_collection_path())
         self.assertEqual(retrieved_entities, [entity])
 
     def test_get_all_in_collection_with_single_collection_containing_multiple_entities(self):
-        entity_1 = self.create_irods_entity(_NAMES[0], self.metadata_1)
-        entity_2 = self.create_irods_entity(_NAMES[1], self.metadata_2)
+        entity_1 = self.create_irods_entity(NAMES[0], self.metadata_1)
+        entity_2 = self.create_irods_entity(NAMES[1], self.metadata_2)
         assert entity_1.get_collection_path() == entity_2.get_collection_path()
 
         retrieved_entities = self.create_mapper().get_all_in_collection(entity_1.get_collection_path())
@@ -263,8 +184,8 @@ class _TestBatonIrodsEntityMapper(unittest.TestCase, metaclass=ABCMeta):
         for i in range(3):
             collection = self.setup_helper.create_collection("collection_%d" % i)
 
-            for j in range(len(_NAMES)):
-                entity = self.create_irods_entity(_NAMES[j], self.metadata_1)
+            for j in range(len(NAMES)):
+                entity = self.create_irods_entity(NAMES[j], self.metadata_1)
                 moved_path = "%s/%s" % (collection, entity.get_name())
                 self.setup_helper.run_icommand(["imv", entity.path, moved_path])
                 entity.path = moved_path
@@ -277,8 +198,8 @@ class _TestBatonIrodsEntityMapper(unittest.TestCase, metaclass=ABCMeta):
         self.assertEqual(retrieved_entities, entities)
 
     def test_get_all_in_collection_when_metadata_not_required(self):
-        entity = self.create_irods_entity(_NAMES[0], self.metadata_1)
-        self.create_irods_entity(_NAMES[1], self.metadata_1)
+        entity = self.create_irods_entity(NAMES[0], self.metadata_1)
+        self.create_irods_entity(NAMES[1], self.metadata_1)
 
         retrieved_entities = self.create_mapper().get_all_in_collection(
             entity.get_collection_path(), load_metadata=False)
@@ -288,13 +209,13 @@ class _TestBatonIrodsEntityMapper(unittest.TestCase, metaclass=ABCMeta):
         self.assertEqual(retrieved_entities[0], entity)
 
     def test_get_all_in_collection_when_collection_contains_data_objects_and_collections(self):
-        data_object = create_data_object(self.test_with_baton, _NAMES[0], self.metadata_1)
-        collection = create_collection(self.test_with_baton, _NAMES[1], self.metadata_2)
+        data_object = create_data_object(self.test_with_baton, NAMES[0], self.metadata_1)
+        collection = create_collection(self.test_with_baton, NAMES[1], self.metadata_2)
 
         retrieved_entities = self.create_mapper().get_all_in_collection(data_object.get_collection_path())
 
         self.assertEqual(len(retrieved_entities), 1)
-        self.assertIsInstance(retrieved_entities[0], type(self.create_irods_entity(_NAMES[2])))
+        self.assertIsInstance(retrieved_entities[0], type(self.create_irods_entity(NAMES[2])))
 
     def tearDown(self):
         self.test_with_baton.tear_down()
@@ -311,8 +232,8 @@ class TestBatonDataObjectMapper(_TestBatonIrodsEntityMapper):
         return create_data_object(self.test_with_baton, name, metadata)
 
     def test_get_by_metadata_when_collection_with_matching_metadata(self):
-        data_object = self.create_irods_entity(_NAMES[0], self.metadata_1)
-        create_collection(self.test_with_baton, _NAMES[1], self.metadata_1_2)
+        data_object = self.create_irods_entity(NAMES[0], self.metadata_1)
+        create_collection(self.test_with_baton, NAMES[1], self.metadata_1_2)
 
         retrieved_entities = self.create_mapper().get_by_metadata(self.search_criterion_1)
         self.assertEqual(retrieved_entities, [data_object])
@@ -329,65 +250,11 @@ class TestBatonCollectionMapper(_TestBatonIrodsEntityMapper):
         return create_collection(self.test_with_baton, name, metadata)
 
     def test_get_by_metadata_when_data_object_with_matching_metadata(self):
-        collection = self.create_irods_entity(_NAMES[0], self.metadata_1)
-        create_data_object(self.test_with_baton, _NAMES[1], self.metadata_1_2)
+        collection = self.create_irods_entity(NAMES[0], self.metadata_1)
+        create_data_object(self.test_with_baton, NAMES[1], self.metadata_1_2)
 
         retrieved_entities = self.create_mapper().get_by_metadata(self.search_criterion_1)
         self.assertEqual(retrieved_entities, [collection])
-
-
-class TestBatonCustomObjectMapper(unittest.TestCase):
-    """
-    Tests for `BatonCustomObjectMapper`.
-    """
-    def setUp(self):
-        self.test_with_baton = TestWithBatonSetup(baton_docker_build=BATON_DOCKER_BUILD)
-        self.test_with_baton.setup()
-
-        self.mapper = StubBatonCustomObjectMapper(self.test_with_baton.baton_location)
-        self.mapper._object_deserialiser = MagicMock(wraps=self.mapper._object_deserialiser)
-
-    def test_get_using_specific_query(self):
-        results = self.mapper._get_with_prepared_specific_query(PreparedSpecificQuery("ls"))
-        self.assertIsInstance(results, list)
-        self.assertEqual(len(results), self.mapper._object_deserialiser.call_count)
-
-
-class TestBatonInstalledSpecificQueryMapper(unittest.TestCase):
-    """
-    Tests for `BatonSpecificQueryMapper`.
-    """
-    def setUp(self):
-        self.test_with_baton = TestWithBatonSetup(baton_docker_build=BATON_DOCKER_BUILD)
-        self.test_with_baton.setup()
-        self.setup_helper = SetupHelper(self.test_with_baton.icommands_location)
-
-        self.mapper = BatonSpecificQueryMapper(self.test_with_baton.baton_location)
-
-    def test_get_all(self):
-        iquest_ls_response = self.setup_helper.run_icommand(["iquest", "--sql", "ls"])
-        expected = TestBatonInstalledSpecificQueryMapper._parse_iquest_ls(iquest_ls_response)
-        specific_queries = self.mapper.get_all()
-        self.assertCountEqual(specific_queries, expected)
-
-    @staticmethod
-    def _parse_iquest_ls(iquest_ls_response: str) -> Sequence[SpecificQuery]:
-        """
-        Gets the installed specific queries by parsing the output returned by "iquest --sql ls".
-        :param iquest_ls_response: the response returned by the iquest command
-        :return: the specific queries installed on the iRODS server
-        """
-        iquest_ls_response_lines = iquest_ls_response.split('\n')
-        assert (len(iquest_ls_response_lines) + 1) % 3 == 0
-
-        specific_queries = []
-        for i in range(int((len(iquest_ls_response_lines) + 1) / 3)):
-            i3 = int(3 * i)
-            alias = iquest_ls_response_lines[i3]
-            sql = iquest_ls_response_lines[i3 + 1]
-            specific_queries.append(SpecificQuery(alias, sql))
-
-        return specific_queries
 
 
 # Trick required to stop Python's unittest from running the abstract base classes as tests
