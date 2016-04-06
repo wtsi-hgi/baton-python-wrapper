@@ -7,11 +7,29 @@ from baton._constants import BATON_SPECIFIC_QUERY_PROPERTY, IRODS_SPECIFIC_QUERY
     BATON_COLLECTION_CONTENTS, BATON_DATA_OBJECT_PROPERTY
 
 from baton._baton_runner import BatonBinary, BatonRunner
+from baton.collections import IrodsMetadata
 from baton.json import DataObjectJSONDecoder, CollectionJSONDecoder, DataObjectJSONEncoder, CollectionJSONEncoder, \
     PreparedSpecificQueryJSONEncoder, SpecificQueryJSONDecoder, SearchCriterionJSONEncoder
 from baton.mappers import DataObjectMapper, CollectionMapper, IrodsEntityMapper, EntityType, CustomObjectType, \
-    CustomObjectMapper, SpecificQueryMapper
+    CustomObjectMapper, SpecificQueryMapper, IrodsMetadataMapper
 from baton.models import DataObject, Collection, PreparedSpecificQuery, SpecificQuery, SearchCriterion
+
+
+class IrodsMetadataMapper(BatonRunner, IrodsMetadataMapper):
+    """
+    iRODS metadata mapper, implemented using baton.
+    """
+    def get_all(self, path: str) -> Sequence[IrodsMetadata]:
+        pass
+
+    def add(self, path: str, metadata: Union[IrodsMetadata, Union[IrodsMetadata, Iterable[IrodsMetadata]]]):
+        pass
+
+    def set(self, path: str, metadata: Union[IrodsMetadata, Iterable[IrodsMetadata]]):
+        pass
+
+    def remove(self, path: str, metadata: Union[IrodsMetadata, Iterable[IrodsMetadata]]):
+        pass
 
 
 class _BatonIrodsEntityMapper(BatonRunner, IrodsEntityMapper, metaclass=ABCMeta):
@@ -25,6 +43,10 @@ class _BatonIrodsEntityMapper(BatonRunner, IrodsEntityMapper, metaclass=ABCMeta)
         """
         super().__init__(*args, **kwargs)
         self._additional_metadata_query_arguments = additional_metadata_query_arguments
+        self._metadata_mapper = IrodsMetadataMapper(*args, **kwargs)
+
+    def metadata(self) -> IrodsMetadataMapper[EntityType]:
+        return self._metadata_mapper
 
     def get_by_metadata(self, metadata_search_criteria: Union[SearchCriterion, Iterable[SearchCriterion]],
                        load_metadata: bool=True, zone: str=None) -> Sequence[EntityType]:
