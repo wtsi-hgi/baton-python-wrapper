@@ -15,20 +15,20 @@ from baton.mappers import DataObjectMapper, CollectionMapper, IrodsEntityMapper,
 from baton.models import DataObject, Collection, PreparedSpecificQuery, SpecificQuery, SearchCriterion
 
 
-class IrodsMetadataMapper(BatonRunner, IrodsMetadataMapper):
+class BatonIrodsMetadataMapper(BatonRunner, IrodsMetadataMapper):
     """
     iRODS metadata mapper, implemented using baton.
     """
-    def get_all(self, path: str) -> Sequence[IrodsMetadata]:
+    def get_all(self, path: str) -> IrodsMetadata:
         pass
 
-    def add(self, path: str, metadata: Union[IrodsMetadata, Union[IrodsMetadata, Iterable[IrodsMetadata]]]):
+    def set(self, path: str, metadata: IrodsMetadata):
         pass
 
-    def set(self, path: str, metadata: Union[IrodsMetadata, Iterable[IrodsMetadata]]):
+    def add(self, path: str, metadata: IrodsMetadata):
         pass
 
-    def remove(self, path: str, metadata: Union[IrodsMetadata, Iterable[IrodsMetadata]]):
+    def remove(self, path: str, metadata: IrodsMetadata):
         pass
 
 

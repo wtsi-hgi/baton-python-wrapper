@@ -12,40 +12,48 @@ class IrodsMetadataMapper(Generic[EntityType], metaclass=ABCMeta):
     iRODS metadata mapper.
     """
     @abstractmethod
-    def get_all(self, path: str) -> Sequence[IrodsMetadata]:
+    def get_all(self, path: str) -> IrodsMetadata:
         """
         Gets all of the metadata for the given entity.
-        :param path: the path of the entity to getr the metadata for
+
+        A `ValueError` will be raised will be raised if the path does not correspond to a valid entity.
+        :param path: the path of the entity to get the metadata for
         :return: metadata for the given entity
         """
 
     @abstractmethod
-    def add(self, path: str, metadata: Union[IrodsMetadata, Union[IrodsMetadata, Iterable[IrodsMetadata]]]):
+    def add(self, path: str, metadata: IrodsMetadata):
         """
-        Adds the given metadata or collection of metadata to the given iRODS entity.
+        Adds the given metadata to the given iRODS entity.
+
+        A `ValueError` will be raised will be raised if the path does not correspond to a valid entity.
         :param path: the path of the entity to add the metadata to
         :param metadata: the metadata to write
         """
 
     @abstractmethod
-    def set(self, path: str, metadata: Union[IrodsMetadata, Iterable[IrodsMetadata]]):
+    def set(self, path: str, metadata: IrodsMetadata):
         """
-        Sets the given metadata or collection of metadata on the given iRODS entity.
+        Sets the given metadata on the given iRODS entity.
 
         Similar to `add` although pre-existing metadata with matching keys will be overwritten.
+
+        A `ValueError` will be raised will be raised if the path does not correspond to a valid entity.
         :param path: the path of the entity to set the metadata for
         :param metadata: the metadata to set
         """
 
     @abstractmethod
-    def remove(self, path: str, metadata: Union[IrodsMetadata, Iterable[IrodsMetadata]]):
+    def remove(self, path: str, metadata: IrodsMetadata):
         """
-        Removes the given metadata or collection of metadata from the given iRODS entity.
+        Removes the given metadata from the given iRODS entity.
 
-        An exception will be raised if the entity does not have metadata with the given key and value. If this exception
+        A `KeyError` will be raised if the entity does not have metadata with the given key and value. If this exception
         is raised part-way through the removal of multiple pieces of metadata, a rollback will not occur - it would be
         necessary to get the metadata for the entity to determine what metadata in the collection was removed
         successfully.
+
+        A `ValueError` will be raised will be raised if the path does not correspond to a valid entity.
         :param path: the path of the entity to remove metadata from
         :param metadata: the metadata to remove
         """
