@@ -22,33 +22,47 @@ git+https://github.com/wtsi-hgi/baton-python-wrapper.git@master#egg=baton
 
 
 ### API
+#### Setup
+To use the iRODS API, you must first define a "connection" to an iRODS server:
 ```python
 from baton.api import connect_to_irods_with_baton, Connection
-from baton.models import IrodsEntity, DataObject, Collection, SpecificQuery
-from baton.collections import IrodsMetadata
-from hgicommon.models import SearchCriterion, ComparisonOperator
-
 
 # Setup connection to iRODS using baton
 irods = connect_to_irods_with_baton("/where/baton/binaries/are/installed/", skip_baton_binaries_validation=False) # type: Connection
+```
 
-# Get all information about the data objects or collections at the given path(s) in iRODS
-irods.data_object.get_by_path("/collection/data_object")    # type: Sequence[DataObject]:
+#### Data Objects and Collections
+The API provides the ability to retrieve models of the data objects and collections stored on an iRODS server. Similarly 
+to the JSON that baton provides, the models do not contain the payloads. They do however provide access to all of the 
+information that baton can retrieve about an entity, including Access Control Lists (ACLs), custom metadata (AVUs),
+the content of collections and information about data object replicas. All methods provide the option to not load AVUs.
+```python
+from baton.models import DataObject, Collection, SpecificQuery, SearchCriterion, ComparisonOperator
+
+# Get models of data objects or collections at the given path(s) in iRODS
+irods.data_object.get_by_path("/collection/data_object", load_metadata=False)    # type: Sequence[DataObject]:
 irods.collection.get_by_path(["/collection", "/other_collection"])   # type: Sequence[Collection]:
 
 # Setup search for data objects or collections based on their metadata
 search_criterion_1 = SearchCriterion("attribute", "match_value", ComparisonOperator.EQUALS)
 search_criterion_2 = SearchCriterion("other_attribute", "other_match_value", ComparisonOperator.LESS_THAN)
-# Do search
+# Do search to get models of data objects or collections
 irods.data_object.get_by_metadata(search_criterion_1, zone="OptionalZoneRestriction")   # type: Sequence[DataObject]
-irods.collection.get_by_metadata([search_criterion_1, search_criterion_2])   # type: Sequence[Collection]
+irods.collection.get_by_metadata([search_criterion_1, search_criterion_2], load_metadata=False)   # type: Sequence[Collection]
 
-# Get data objects or collections contained within a collection(s)
-irods.collection.get_all_in_collection("/collection")    # type: Sequence[Collection]
+# Get models of data objects or collections contained within a collection(s)
+irods.collection.get_all_in_collection("/collection", load_metadata=False)    # type: Sequence[Collection]
 irods.data_object.get_all_in_collection(["/collection", "/other_collection"])   # type: Sequence[DataObject]
+```
 
-# Get specific queries that have been installed on the iRODS server
-irods.specific_query.get_all(zone="OptionalZoneRestriction")  # type: Sequence[SpecificQuery]
+#### Metadata
+The API provides the ability to both retrieve and manipulate the custom metadata (AVUs) associated with data objects and
+collections.
+
+Although the type of metadata is the same for both data objects and collections, due to the way iRODS works, it is 
+necessary to know the type of entity that a path corresponds to in order to retrieve metadata. 
+```python
+from baton.collections import IrodsMetadata
 
 # Metadata (methods available for both `data_object` and `collection`)
 metadata_examples = [
@@ -67,16 +81,33 @@ irods.collection.metadata.set("/collection", metadata_examples[1])
 
 irods.data_object.metadata.remove("/collection/data_object", metadata_examples)
 irods.collection.metadata.remove("/collection", metadata_examples[1])
+
+irods.data_object.metadata.remove_all("/collection/data_object")
+irods.collection.metadata.remove_all("/collection")
 ```
 
-### JSON Serialization/Deserialization
+#### Custom objects via specific queries
+iRODS supports specific queries which return new types of object. In order to use such custom objects in iRODS via this
+library, a custom model of the object should to be made. Then, a subclass of `BatonCustomObjectMapper` needs to be 
+defined to specify how a specific query (or number of specific queries) can be used to retrieve from and/or modify the
+object in iRODS.
+
+The API provides the ability to retrieve the queries that are installed on an iRODS server: 
+```python
+from baton.models import SpecificQuery
+
+# Get specific queries that have been installed on the iRODS server
+irods.specific_query.get_all(zone="OptionalZoneRestriction")  # type: Sequence[SpecificQuery]
+```
+
+#### JSON Serialization/Deserialization
 There are JSON encoders and decoders for nearly all iRODS object models in this library. These can be used to convert 
 models to/from their baton defined JSON representations. All serializers/deserializers extend `JSONEncoder` and
 `JSONDecoder` (most through use of the [hgijson](https://github.com/wtsi-hgi/python-json/) library) meaning that they 
 can be used with [Python's built in `json` package](https://docs.python.org/3/library/json.html):
 ```python
 import json
-from baton.json import DataObjectJSONEncoder, DataObjectJSONDecoder, CollectionJSONEncoder, CollectionJSONDecoder
+from baton.json import DataObjectJSONEncoder, DataObjectJSONDecoder, CollectionJSONEncoder, CollectionJSONDecoder, IrodsMetadataJSONEncoder, IrodsMetadataJSONDecoder
 
 data_object_as_json_string = json.dumps(data_object, cls=DataObjectJSONEncoder)
 data_object = json.loads(data_object_as_json_string, cls=DataObjectJSONDecoder)
@@ -84,6 +115,8 @@ data_object = json.loads(data_object_as_json_string, cls=DataObjectJSONDecoder)
 collection_as_json_string = json.dumps(collection, cls=CollectionJSONEncoder)
 collection = json.loads(collection_as_json_string, cls=CollectionJSONDecoder)
 
+metadata_as_json_string = json.dumps(metadata, cls=IrodsMetadataJSONEncoder)
+metadata = json.loads(metadata_as_json_string, cls=IrodsMetadataJSONDecoder)
 ```
 
 

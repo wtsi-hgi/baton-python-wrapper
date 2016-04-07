@@ -27,5 +27,3 @@ def connect_to_irods_with_baton(baton_binaries_directory: str, skip_baton_binari
     :return: pseudo connection to iRODS
     """
     return Connection(baton_binaries_directory, skip_baton_binaries_validation)
-
-
