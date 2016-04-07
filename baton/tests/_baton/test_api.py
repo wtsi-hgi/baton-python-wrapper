@@ -1,10 +1,10 @@
 import unittest
 from unittest.mock import patch, MagicMock
 
-from baton._baton_entity_mappers import BatonDataObjectMapper, BatonCollectionMapper
-
 from baton._baton.api import Connection, connect_to_irods_with_baton
 from baton._baton.baton_custom_object_mappers import BatonSpecificQueryMapper
+from baton._baton.baton_entity_mappers import BatonCollectionMapper
+from baton._baton.baton_entity_mappers import BatonDataObjectMapper
 from baton.tests._baton._settings import BATON_DOCKER_BUILD
 from testwithbaton.api import TestWithBatonSetup
 

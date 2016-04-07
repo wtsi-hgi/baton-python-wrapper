@@ -1,7 +1,6 @@
 import collections
 from typing import Dict, Sequence, Union, Optional, Sized, Iterable, Any, Set, Container
 
-from baton.models import DataObjectReplica
 from hgicommon.collections import Metadata
 
 
@@ -58,6 +57,9 @@ class IrodsMetadata(Metadata):
         for key, value in metadata.items():
             irods_metadata[key] = {value}
         return irods_metadata
+
+
+from baton.models import DataObjectReplica
 
 
 class DataObjectReplicaCollection(Sized, Iterable, Container):

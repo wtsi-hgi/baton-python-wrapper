@@ -1,13 +1,11 @@
 from abc import ABCMeta, abstractmethod
 from typing import Sequence
 
-from baton._constants import BATON_SPECIFIC_QUERY_PROPERTY, IRODS_SPECIFIC_QUERY_LS
-
-from baton import SpecificQuery
 from baton._baton._baton_runner import BatonRunner, BatonBinary
+from baton._baton._constants import BATON_SPECIFIC_QUERY_PROPERTY, IRODS_SPECIFIC_QUERY_LS
 from baton._baton.json import PreparedSpecificQueryJSONEncoder, SpecificQueryJSONDecoder
 from baton.mappers import CustomObjectMapper, SpecificQueryMapper
-from baton.models import PreparedSpecificQuery
+from baton.models import PreparedSpecificQuery, SpecificQuery
 from baton.types import CustomObjectType
 
 

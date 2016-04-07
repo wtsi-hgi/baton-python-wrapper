@@ -2,14 +2,12 @@ import unittest
 from abc import ABCMeta, abstractmethod
 from copy import deepcopy
 
-from baton.tests._settings import BATON_DOCKER_BUILD
-
-from baton import IrodsEntity, DataObject, Collection
 from baton._baton.baton_entity_mappers import _BatonIrodsEntityMapper, BatonDataObjectMapper, BatonCollectionMapper
 from baton.collections import IrodsMetadata
-from baton.models import SearchCriterion
+from baton.models import SearchCriterion, IrodsEntity, Collection, DataObject
 from baton.tests._baton._helpers import combine_metadata, synchronise_timestamps, create_data_object, create_collection, \
     NAMES, ATTRIBUTES, VALUES, UNUSED_VALUE
+from baton.tests._baton._settings import BATON_DOCKER_BUILD
 from hgicommon.enums import ComparisonOperator
 from testwithbaton.api import TestWithBatonSetup
 from testwithbaton.helpers import SetupHelper
