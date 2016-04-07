@@ -3,6 +3,7 @@ from abc import ABCMeta, abstractmethod
 from copy import deepcopy
 
 from baton._baton.baton_entity_mappers import _BatonIrodsEntityMapper, BatonDataObjectMapper, BatonCollectionMapper
+from baton._baton.baton_metadata_mappers import BatonDataObjectIrodsMetadataMapper, BatonCollectionIrodsMetadataMapper
 from baton.collections import IrodsMetadata
 from baton.models import SearchCriterion, IrodsEntity, Collection, DataObject
 from baton.tests._baton._helpers import combine_metadata, synchronise_timestamps, create_data_object, create_collection, \
@@ -236,6 +237,9 @@ class TestBatonDataObjectMapper(_TestBatonIrodsEntityMapper):
         retrieved_entities = self.create_mapper().get_by_metadata(self.search_criterion_1)
         self.assertEqual(retrieved_entities, [data_object])
 
+    def test_metadata_property(self):
+        self.assertIsInstance(self.create_mapper().metadata(), BatonDataObjectIrodsMetadataMapper)
+
 
 class TestBatonCollectionMapper(_TestBatonIrodsEntityMapper):
     """
@@ -253,6 +257,9 @@ class TestBatonCollectionMapper(_TestBatonIrodsEntityMapper):
 
         retrieved_entities = self.create_mapper().get_by_metadata(self.search_criterion_1)
         self.assertEqual(retrieved_entities, [collection])
+
+    def test_metadata_property(self):
+        self.assertIsInstance(self.create_mapper().metadata(), BatonCollectionIrodsMetadataMapper)
 
 
 # Trick required to stop Python's unittest from running the abstract base classes as tests
