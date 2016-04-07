@@ -2,4 +2,4 @@
 pip install -q -r requirements.txt
 pip install -q -r test_requirements.txt
 
-nosetests -v
+nosetests -v --tests baton/tests --tests baton/tests/_baton

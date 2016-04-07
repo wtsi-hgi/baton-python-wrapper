@@ -35,6 +35,9 @@ class _BatonIrodsMetadataMapper(BatonRunner, IrodsMetadataMapper, metaclass=ABCM
     def remove(self, path: str, metadata: IrodsMetadata):
         self._modify(path, metadata, BATON_METAMOD_REMOVE_OPERATION)
 
+    def remove_all(self, path: str):
+        self.set(path, IrodsMetadata())
+
     @abstractmethod
     def _create_entity_with_path(self, path: str) -> IrodsEntity:
         """

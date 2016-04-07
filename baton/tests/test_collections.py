@@ -1,7 +1,7 @@
 import copy
 import unittest
 
-from baton.collections import IrodsMetadata, DataObjectReplicaCollection
+from baton.collections import DataObjectReplicaCollection, IrodsMetadata
 from baton.models import DataObjectReplica
 
 

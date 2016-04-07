@@ -4,8 +4,8 @@ from unittest.mock import MagicMock
 
 from baton._baton.baton_custom_object_mappers import BatonSpecificQueryMapper
 from baton.models import PreparedSpecificQuery, SpecificQuery
-from baton.tests.baton._settings import BATON_DOCKER_BUILD
-from baton.tests.baton._stubs import StubBatonCustomObjectMapper
+from baton.tests._baton._settings import BATON_DOCKER_BUILD
+from baton.tests._baton._stubs import StubBatonCustomObjectMapper
 from testwithbaton.api import TestWithBatonSetup
 from testwithbaton.helpers import SetupHelper
 

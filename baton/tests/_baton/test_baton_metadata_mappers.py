@@ -7,8 +7,8 @@ from baton._baton.baton_metadata_mappers import BatonDataObjectIrodsMetadataMapp
 from baton.collections import IrodsMetadata
 from baton.models import Collection, IrodsEntity
 from baton.models import DataObject
-from baton.tests.baton._helpers import NAMES, create_collection, create_data_object
-from baton.tests.baton._settings import BATON_DOCKER_BUILD
+from baton.tests._baton._helpers import NAMES, create_collection, create_data_object
+from baton.tests._baton._settings import BATON_DOCKER_BUILD
 from testwithbaton.api import TestWithBatonSetup
 from testwithbaton.helpers import SetupHelper
 
@@ -40,14 +40,14 @@ class _TestBatonIrodsEntityMetadataMapper(unittest.TestCase):
         :return: the created entity
         """
 
-    def test_get_all_when_invalid_path(self):
+    def test_get_all_with_invalid_path(self):
         self.assertRaises(FileNotFoundError, self.mapper.get_all, "/invalid")
 
     def test_get_all(self):
         entity = self.create_irods_entity(NAMES[0], self.metadata)
         self.assertEqual(self.mapper.get_all(entity.path), self.metadata)
 
-    def test_add_when_invalid_path(self):
+    def test_add_with_invalid_path(self):
         self.assertRaises(FileNotFoundError, self.mapper.add, "/invalid", self.metadata)
 
     def test_add(self):
@@ -60,7 +60,7 @@ class _TestBatonIrodsEntityMetadataMapper(unittest.TestCase):
         del self.metadata["key_1"]
         self.assertRaises(KeyError, self.mapper.add, entity.path, self.metadata)
 
-    def test_set_when_invalid_path(self):
+    def test_set_with_invalid_path(self):
         self.assertRaises(FileNotFoundError, self.mapper.set, "/invalid", self.metadata)
 
     def test_set_when_no_existing_metadata(self):
@@ -78,7 +78,7 @@ class _TestBatonIrodsEntityMetadataMapper(unittest.TestCase):
         self.mapper.set(entity.path, self.metadata)
         self.assertEqual(self.mapper.get_all(entity.path), self.metadata)
 
-    def test_remove_when_invalid_path(self):
+    def test_remove_with_invalid_path(self):
         self.assertRaises(FileNotFoundError, self.mapper.remove, "/invalid", self.metadata)
 
     def test_remove_unset_metadata(self):
@@ -100,6 +100,14 @@ class _TestBatonIrodsEntityMetadataMapper(unittest.TestCase):
         del partial_metadata_2["key_2"]
         self.mapper.remove(entity.path, partial_metadata_1)
         self.assertEqual(self.mapper.get_all(entity.path), partial_metadata_2)
+
+    def test_remove_all_with_invalid_path(self):
+        self.assertRaises(FileNotFoundError, self.mapper.remove_all, "/invalid")
+
+    def test_remove_all(self):
+        entity = self.create_irods_entity(NAMES[0], self.metadata)
+        self.mapper.remove_all(entity.path)
+        self.assertEqual(self.mapper.get_all(entity.path), IrodsMetadata())
 
     def tearDown(self):
         self.test_with_baton.tear_down()

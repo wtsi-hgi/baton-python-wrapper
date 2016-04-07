@@ -7,7 +7,7 @@ from baton._baton._constants import BATON_COLLECTION_PROPERTY, IRODS_SPECIFIC_QU
 from baton._baton._constants import BATON_DATA_OBJECT_PROPERTY
 from baton.collections import IrodsMetadata
 from baton.models import Collection, SpecificQuery, DataObject
-from baton.tests.baton._helpers import create_data_object, create_collection
+from baton.tests._baton._helpers import create_data_object, create_collection
 from testwithbaton.api import TestWithBatonSetup
 
 _data_object = None
