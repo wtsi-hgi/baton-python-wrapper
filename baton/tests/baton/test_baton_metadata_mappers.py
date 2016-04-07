@@ -7,8 +7,8 @@ from baton._baton.baton_metadata_mappers import BatonDataObjectIrodsMetadataMapp
 from baton.collections import IrodsMetadata
 from baton.models import Collection, IrodsEntity
 from baton.models import DataObject
-from baton.tests._baton._helpers import NAMES, create_collection, create_data_object
-from baton.tests._baton._settings import BATON_DOCKER_BUILD
+from baton.tests.baton._helpers import NAMES, create_collection, create_data_object
+from baton.tests.baton._settings import BATON_DOCKER_BUILD
 from testwithbaton.api import TestWithBatonSetup
 from testwithbaton.helpers import SetupHelper
 
