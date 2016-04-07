@@ -123,8 +123,8 @@ class _TestBatonIrodsEntityMapper(unittest.TestCase, metaclass=ABCMeta):
     def test_get_by_path_with_single_entity(self):
         irods_entity_1 = self.create_irods_entity(NAMES[0], self.metadata_1)
 
-        retrieved_entities = self.create_mapper().get_by_path(irods_entity_1.path)
-        self.assertEqual(retrieved_entities, [irods_entity_1])
+        retrieved_entity = self.create_mapper().get_by_path(irods_entity_1.path)
+        self.assertEqual(retrieved_entity, irods_entity_1)
 
     def test_get_by_path_with_multiple_entities(self):
         irods_entities = [
@@ -145,11 +145,11 @@ class _TestBatonIrodsEntityMapper(unittest.TestCase, metaclass=ABCMeta):
     def test_get_by_path_when_metadata_not_required(self):
         irods_entity_1 = self.create_irods_entity(NAMES[0], self.metadata_1)
 
-        retrieved_entities = self.create_mapper().get_by_path(irods_entity_1.path, load_metadata=False)
+        retrieved_entity = self.create_mapper().get_by_path(irods_entity_1.path, load_metadata=False)
 
-        self.assertIsNone(retrieved_entities[0].metadata)
+        self.assertIsNone(retrieved_entity.metadata)
         irods_entity_1.metadata = None
-        self.assertEqual(retrieved_entities, [irods_entity_1])
+        self.assertEqual(retrieved_entity, irods_entity_1)
 
     def test_get_all_in_collection_when_collection_does_not_exist(self):
         self.assertRaises(FileNotFoundError, self.create_mapper().get_all_in_collection, "/invalid")

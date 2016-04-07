@@ -57,9 +57,12 @@ class _BatonIrodsEntityMapper(BatonRunner, IrodsEntityMapper, metaclass=ABCMeta)
         baton_out_as_json = self.run_baton_query(BatonBinary.BATON_METAQUERY, arguments, input_data=baton_json)
         return self._baton_json_to_irods_entities(baton_out_as_json)
 
-    def get_by_path(self, paths: Union[str, Iterable[str]], load_metadata: bool=True) -> Sequence[EntityType]:
-        if not isinstance(paths, list):
+    def get_by_path(self, paths: Union[str, Iterable[str]], load_metadata: bool=True) \
+            -> Union[EntityType, Sequence[EntityType]]:
+        single_path = False
+        if isinstance(paths, str):
             paths = [paths]
+            single_path = True
         if len(paths) == 0:
             return []
 
@@ -70,9 +73,11 @@ class _BatonIrodsEntityMapper(BatonRunner, IrodsEntityMapper, metaclass=ABCMeta)
         arguments = self._create_entity_query_arguments(load_metadata)
 
         baton_out_as_json = self.run_baton_query(BatonBinary.BATON_LIST, arguments, input_data=baton_json)
-        return self._baton_json_to_irods_entities(baton_out_as_json)
+        irods_entities = self._baton_json_to_irods_entities(baton_out_as_json)
 
-    def get_all_in_collection(self, collection_paths: Union[str, Iterable[str]], load_metadata: bool = True) \
+        return irods_entities[0] if single_path else irods_entities
+
+    def get_all_in_collection(self, collection_paths: Union[str, Iterable[str]], load_metadata: bool=True) \
             -> Sequence[EntityType]:
         if isinstance(collection_paths, str):
             collection_paths = [collection_paths]

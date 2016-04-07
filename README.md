@@ -40,7 +40,7 @@ the content of collections and information about data object replicas. All metho
 from baton.models import DataObject, Collection, SpecificQuery, SearchCriterion, ComparisonOperator
 
 # Get models of data objects or collections at the given path(s) in iRODS
-irods.data_object.get_by_path("/collection/data_object", load_metadata=False)    # type: Sequence[DataObject]:
+irods.data_object.get_by_path("/collection/data_object", load_metadata=False)    # type: DataObject:
 irods.collection.get_by_path(["/collection", "/other_collection"])   # type: Sequence[Collection]:
 
 # Setup search for data objects or collections based on their metadata
