@@ -2,14 +2,14 @@ import json
 import logging
 import os
 import subprocess
+import time
 from abc import ABCMeta
 from datetime import timedelta
 from enum import Enum
-from typing import Any, List
-import time
+from typing import Any, List, Dict
 
-from baton._constants import BATON_ERROR_MESSAGE_KEY, BATON_FILE_DOES_NOT_EXIST_ERROR_CODE, BATON_ERROR_PROPERTY,\
-    BATON_ERROR_CODE_KEY
+from baton._baton._constants import BATON_ERROR_MESSAGE_KEY, BATON_ERROR_ENTITY_DOES_NOT_EXIST_ERROR_CODE, BATON_ERROR_PROPERTY,\
+    BATON_ERROR_CODE_KEY, BATON_ERROR_CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME, BATON_ERROR_CAT_SUCCESS_BUT_WITH_NO_INFO
 
 
 class BatonBinary(Enum):
@@ -21,6 +21,7 @@ class BatonBinary(Enum):
     BATON_LIST = "baton-list"
     BATON_SPECIFIC_QUERY = "baton-specificquery"
     BATON_GET = "baton-get"
+    BATON_METAMOD = "baton-metamod"
 
 
 class BatonRunner(metaclass=ABCMeta):
@@ -46,7 +47,7 @@ class BatonRunner(metaclass=ABCMeta):
         self.timeout_queries_after = timeout_queries_after
 
     def run_baton_query(self, baton_binary: BatonBinary, program_arguments: List[str]=None, input_data: Any=None) \
-            -> List[dict]:
+            -> List[Dict]:
         """
         Runs a baton query.
         :param baton_binary: the baton binary to use
@@ -118,7 +119,7 @@ class BatonRunner(metaclass=ABCMeta):
         return True
 
     @staticmethod
-    def _raise_any_errors_given_in_baton_out(baton_out_as_json: List[dict]):
+    def _raise_any_errors_given_in_baton_out(baton_out_as_json: List[Dict]):
         """
         Raises any errors that baton has expressed in its output.
         :param baton_out_as_json: the output baton gave as parsed serialization
@@ -132,7 +133,10 @@ class BatonRunner(metaclass=ABCMeta):
                 error_message = error[BATON_ERROR_MESSAGE_KEY]
                 error_code = error[BATON_ERROR_CODE_KEY]
 
-                if error_code == BATON_FILE_DOES_NOT_EXIST_ERROR_CODE:
+                if error_code == BATON_ERROR_ENTITY_DOES_NOT_EXIST_ERROR_CODE:
                     raise FileNotFoundError(error_message)
+                elif error_code == BATON_ERROR_CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME \
+                        or error_code == BATON_ERROR_CAT_SUCCESS_BUT_WITH_NO_INFO:
+                    raise KeyError(error_message)
                 else:
                     raise RuntimeError(error_message)

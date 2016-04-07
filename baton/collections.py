@@ -1,7 +1,6 @@
 import collections
 from typing import Dict, Sequence, Union, Optional, Sized, Iterable, Any, Set, Container
 
-from baton.models import DataObjectReplica
 from hgicommon.collections import Metadata
 
 
@@ -15,7 +14,7 @@ class IrodsMetadata(Metadata):
     superclass, which allows keys to be associated to any value. The current implementation is essentially
     `Dict[str, Set[Any]]` (with convenience methods).
     """
-    def __init__(self, seq: Dict=None):
+    def __init__(self, seq: Dict[Any, Set]=None):
         super().__init__()
         if seq is not None:
             for key, value in seq.items():
@@ -58,6 +57,9 @@ class IrodsMetadata(Metadata):
         for key, value in metadata.items():
             irods_metadata[key] = {value}
         return irods_metadata
+
+
+from baton.models import DataObjectReplica
 
 
 class DataObjectReplicaCollection(Sized, Iterable, Container):
