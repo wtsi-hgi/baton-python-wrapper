@@ -79,6 +79,11 @@ class AccessControlMapper(Generic[EntityType], metaclass=ABCMeta):
         :return:
         """
 
+
+class DataObjectAccessControlMapper(AccessControlMapper[DataObject], metaclass=ABCMeta):
+    """
+    Access control mapper for controls relating specifically to data objects.
+    """
     @abstractmethod
     def add(self, paths: Union[str, Iterable[str]], access_controls: Union[AccessControl, Iterable[AccessControl]]):
         """
@@ -106,7 +111,7 @@ class AccessControlMapper(Generic[EntityType], metaclass=ABCMeta):
 
 class CollectionAccessControlMapper(AccessControlMapper[Collection], metaclass=ABCMeta):
     """
-    Access control mapper for controls relating to collections.
+    Access control mapper for controls relating specifically to collections.
     """
     @abstractmethod
     def add(self, paths: Union[str, Iterable[str]], access_controls: Union[AccessControl, Iterable[AccessControl]],
