@@ -58,6 +58,15 @@ class IrodsMetadataMapper(Generic[EntityType], metaclass=ABCMeta):
         :param metadata: the metadata to remove
         """
 
+    @abstractmethod
+    def remove_all(self, path: str):
+        """
+        Removes all of the metadata from the given iRODS entity.
+
+        A `ValueError` will be raised will be raised if the path does not correspond to a valid entity.
+        :param path: the path of the entity to remove all of the metadata from
+        """
+
 
 class IrodsEntityMapper(Generic[EntityType], metaclass=ABCMeta):
     """
