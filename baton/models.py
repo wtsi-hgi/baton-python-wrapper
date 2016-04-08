@@ -1,7 +1,7 @@
 from abc import ABCMeta
 from datetime import datetime
 from enum import Enum, unique
-from typing import Iterable, List
+from typing import Iterable, List, Set
 import re
 
 import hgicommon
@@ -56,12 +56,22 @@ class IrodsEntity(Model, metaclass=ABCMeta):
     from baton.collections import IrodsMetadata
     _ABSOLUTE_PATH_REGEX = re.compile("^/.+")
 
-    def __init__(self, path: str, access_control_list: Iterable[AccessControl]=None, metadata: IrodsMetadata=None):
+    def __init__(self, path: str, access_controls: Iterable[AccessControl]=None, metadata: IrodsMetadata=None):
         if not re.match(IrodsEntity._ABSOLUTE_PATH_REGEX, path):
             raise ValueError("baton does not support the given type of relative path: \"%s\"" % path)
         self.path = path
-        self.acl = access_control_list if access_control_list else []
+        self._access_controls = None
+        self.access_controls = access_controls
+        self.acl = self.access_controls
         self.metadata = metadata
+
+    @property
+    def access_controls(self) -> Set[AccessControl]:
+        return self._access_controls
+
+    @access_controls.setter
+    def access_controls(self, access_controls: Iterable[AccessControl]):
+        self._access_controls = set(access_controls)
 
     def get_collection_path(self) -> str:
         """
@@ -84,11 +94,10 @@ class DataObject(IrodsEntity):
     """
     from baton.collections import IrodsMetadata
 
-    def __init__(self, path: str, access_control_list: Iterable[AccessControl]=None, metadata: IrodsMetadata=None,
+    def __init__(self, path: str, access_controls: Iterable[AccessControl]=None, metadata: IrodsMetadata=None,
                  replicas: Iterable[DataObjectReplica]=()):
         from baton.collections import DataObjectReplicaCollection
-        access_control_list = access_control_list if access_control_list else []
-        super().__init__(path, access_control_list, metadata)
+        super().__init__(path, access_controls, metadata)
         self.replicas = DataObjectReplicaCollection(replicas)
 
 

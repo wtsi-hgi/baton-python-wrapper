@@ -17,8 +17,9 @@ from baton.collections import IrodsMetadata, DataObjectReplicaCollection
 from baton.models import AccessControl, DataObjectReplica, DataObject, IrodsEntity, Collection, PreparedSpecificQuery, \
     SpecificQuery, SearchCriterion
 from hgicommon.enums import ComparisonOperator
-from hgijson.json.builders import MappingJSONEncoderClassBuilder, MappingJSONDecoderClassBuilder
-from hgijson.json.interfaces import DictJSONDecoder
+from hgijson.json.builders import MappingJSONEncoderClassBuilder, MappingJSONDecoderClassBuilder, \
+    SetJSONEncoderClassBuilder, SetJSONDecoderClassBuilder
+from hgijson.json.interfaces import ParsedJSONDecoder
 from hgijson.json.models import JsonPropertyMapping
 from hgijson.types import PrimitiveJsonSerializableType
 
@@ -42,6 +43,11 @@ _access_control_json_mappings = [
 ]
 AccessControlJSONEncoder = MappingJSONEncoderClassBuilder(AccessControl, _access_control_json_mappings).build()
 AccessControlJSONDecoder = MappingJSONDecoderClassBuilder(AccessControl, _access_control_json_mappings).build()
+
+
+# JSON encoder/decoder for sets of `AccessControl` instances
+AccessControlSetJSONEncoder = SetJSONEncoderClassBuilder(AccessControlJSONEncoder).build()
+AccessControlSetJSONDecoder = SetJSONDecoderClassBuilder(AccessControlJSONDecoder).build()
 
 
 # JSON encoder/decoder for `DataObjectReplica`
@@ -69,16 +75,16 @@ class DataObjectReplicaCollectionJSONEncoder(JSONEncoder):
             return super().default(data_object_replica_collection)
         return [self._replica_encoder.default(replica) for replica in data_object_replica_collection.get_all()]
 
-class DataObjectReplicaCollectionJSONDecoder(JSONDecoder, DictJSONDecoder):
+class DataObjectReplicaCollectionJSONDecoder(JSONDecoder, ParsedJSONDecoder):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._replica_decoder = DataObjectReplicaJSONDecoder(*args, **kwargs)   # type: JSONDecoder
 
     def decode(self, json_as_string: str, **kwargs) -> DataObjectReplicaCollection:
         json_as_dict = json.loads(json_as_string)
-        return self.decode_dict(json_as_dict)
+        return self.decode_parsed(json_as_dict)
 
-    def decode_dict(self, json_as_dict: dict) -> DataObjectReplicaCollection:
+    def decode_parsed(self, json_as_dict: dict) -> DataObjectReplicaCollection:
         if not isinstance(json_as_dict, List):
             return super().decode(json_as_dict)
         return DataObjectReplicaCollection([self._replica_decoder.decode(json.dumps(item)) for item in json_as_dict])
@@ -98,12 +104,12 @@ class IrodsMetadataJSONEncoder(JSONEncoder):
                 })
         return avus
 
-class IrodsMetadataJSONDecoder(JSONDecoder, DictJSONDecoder):
+class IrodsMetadataJSONDecoder(JSONDecoder, ParsedJSONDecoder):
     def decode(self, json_as_string: str, **kwargs) -> IrodsMetadata:
         json_as_dict = json.loads(json_as_string)
-        return self.decode_dict(json_as_dict)
+        return self.decode_parsed(json_as_dict)
 
-    def decode_dict(self, json_as_dict: dict) -> IrodsMetadata:
+    def decode_parsed(self, json_as_dict: dict) -> IrodsMetadata:
         if not isinstance(json_as_dict, List):
             return super().decode(json_as_dict)
         irods_metadata = IrodsMetadata()
@@ -117,8 +123,9 @@ class IrodsMetadataJSONDecoder(JSONDecoder, DictJSONDecoder):
 
 # JSON encoder/decoder for `IrodsEntity`
 _irods_entity_json_mappings = [
-    JsonPropertyMapping(BATON_ACL_PROPERTY, "acl", "access_control_list",
-                        encoder_cls=AccessControlJSONEncoder, decoder_cls=AccessControlJSONDecoder, optional=True),
+    JsonPropertyMapping(BATON_ACL_PROPERTY, "acl", "access_controls",
+                        encoder_cls=AccessControlSetJSONEncoder,
+                        decoder_cls=AccessControlSetJSONDecoder, optional=True),
     JsonPropertyMapping(BATON_AVU_PROPERTY, "metadata", "metadata",
                         encoder_cls=IrodsMetadataJSONEncoder, decoder_cls=IrodsMetadataJSONDecoder, optional=True)
 ]
