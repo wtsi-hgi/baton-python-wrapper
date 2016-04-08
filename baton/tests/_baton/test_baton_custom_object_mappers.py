@@ -21,6 +21,9 @@ class TestBatonCustomObjectMapper(unittest.TestCase):
         self.mapper = StubBatonCustomObjectMapper(self.test_with_baton.baton_location)
         self.mapper._object_deserialiser = MagicMock(wraps=self.mapper._object_deserialiser)
 
+    def tearDown(self):
+        self.test_with_baton.tear_down()
+
     def test_get_using_specific_query(self):
         results = self.mapper._get_with_prepared_specific_query(PreparedSpecificQuery("ls"))
         self.assertIsInstance(results, list)

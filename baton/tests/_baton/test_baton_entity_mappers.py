@@ -29,6 +29,9 @@ class _TestBatonIrodsEntityMapper(unittest.TestCase, metaclass=ABCMeta):
         self.search_criterion_1 = SearchCriterion(ATTRIBUTES[0], VALUES[0], ComparisonOperator.EQUALS)
         self.search_criterion_2 = SearchCriterion(ATTRIBUTES[1], VALUES[1], ComparisonOperator.EQUALS)
 
+    def tearDown(self):
+        self.test_with_baton.tear_down()
+
     @abstractmethod
     def create_mapper(self) -> _BatonIrodsEntityMapper:
         """
@@ -215,9 +218,6 @@ class _TestBatonIrodsEntityMapper(unittest.TestCase, metaclass=ABCMeta):
 
         self.assertEqual(len(retrieved_entities), 1)
         self.assertIsInstance(retrieved_entities[0], type(self.create_irods_entity(NAMES[2])))
-
-    def tearDown(self):
-        self.test_with_baton.tear_down()
 
 
 class TestBatonDataObjectMapper(_TestBatonIrodsEntityMapper):

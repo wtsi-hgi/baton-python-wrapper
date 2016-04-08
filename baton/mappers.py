@@ -67,7 +67,7 @@ class IrodsMetadataMapper(Generic[EntityType], metaclass=ABCMeta):
         """
 
 
-class AccessControlMapper(Generic[EntityType], metaclass=ABCMeta):
+class AccessControlMapper(metaclass=ABCMeta):
     """
     Access control mapper.
     """
@@ -78,12 +78,6 @@ class AccessControlMapper(Generic[EntityType], metaclass=ABCMeta):
         :param path: the path of the entity to find access controls for
         :return:
         """
-
-
-class DataObjectAccessControlMapper(AccessControlMapper[DataObject], metaclass=ABCMeta):
-    """
-    Access control mapper for controls relating specifically to data objects.
-    """
     @abstractmethod
     def add(self, paths: Union[str, Iterable[str]], access_controls: Union[AccessControl, Iterable[AccessControl]]):
         """
@@ -109,7 +103,7 @@ class DataObjectAccessControlMapper(AccessControlMapper[DataObject], metaclass=A
         """
 
 
-class CollectionAccessControlMapper(AccessControlMapper[Collection], metaclass=ABCMeta):
+class CollectionAccessControlMapper(AccessControlMapper, metaclass=ABCMeta):
     """
     Access control mapper for controls relating specifically to collections.
     """
@@ -156,7 +150,7 @@ class IrodsEntityMapper(Generic[EntityType], metaclass=ABCMeta):
         """
 
     @abstractproperty
-    def access_control(self) -> AccessControlMapper[EntityType]:
+    def access_control(self) -> AccessControlMapper:
         """
         Property to access a mapper for access controls related the entities that this mapper deals with.
         :return: the entity access control mapper

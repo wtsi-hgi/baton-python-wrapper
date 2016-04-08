@@ -38,9 +38,10 @@ class AccessControl(Model):
     """
     @unique
     class Level(Enum):
-        READ = 0
-        WRITE = 1
-        OWN = 2
+        NONE = 0
+        READ = 1
+        WRITE = 2
+        OWN = 3
 
     def __init__(self, owner: str, zone: str, level: Level):
         self.owner = owner
