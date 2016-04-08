@@ -16,6 +16,30 @@ class _BatonIrodsEntityMapper(BatonRunner, IrodsEntityMapper, metaclass=ABCMeta)
     """
     Mapper for iRODS entities, implemented using baton.
     """
+    @abstractmethod
+    def _path_to_baton_json(self, path: str) -> Dict:
+        """
+        Converts a path to the type of iRODS entity the mapper deals with, to its JSON representation.
+        :param path: the path to convert
+        :return: the JSON representation of the path
+        """
+
+    @abstractmethod
+    def _baton_json_to_irods_entity(self, entity_as_baton_json: Dict) -> EntityType:
+        """
+        Converts the baton representation of an iRODS entity to a list of `EntityType` models.
+        :param entity_as_baton_json: the baton serialization representation of the entity
+        :return: the equivalent models
+        """
+
+    @abstractmethod
+    def _extract_irods_entities_of_entity_type_from_baton_json(self, entities_as_baton_json: List[Dict]) -> List[Dict]:
+        """
+        Extract from the list the JSON representation of entities of type `EntityType`.
+        :param entities_as_baton_json: iRODS entities encoded as baton JSON
+        :return: extracted entities as baton JSON
+        """
+
     def __init__(self, additional_metadata_query_arguments: List[str], metadata_mapper: IrodsMetadataMapper[EntityType],
                  *args, **kwargs):
         """
@@ -127,30 +151,6 @@ class _BatonIrodsEntityMapper(BatonRunner, IrodsEntityMapper, metaclass=ABCMeta)
 
         return entities
 
-    @abstractmethod
-    def _path_to_baton_json(self, path: str) -> Dict:
-        """
-        Converts a path to the type of iRODS entity the mapper deals with, to its JSON representation.
-        :param path: the path to convert
-        :return: the JSON representation of the path
-        """
-
-    @abstractmethod
-    def _baton_json_to_irods_entity(self, entity_as_baton_json: Dict) -> EntityType:
-        """
-        Converts the baton representation of an iRODS entity to a list of `EntityType` models.
-        :param entity_as_baton_json: the baton serialization representation of the entity
-        :return: the equivalent models
-        """
-
-    @abstractmethod
-    def _extract_irods_entities_of_entity_type_from_baton_json(self, entities_as_baton_json: List[Dict]) -> List[Dict]:
-        """
-        Extract from the list the JSON representation of entities of type `EntityType`.
-        :param entities_as_baton_json: iRODS entities encoded as baton JSON
-        :return: extracted entities as baton JSON
-        """
-
 
 class BatonDataObjectMapper(_BatonIrodsEntityMapper, DataObjectMapper):
     """
@@ -188,7 +188,7 @@ class BatonCollectionMapper(_BatonIrodsEntityMapper, CollectionMapper):
         return CollectionJSONEncoder().default(collection)
 
     def _baton_json_to_irods_entity(self, entity_as_baton_json: Dict) -> Collection:
-        return CollectionJSONDecoder().decode_dict(entity_as_baton_json)
+        return CollectionJSONDecoder().decode_parsed(entity_as_baton_json)
 
     def _extract_irods_entities_of_entity_type_from_baton_json(self, entities_as_baton_json: List[Dict]) -> List[Dict]:
         collections_as_baton_json = []

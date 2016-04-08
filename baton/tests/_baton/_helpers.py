@@ -94,7 +94,7 @@ def create_collection(test_with_baton: TestWithBatonSetup, name: str, metadata: 
     else:
         _set_access_controls(test_with_baton, path, acl)
 
-    return Collection(path=path, access_control_list=acl, metadata=metadata)
+    return Collection(path=path, access_controls=acl, metadata=metadata)
 
 
 def synchronise_timestamps(test_with_baton: TestWithBatonSetup, irods_entity: IrodsEntity):

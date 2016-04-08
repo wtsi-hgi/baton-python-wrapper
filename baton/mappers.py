@@ -78,6 +78,7 @@ class AccessControlMapper(metaclass=ABCMeta):
         :param path: the path of the entity to find access controls for
         :return:
         """
+
     @abstractmethod
     def add(self, paths: Union[str, Iterable[str]], access_controls: Union[AccessControl, Iterable[AccessControl]]):
         """

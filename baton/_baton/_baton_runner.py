@@ -22,6 +22,7 @@ class BatonBinary(Enum):
     BATON_SPECIFIC_QUERY = "baton-specificquery"
     BATON_GET = "baton-get"
     BATON_METAMOD = "baton-metamod"
+    BATON_CHMOD = "baton-chmod"
 
 
 class BatonRunner(metaclass=ABCMeta):
@@ -91,7 +92,7 @@ class BatonRunner(metaclass=ABCMeta):
         """
         process = subprocess.Popen(arguments, stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.PIPE)
 
-        if isinstance(input_data, list):
+        if isinstance(input_data, List):
             for to_write in input_data:
                 to_write_as_json = json.dumps(to_write)
                 process.stdin.write(str.encode(to_write_as_json))

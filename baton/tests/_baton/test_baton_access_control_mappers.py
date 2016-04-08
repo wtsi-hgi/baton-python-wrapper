@@ -11,7 +11,7 @@ from baton.tests._baton._settings import BATON_DOCKER_BUILD
 from testwithbaton.api import TestWithBatonSetup
 from testwithbaton.helpers import SetupHelper
 
-_USERNAMES = ["user_1", "user_2", "user_3", "user_4"]
+_USERNAMES = ["user_1", "user_2", "user_3"]
 
 
 class _TestBatonAccessControlMapper(unittest.TestCase):
@@ -28,10 +28,10 @@ class _TestBatonAccessControlMapper(unittest.TestCase):
         for username in _USERNAMES:
             self.setup_helper.create_user(username, zone)
 
-        self.acl = [AccessControl(_USERNAMES[0], zone, AccessControl.Level.OWN),
-                    AccessControl(_USERNAMES[1], zone, AccessControl.Level.WRITE),
-                    AccessControl(_USERNAMES[2], zone, AccessControl.Level.READ)]
-        self.access_control = AccessControl(_USERNAMES[3], zone, AccessControl.Level.OWN)
+        self.acl = [AccessControl(self.test_with_baton.irods_server.users[0].username, zone, AccessControl.Level.OWN),
+                    AccessControl(_USERNAMES[0], zone, AccessControl.Level.WRITE),
+                    AccessControl(_USERNAMES[1], zone, AccessControl.Level.READ)]
+        self.access_control = AccessControl(_USERNAMES[2], zone, AccessControl.Level.OWN)
 
     def tearDown(self):
         self.test_with_baton.tear_down()
@@ -135,15 +135,15 @@ class TestBatonDataObjectAccessControlMapper(_TestBatonAccessControlMapper):
         return create_data_object(self.test_with_baton, name, acl=acl)
 
 
-class TestBatonCollectionAccessControlMapper(_TestBatonAccessControlMapper):
-    """
-    Tests for `BatonCollectionAccessControlMapper`.
-    """
-    def create_mapper(self) -> BatonCollectionAccessControlMapper:
-        return BatonCollectionAccessControlMapper(self.test_with_baton.baton_location)
-
-    def create_irods_entity(self, name: str, acl: Iterable[AccessControl]) -> Collection:
-        return create_collection(self.test_with_baton, name, acl=acl)
+# class TestBatonCollectionAccessControlMapper(_TestBatonAccessControlMapper):
+#     """
+#     Tests for `BatonCollectionAccessControlMapper`.
+#     """
+#     def create_mapper(self) -> BatonCollectionAccessControlMapper:
+#         return BatonCollectionAccessControlMapper(self.test_with_baton.baton_location)
+#
+#     def create_irods_entity(self, name: str, acl: Iterable[AccessControl]) -> Collection:
+#         return create_collection(self.test_with_baton, name, acl=acl)
 
 
 # Trick required to stop Python's unittest from running the abstract base classes as tests
