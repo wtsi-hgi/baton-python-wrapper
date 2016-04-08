@@ -132,7 +132,7 @@ models to/from their baton defined JSON representations. All serializers/deseria
 can be used with [Python's built in `json` package](https://docs.python.org/3/library/json.html):
 ```python
 import json
-from baton.json import DataObjectJSONEncoder, DataObjectJSONDecoder, CollectionJSONEncoder, CollectionJSONDecoder, IrodsMetadataJSONEncoder, IrodsMetadataJSONDecoder
+from baton.json import DataObjectJSONEncoder, DataObjectJSONDecoder, CollectionJSONEncoder, CollectionJSONDecoder, IrodsMetadataJSONEncoder, IrodsMetadataJSONDecoder, AccessControlJSONEncoder, AccessControlJSONDecoder
 
 data_object_as_json_string = json.dumps(data_object, cls=DataObjectJSONEncoder)
 data_object = json.loads(data_object_as_json_string, cls=DataObjectJSONDecoder)
@@ -142,6 +142,9 @@ collection = json.loads(collection_as_json_string, cls=CollectionJSONDecoder)
 
 metadata_as_json_string = json.dumps(metadata, cls=IrodsMetadataJSONEncoder)
 metadata = json.loads(metadata_as_json_string, cls=IrodsMetadataJSONDecoder)
+
+acl_as_json_string = json.dumps(metadata, cls=AccessControlJSONEncoder)
+acl = json.loads(acl_as_json_string, cls=AccessControlJSONDecoder)
 ```
 
 
