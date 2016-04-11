@@ -1,9 +1,10 @@
 from abc import ABCMeta, abstractmethod
-from typing import Iterable, Sequence, Union, Dict, List
+from typing import Iterable, Sequence, Union, Dict, List, Set
 
 from baton._baton._baton_runner import BatonRunner, BatonBinary
 from baton._baton._constants import BATON_ACL_PROPERTY
-from baton._baton.json import DataObjectJSONEncoder, AccessControlJSONDecoder, CollectionJSONEncoder
+from baton._baton.json import DataObjectJSONEncoder, AccessControlJSONDecoder, CollectionJSONEncoder, \
+    AccessControlSetJSONDecoder
 from baton.mappers import AccessControlMapper, CollectionAccessControlMapper
 from baton.models import AccessControl, DataObject, IrodsEntity, Collection
 
@@ -12,7 +13,7 @@ class _BatonAccessControlMapper(BatonRunner, AccessControlMapper, metaclass=ABCM
     """
     Access control mapper, implemented using baton.
     """
-    _ACCESS_CONTROL_JSON_ENCODER = AccessControlJSONDecoder()
+    _ACCESS_CONTROL_SET_JSON_ENCODER = AccessControlSetJSONDecoder()
 
     @abstractmethod
     def _create_entity_with_path(self, path: str) -> IrodsEntity:
@@ -30,12 +31,12 @@ class _BatonAccessControlMapper(BatonRunner, AccessControlMapper, metaclass=ABCM
         :return: the JSON representation
         """
 
-    def get_all(self, path: str) -> Sequence[AccessControl]:
+    def get_all(self, path: str) -> Set[AccessControl]:
         baton_json = self._path_to_baton_json(path)
         baton_out_as_json = self.run_baton_query(BatonBinary.BATON_LIST, ["--acl"], input_data=baton_json)
         assert len(baton_out_as_json) == 1
         access_controls_as_baton_json = baton_out_as_json[0][BATON_ACL_PROPERTY]
-        return _BatonAccessControlMapper._ACCESS_CONTROL_JSON_ENCODER.decode_parsed(access_controls_as_baton_json)
+        return _BatonAccessControlMapper._ACCESS_CONTROL_SET_JSON_ENCODER.decode_parsed(access_controls_as_baton_json)
 
     def add(self, paths: Union[str, Iterable[str]], access_controls: Union[AccessControl, Iterable[AccessControl]]):
         if isinstance(paths, str):
@@ -46,8 +47,7 @@ class _BatonAccessControlMapper(BatonRunner, AccessControlMapper, metaclass=ABCM
         baton_json = []
         for path in paths:
             entity = self._create_entity_with_path(path)
-            # TODO: This is inefficient - `get_all` should accept a list then this could be done in one call, not n
-            entity.acl = set(self.get_all(path)).union(set(access_controls))
+            entity.access_controls = access_controls
             baton_json.append(self._entity_to_baton_json(entity))
         self.run_baton_query(BatonBinary.BATON_CHMOD, input_data=baton_json)
 
@@ -55,12 +55,16 @@ class _BatonAccessControlMapper(BatonRunner, AccessControlMapper, metaclass=ABCM
         if isinstance(paths, str):
             paths = [paths]
         if isinstance(access_controls, AccessControl):
-            access_controls = [AccessControl]
+            access_controls = [access_controls]
+
+        # baton-chmod does a mix of set and add: if no level has been defined for a user, else sets if it has
+        # Taking easiest route of starting from a blank slate
+        self.remove_all(paths)
 
         baton_json = []
         for path in paths:
             entity = self._create_entity_with_path(path)
-            entity.acl = access_controls
+            entity.access_controls = access_controls
             baton_json.append(self._entity_to_baton_json(entity))
         self.run_baton_query(BatonBinary.BATON_CHMOD, input_data=baton_json)
 
@@ -68,13 +72,24 @@ class _BatonAccessControlMapper(BatonRunner, AccessControlMapper, metaclass=ABCM
         if isinstance(paths, str):
             paths = [paths]
         if isinstance(access_controls, AccessControl):
-            access_controls = [AccessControl]
+            access_controls = [access_controls]
+
+        no_access_controls = [AccessControl(access_control.owner, access_control.zone, AccessControl.Level.NONE)
+                              for access_control in access_controls]
+        self.add(paths, no_access_controls)
+
+    def remove_all(self, paths: Union[str, Iterable[str]]):
+        if isinstance(paths, str):
+            paths = [paths]
 
         baton_json = []
         for path in paths:
-            entity = self._create_entity_with_path(path)
             # TODO: This is inefficient - `get_all` should accept a list then this could be done in one call, not n
-            entity.acl = set(self.get_all(path)) - set(access_controls)
+            access_controls = self.get_all(path)
+            for access_control in access_controls:
+                access_control.level = AccessControl.Level.NONE
+            entity = self._create_entity_with_path(path)
+            entity.access_controls = access_controls
             baton_json.append(self._entity_to_baton_json(entity))
         self.run_baton_query(BatonBinary.BATON_CHMOD, input_data=baton_json)
 
@@ -104,16 +119,27 @@ class BatonCollectionAccessControlMapper(_BatonAccessControlMapper, CollectionAc
     Access control mapper for controls relating specifically to collections, implemented using baton.
     """
     def set(self, paths: Union[str, Iterable[str]], access_controls: Union[AccessControl, Iterable[AccessControl]],
-            recursive: bool = False):
-        pass
+            recursive: bool=False):
+        if recursive:
+            raise NotImplementedError()
+        else:
+            super().set(paths, access_controls)
 
     def add(self, paths: Union[str, Iterable[str]], access_controls: Union[AccessControl, Iterable[AccessControl]],
-            recursive: bool = False):
-        pass
+            recursive: bool=False):
+        if recursive:
+            raise NotImplementedError()
+        else:
+            super().add(paths, access_controls)
 
     def remove(self, paths: Union[str, Iterable[str]], access_controls: Union[AccessControl, Iterable[AccessControl]],
-               recursive: bool = False):
-        pass
+               recursive: bool=False):
+        if recursive:
+            raise NotImplementedError()
+        else:
+            super().remove(paths, access_controls)
+
+    # def run_baton_query(self):
 
     def _create_entity_with_path(self, path: str) -> DataObject:
         return Collection(path)

@@ -123,7 +123,7 @@ class IrodsMetadataJSONDecoder(JSONDecoder, ParsedJSONDecoder):
 
 # JSON encoder/decoder for `IrodsEntity`
 _irods_entity_json_mappings = [
-    JsonPropertyMapping(BATON_ACL_PROPERTY, "acl", "access_controls",
+    JsonPropertyMapping(BATON_ACL_PROPERTY, "access_controls", "access_controls",
                         encoder_cls=AccessControlSetJSONEncoder,
                         decoder_cls=AccessControlSetJSONDecoder, optional=True),
     JsonPropertyMapping(BATON_AVU_PROPERTY, "metadata", "metadata",
@@ -177,8 +177,8 @@ class DataObjectJSONEncoder(_DataObjectJSONEncoder):
 class DataObjectJSONDecoder(_DataObjectJSONDecoder):
     _DATE_PARSER = parser()
 
-    def decode_dict(self, json_as_dict: Dict):
-        data_object = super().decode_dict(json_as_dict)
+    def decode_parsed(self, json_as_dict: Dict):
+        data_object = super().decode_parsed(json_as_dict)
         timestamps_as_json = json_as_dict["timestamps"]
         DataObjectJSONDecoder._deserialize_timestamps_as_json(data_object, timestamps_as_json)
         return data_object

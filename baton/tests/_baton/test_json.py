@@ -17,7 +17,7 @@ class TestAccessControlJSONEncoder(unittest.TestCase):
     """
     def setUp(self):
         self.data_object, self.data_object_as_json = create_data_object_with_baton_json_representation()
-        self.access_control = self.data_object.acl[0]
+        self.access_control = list(self.data_object.access_controls)[0]
         self.access_control_as_json = self.data_object_as_json["access"][0]
 
     def test_default(self):
@@ -35,7 +35,7 @@ class TestAccessControlJSONDecoder(unittest.TestCase):
     """
     def setUp(self):
         self.data_object, self.data_object_as_json = create_data_object_with_baton_json_representation()
-        self.access_control = list(self.data_object.acl)[0]
+        self.access_control = list(self.data_object.access_controls)[0]
         self.access_control_as_json_string = json.dumps(self.data_object_as_json["access"][0])
 
     def test_decode(self):

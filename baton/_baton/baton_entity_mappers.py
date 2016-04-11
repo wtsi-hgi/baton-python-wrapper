@@ -4,10 +4,12 @@ from typing import List, Union, Iterable, Sequence, Dict
 
 from baton._baton._baton_runner import BatonRunner, BatonBinary
 from baton._baton._constants import BATON_AVU_PROPERTY, BATON_COLLECTION_CONTENTS, BATON_DATA_OBJECT_PROPERTY
+from baton._baton.baton_access_control_mappers import BatonDataObjectAccessControlMapper
 from baton._baton.baton_metadata_mappers import BatonDataObjectIrodsMetadataMapper, BatonCollectionIrodsMetadataMapper
 from baton._baton.json import SearchCriterionJSONEncoder, CollectionJSONEncoder, DataObjectJSONEncoder, \
     DataObjectJSONDecoder, CollectionJSONDecoder
-from baton.mappers import IrodsEntityMapper, IrodsMetadataMapper, DataObjectMapper, CollectionMapper
+from baton.mappers import IrodsEntityMapper, IrodsMetadataMapper, DataObjectMapper, CollectionMapper, \
+    AccessControlMapper
 from baton.models import SearchCriterion, Collection, DataObject
 from baton.types import EntityType
 
@@ -40,19 +42,13 @@ class _BatonIrodsEntityMapper(BatonRunner, IrodsEntityMapper, metaclass=ABCMeta)
         :return: extracted entities as baton JSON
         """
 
-    def __init__(self, additional_metadata_query_arguments: List[str], metadata_mapper: IrodsMetadataMapper[EntityType],
-                 *args, **kwargs):
+    def __init__(self, additional_metadata_query_arguments: List[str], *args, **kwargs):
         """
         Constructor.
-        :param additional_metadata_query_arguments: additional arguments to use in baton metadata query
         :param metadata_mapper: TODO
         """
         super().__init__(*args, **kwargs)
         self._additional_metadata_query_arguments = additional_metadata_query_arguments
-        self._metadata_mapper = metadata_mapper
-
-    def metadata(self) -> IrodsMetadataMapper[EntityType]:
-        return self._metadata_mapper
 
     def get_by_metadata(self, metadata_search_criteria: Union[SearchCriterion, Iterable[SearchCriterion]],
                        load_metadata: bool=True, zone: str=None) -> Sequence[EntityType]:
@@ -157,15 +153,22 @@ class BatonDataObjectMapper(_BatonIrodsEntityMapper, DataObjectMapper):
     iRODS data object mapper, implemented using baton.
     """
     def __init__(self, *args, **kwargs):
-        metadata_mapper = BatonDataObjectIrodsMetadataMapper(*args, **kwargs)
-        super().__init__(["--obj"], metadata_mapper, *args, **kwargs)
+        super().__init__(["--obj"], *args, **kwargs)
+        self._metadata_mapper = BatonDataObjectIrodsMetadataMapper(*args, **kwargs)
+        self._access_control_mapper = BatonDataObjectAccessControlMapper(*args, **kwargs)
+
+    def metadata(self) -> IrodsMetadataMapper[EntityType]:
+        return self._metadata_mapper
+
+    def access_control(self) -> AccessControlMapper:
+        return self._access_control_mapper
 
     def _path_to_baton_json(self, path: str) -> Dict:
         data_object = DataObject(path)
         return DataObjectJSONEncoder().default(data_object)
 
     def _baton_json_to_irods_entity(self, entity_as_baton_json: Dict) -> DataObject:
-        return DataObjectJSONDecoder().decode_dict(entity_as_baton_json)
+        return DataObjectJSONDecoder().decode_parsed(entity_as_baton_json)
 
     def _extract_irods_entities_of_entity_type_from_baton_json(self, entities_as_baton_json: List[Dict]) -> List[Dict]:
         data_objects_as_baton_json = []
@@ -180,8 +183,15 @@ class BatonCollectionMapper(_BatonIrodsEntityMapper, CollectionMapper):
     iRODS collection mapper, implemented using baton.
     """
     def __init__(self, *args, **kwargs):
-        metadata_mapper = BatonCollectionIrodsMetadataMapper(*args, **kwargs)
-        super().__init__(["--coll"], metadata_mapper, *args, **kwargs)
+        super().__init__(["--coll"], *args, **kwargs)
+        self._metadata_mapper = BatonCollectionIrodsMetadataMapper(*args, **kwargs)
+        self._access_control_mapper = BatonDataObjectAccessControlMapper(*args, **kwargs)
+
+    def metadata(self) -> IrodsMetadataMapper[EntityType]:
+        return self._metadata_mapper
+
+    def access_control(self) -> AccessControlMapper:
+        return self._access_control_mapper
 
     def _path_to_baton_json(self, path: str) -> Dict:
         collection = Collection(path)

@@ -22,26 +22,27 @@ _access_level_conversion = {
 }
 
 
-def _set_access_controls(test_with_baton: TestWithBatonSetup, path: str, acl: Iterable[AccessControl]):
+def _set_access_controls(test_with_baton: TestWithBatonSetup, path: str, access_controls: Iterable[AccessControl]):
     """
     Sets the given access controls on the entity at the given iRODS path.
     :param test_with_baton: framework to allow testing with baton
     :param path: the path of the entity
-    :param acl: the access control list the entity should have
+    :param access_controls: the access control list the entity should have
     """
     setup_helper = SetupHelper(test_with_baton.icommands_location)
-    for access_control in acl:
+    setup_helper.set_access(test_with_baton.irods_server.users[0].username, AccessLevel.NONE, path)
+    for access_control in access_controls:
         setup_helper.set_access(access_control.owner, _access_level_conversion[access_control.level], path)
 
 
 def create_data_object(test_with_baton: TestWithBatonSetup, name: str, metadata: IrodsMetadata=IrodsMetadata(),
-                       acl: Iterable[AccessControl]=None) -> DataObject:
+                       access_controls: Iterable[AccessControl]=None) -> DataObject:
     """
     Factory method to create an iRODS data object that has metadata, an ACL and replicas. Creates in current directory.
     :param test_with_baton: framework to allow testing with baton
     :param name: the name given to the created data object
     :param metadata: the metadata to give the file
-    :param acl: access control list that the data object should have
+    :param access_controls: access control list that the data object should have
     :return: the created iRODS file
     """
     user = test_with_baton.irods_server.users[0]
@@ -61,25 +62,25 @@ def create_data_object(test_with_baton: TestWithBatonSetup, name: str, metadata:
     # Difficult to get all the details of replica 0 using icommands so remove
     setup_helper.run_icommand(["irm", "-n", "0", path])
 
-    if acl is None:
-        acl = [AccessControl(user.username, user.zone, AccessControl.Level.OWN)]
+    if access_controls is None:
+        access_controls = [AccessControl(user.username, user.zone, AccessControl.Level.OWN)]
     else:
-        _set_access_controls(test_with_baton, path, acl)
+        _set_access_controls(test_with_baton, path, access_controls)
 
-    data_object = DataObject(path, acl, metadata, replicas)
+    data_object = DataObject(path, access_controls, metadata, replicas)
     synchronise_timestamps(test_with_baton, data_object)
 
     return data_object
 
 
 def create_collection(test_with_baton: TestWithBatonSetup, name: str, metadata: IrodsMetadata=IrodsMetadata(),
-                      acl: Iterable[AccessControl] = None) -> Collection:
+                      access_controls: Iterable[AccessControl] = None) -> Collection:
     """
     Factory method to create an iRODS collection that has metadata and an ACL. Creates in current directory.
     :param test_with_baton: framework to allow testing with baton
     :param name: the name given to the created collection
     :param metadata: the metadata to give the file
-    :param acl: access control list that the collection should have
+    :param access_controls: access control list that the collection should have
     :return: the created iRODS file
     """
     user = test_with_baton.irods_server.users[0]
@@ -89,12 +90,15 @@ def create_collection(test_with_baton: TestWithBatonSetup, name: str, metadata: 
 
     setup_helper.add_metadata_to(path, metadata)
 
-    if acl is None:
-        acl = [AccessControl(user.username, user.zone, AccessControl.Level.OWN)]
+    if access_controls is None:
+        access_controls = [AccessControl(user.username, user.zone, AccessControl.Level.OWN)]
     else:
-        _set_access_controls(test_with_baton, path, acl)
+        _set_access_controls(test_with_baton, path, access_controls)
 
-    return Collection(path=path, access_controls=acl, metadata=metadata)
+    collection = Collection(path=path, access_controls=access_controls, metadata=metadata)
+    synchronise_timestamps(test_with_baton, collection)
+
+    return collection
 
 
 def synchronise_timestamps(test_with_baton: TestWithBatonSetup, irods_entity: IrodsEntity):

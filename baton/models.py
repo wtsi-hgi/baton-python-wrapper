@@ -56,13 +56,12 @@ class IrodsEntity(Model, metaclass=ABCMeta):
     from baton.collections import IrodsMetadata
     _ABSOLUTE_PATH_REGEX = re.compile("^/.+")
 
-    def __init__(self, path: str, access_controls: Iterable[AccessControl]=None, metadata: IrodsMetadata=None):
+    def __init__(self, path: str, access_controls: Iterable[AccessControl]=(), metadata: IrodsMetadata=None):
         if not re.match(IrodsEntity._ABSOLUTE_PATH_REGEX, path):
             raise ValueError("baton does not support the given type of relative path: \"%s\"" % path)
         self.path = path
         self._access_controls = None
         self.access_controls = access_controls
-        self.acl = self.access_controls
         self.metadata = metadata
 
     @property
@@ -94,7 +93,7 @@ class DataObject(IrodsEntity):
     """
     from baton.collections import IrodsMetadata
 
-    def __init__(self, path: str, access_controls: Iterable[AccessControl]=None, metadata: IrodsMetadata=None,
+    def __init__(self, path: str, access_controls: Iterable[AccessControl]=(), metadata: IrodsMetadata=None,
                  replicas: Iterable[DataObjectReplica]=()):
         from baton.collections import DataObjectReplicaCollection
         super().__init__(path, access_controls, metadata)
