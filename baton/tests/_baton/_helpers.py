@@ -63,7 +63,7 @@ def create_data_object(test_with_baton: TestWithBatonSetup, name: str, metadata:
     setup_helper.run_icommand(["irm", "-n", "0", path])
 
     if access_controls is None:
-        access_controls = [AccessControl(user.username, user.zone, AccessControl.Level.OWN)]
+        access_controls = [AccessControl(user.username, AccessControl.Level.OWN)]
     else:
         _set_access_controls(test_with_baton, path, access_controls)
 
@@ -91,7 +91,7 @@ def create_collection(test_with_baton: TestWithBatonSetup, name: str, metadata: 
     setup_helper.add_metadata_to(path, metadata)
 
     if access_controls is None:
-        access_controls = [AccessControl(user.username, user.zone, AccessControl.Level.OWN)]
+        access_controls = [AccessControl(user.username, AccessControl.Level.OWN)]
     else:
         _set_access_controls(test_with_baton, path, access_controls)
 

@@ -92,10 +92,10 @@ objects and collections.
 ```python
 from baton.models import AccessControl
 
-# ACLs
+# ACLs. Note: it is implied that the owner is in the same zone as the entity to which the access control is applied
 acl_examples = [
-    AccessControl("owner", "zone", AccessControl.READ),
-    AccessControl("another_owner", "another_zone", AccessControl.WRITE)
+    AccessControl("owner", AccessControl.READ),
+    AccessControl("another_owner", AccessControl.WRITE)
 ]
 
 irods.data_object.access_control.get_all("/collection/data_object") # type: Sequence[AccessControl]

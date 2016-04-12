@@ -38,7 +38,8 @@ class _BatonAccessControlMapper(BatonRunner, AccessControlMapper, metaclass=ABCM
         access_controls_as_baton_json = baton_out_as_json[0][BATON_ACL_PROPERTY]
         return _BatonAccessControlMapper._ACCESS_CONTROL_SET_JSON_ENCODER.decode_parsed(access_controls_as_baton_json)
 
-    def add(self, paths: Union[str, Iterable[str]], access_controls: Union[AccessControl, Iterable[AccessControl]]):
+    def add_or_replace(self, paths: Union[str, Iterable[str]],
+                       access_controls: Union[AccessControl, Iterable[AccessControl]]):
         if isinstance(paths, str):
             paths = [paths]
         if isinstance(access_controls, AccessControl):
@@ -59,7 +60,7 @@ class _BatonAccessControlMapper(BatonRunner, AccessControlMapper, metaclass=ABCM
 
         # baton-chmod does a mix of set and add: if no level has been defined for a user, else sets if it has
         # Taking easiest route of starting from a blank slate
-        self.remove_all(paths)
+        self.revoke_all(paths)
 
         baton_json = []
         for path in paths:
@@ -68,17 +69,16 @@ class _BatonAccessControlMapper(BatonRunner, AccessControlMapper, metaclass=ABCM
             baton_json.append(self._entity_to_baton_json(entity))
         self.run_baton_query(BatonBinary.BATON_CHMOD, input_data=baton_json)
 
-    def remove(self, paths: Union[str, Iterable[str]], access_controls: Union[AccessControl, Iterable[AccessControl]]):
+    def revoke(self, paths: Union[str, Iterable[str]], users_or_groups: Union[str, Iterable[str]]):
         if isinstance(paths, str):
             paths = [paths]
-        if isinstance(access_controls, AccessControl):
-            access_controls = [access_controls]
+        if isinstance(users_or_groups, str):
+            users_or_groups = [users_or_groups]
 
-        no_access_controls = [AccessControl(access_control.owner, access_control.zone, AccessControl.Level.NONE)
-                              for access_control in access_controls]
-        self.add(paths, no_access_controls)
+        no_access_controls = [AccessControl(users_or_group, AccessControl.Level.NONE) for users_or_group in users_or_groups]
+        self.add_or_replace(paths, no_access_controls)
 
-    def remove_all(self, paths: Union[str, Iterable[str]]):
+    def revoke_all(self, paths: Union[str, Iterable[str]]):
         if isinstance(paths, str):
             paths = [paths]
 
@@ -125,19 +125,25 @@ class BatonCollectionAccessControlMapper(_BatonAccessControlMapper, CollectionAc
         else:
             super().set(paths, access_controls)
 
-    def add(self, paths: Union[str, Iterable[str]], access_controls: Union[AccessControl, Iterable[AccessControl]],
-            recursive: bool=False):
+    def add_or_replace(self, paths: Union[str, Iterable[str]],
+                       access_controls: Union[AccessControl, Iterable[AccessControl]], recursive: bool=False):
         if recursive:
             raise NotImplementedError()
         else:
-            super().add(paths, access_controls)
+            super().add_or_replace(paths, access_controls)
 
-    def remove(self, paths: Union[str, Iterable[str]], access_controls: Union[AccessControl, Iterable[AccessControl]],
+    def revoke(self, paths: Union[str, Iterable[str]], users_or_groups: Union[str, Iterable[str]],
                recursive: bool=False):
         if recursive:
             raise NotImplementedError()
         else:
-            super().remove(paths, access_controls)
+            super().revoke(paths, users_or_groups)
+
+    def revoke_all(self, paths: Union[str, Iterable[str]], recursive: bool=False):
+        if recursive:
+            raise NotImplementedError()
+        else:
+            super().revoke_all(paths)
 
     # def run_baton_query(self):
 

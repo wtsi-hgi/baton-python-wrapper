@@ -81,9 +81,11 @@ class AccessControlMapper(metaclass=ABCMeta):
         """
 
     @abstractmethod
-    def add(self, paths: Union[str, Iterable[str]], access_controls: Union[AccessControl, Iterable[AccessControl]]):
+    def add_or_replace(self, paths: Union[str, Iterable[str]],
+                       access_controls: Union[AccessControl, Iterable[AccessControl]]):
         """
-        Adds the given access controls to those associated with the given path or collection of paths.
+        Adds the given access controls to those associated with the given path or collection of paths. If an acceess
+        control already exists for a user or group, the access control is replaced.
         :param paths: the paths to add the access controls
         :param access_controls: the access controls to add
         """
@@ -97,11 +99,18 @@ class AccessControlMapper(metaclass=ABCMeta):
         """
 
     @abstractmethod
-    def remove(self, paths: Union[str, Iterable[str]], access_controls: Union[AccessControl, Iterable[AccessControl]]):
+    def revoke(self, paths: Union[str, Iterable[str]], users_or_groups: Union[str, Iterable[str]]):
         """
-        Remove the given access controls that are associated to the given path or collection of paths.
+        Revokes all access controls that are associated to the given path or collection of paths.
         :param paths: the paths to remove access controls on
-        :param access_controls: the access controls to remove
+        :param users_or_groups: the users or groups to revoke access controls for
+        """
+
+    @abstractmethod
+    def revoke_all(self, paths: Union[str, Iterable[str]]):
+        """
+        Removes all access controls associated to the given path or collection of paths.
+        :param paths: the paths to remove all access controls on (i.e. they are made accessible to no-one)
         """
 
 
@@ -110,8 +119,8 @@ class CollectionAccessControlMapper(AccessControlMapper, metaclass=ABCMeta):
     Access control mapper for controls relating specifically to collections.
     """
     @abstractmethod
-    def add(self, paths: Union[str, Iterable[str]], access_controls: Union[AccessControl, Iterable[AccessControl]],
-            recursive: bool=False):
+    def add_or_replace(self, paths: Union[str, Iterable[str]],
+                       access_controls: Union[AccessControl, Iterable[AccessControl]], recursive: bool=False):
         """
         See `AccessControlMapper.add`.
         :param paths: see `AccessControlMapper.add`
@@ -130,12 +139,21 @@ class CollectionAccessControlMapper(AccessControlMapper, metaclass=ABCMeta):
         """
 
     @abstractmethod
-    def remove(self, paths: Union[str, Iterable[str]], access_controls: Union[AccessControl, Iterable[AccessControl]],
+    def revoke(self, paths: Union[str, Iterable[str]], users_or_groups: Union[str, Iterable[str]],
                recursive: bool=False):
         """
-        See `AccessControlMapper.remove`.
-        :param paths: see `AccessControlMapper.remove`
-        :param access_controls: see `AccessControlMapper.remove`
+        See `AccessControlMapper.revoke`.
+        :param paths: see `AccessControlMapper.revoke`
+        :param access_controls: see `AccessControlMapper.revoke`
+        :param recursive: whether the access control list should be changed recursively for all nested collections
+        """
+
+    @abstractmethod
+    def revoke_all(self, paths: Union[str, Iterable[str]], recursive: bool=False):
+        """
+        See `AccessControlMapper.revoke_all`.
+        :param paths: see `AccessControlMapper.revoke_all`
+        :param access_controls: see `AccessControlMapper.revoke_all`
         :param recursive: whether the access control list should be changed recursively for all nested collections
         """
 
