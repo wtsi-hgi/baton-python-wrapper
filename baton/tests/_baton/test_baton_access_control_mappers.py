@@ -115,19 +115,19 @@ class _TestBatonAccessControlMapper(unittest.TestCase):
         self.assertEqual(self.mapper.get_all(entity.path), set(self.access_controls))
 
     def test_revoke_with_invalid_path(self):
-        self.assertRaises(FileNotFoundError, self.mapper.revoke, "/invalid", self.access_control.owner)
+        self.assertRaises(FileNotFoundError, self.mapper.revoke, "/invalid", self.access_control.user_or_group)
 
     def test_revoke_with_no_paths(self):
-        self.mapper.revoke([], self.access_control.owner)
+        self.mapper.revoke([], self.access_control.user_or_group)
 
     def test_revoke_unset_access_control(self):
         entity = self.create_irods_entity(NAMES[0], ())
-        self.mapper.revoke(entity.path, self.access_control.owner)
+        self.mapper.revoke(entity.path, self.access_control.user_or_group)
         self.assertEqual(self.mapper.get_all(entity.path), set())
 
     def test_revoke_subset_of_access_controls(self):
         entity = self.create_irods_entity(NAMES[0], self.access_controls + [self.access_control])
-        self.mapper.revoke(entity.path, [access_control.owner for access_control in self.access_controls])
+        self.mapper.revoke(entity.path, [access_control.user_or_group for access_control in self.access_controls])
         self.assertEqual(self.mapper.get_all(entity.path), {self.access_control})
 
     def test_revoke_all_with_invalid_path(self):

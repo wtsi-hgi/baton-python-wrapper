@@ -32,7 +32,7 @@ def access_control_level_from_string(level_as_string: str):
     return [key for key, value in BATON_ACL_LEVELS.items() if value == level_as_string][0]
 
 _access_control_json_mappings = [
-    JsonPropertyMapping(BATON_ACL_OWNER_PROPERTY, "owner", "owner"),
+    JsonPropertyMapping(BATON_ACL_OWNER_PROPERTY, "user_or_group", "user_or_group"),
     JsonPropertyMapping(BATON_ACL_LEVEL_PROPERTY, None, "level",
                         object_property_getter=lambda access_control: access_control_level_to_string(
                             access_control.level),

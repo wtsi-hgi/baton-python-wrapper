@@ -32,7 +32,7 @@ def _set_access_controls(test_with_baton: TestWithBatonSetup, path: str, access_
     setup_helper = SetupHelper(test_with_baton.icommands_location)
     setup_helper.set_access(test_with_baton.irods_server.users[0].username, AccessLevel.NONE, path)
     for access_control in access_controls:
-        setup_helper.set_access(access_control.owner, _access_level_conversion[access_control.level], path)
+        setup_helper.set_access(access_control.user_or_group, _access_level_conversion[access_control.level], path)
 
 
 def create_data_object(test_with_baton: TestWithBatonSetup, name: str, metadata: IrodsMetadata=IrodsMetadata(),

@@ -43,8 +43,8 @@ class AccessControl(Model):
         WRITE = 2
         OWN = 3
 
-    def __init__(self, owner: str, level: Level):
-        self.owner = owner
+    def __init__(self, user_or_group: str, level: Level):
+        self.user_or_group = user_or_group
         self.level = level
 
 
