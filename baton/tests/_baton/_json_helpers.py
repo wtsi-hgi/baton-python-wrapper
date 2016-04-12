@@ -3,7 +3,7 @@ from typing import Dict, Tuple
 
 from baton._baton._baton_runner import BatonBinary, BatonRunner
 from baton._baton._constants import BATON_COLLECTION_PROPERTY, IRODS_SPECIFIC_QUERY_FIND_QUERY_BY_ALIAS, \
-    BATON_SPECIFIC_QUERY_SQL_PROPERTY
+    BATON_SPECIFIC_QUERY_SQL_PROPERTY, BATON_ACL_PROPERTY
 from baton._baton._constants import BATON_DATA_OBJECT_PROPERTY
 from baton.collections import IrodsMetadata
 from baton.models import Collection, SpecificQuery, DataObject
@@ -46,6 +46,10 @@ def create_data_object_with_baton_json_representation() -> Tuple[DataObject, Dic
 
         _data_object_as_json = baton_runner.run_baton_query(
                 BatonBinary.BATON_LIST, ["--acl", "--avu", "--replicate", "--timestamp"], input_data=baton_query)[0]
+
+        # Not interested in redundant information
+        for access_control in _data_object_as_json[BATON_ACL_PROPERTY]:
+            del access_control["zone"]
 
     return deepcopy(_data_object), deepcopy(_data_object_as_json)
 

@@ -57,25 +57,25 @@ class _TestBatonAccessControlMapper(unittest.TestCase):
         entity = self.create_irods_entity(NAMES[0], self.access_controls)
         self.assertEqual(self.mapper.get_all(entity.path), set(self.access_controls))
 
-    def test_add_with_invalid_path(self):
+    def test_add_or_replace_with_invalid_path(self):
         self.assertRaises(FileNotFoundError, self.mapper.add_or_replace, "/invalid", self.access_controls)
 
-    def test_add_single_access_control(self):
+    def test_add_or_replace_single_access_control(self):
         entity = self.create_irods_entity(NAMES[0], [self.access_control])
         self.mapper.add_or_replace(entity.path, self.access_controls[0])
         self.assertCountEqual(self.mapper.get_all(entity.path), [self.access_control, self.access_controls[0]])
 
-    def test_add_single_access_control_when_already_exists(self):
+    def test_add_or_replace_single_access_control_when_already_exists(self):
         entity = self.create_irods_entity(NAMES[0], [self.access_control])
         self.mapper.add_or_replace(entity.path, self.access_control)
         self.assertEqual(self.mapper.get_all(entity.path), {self.access_control})
 
-    def test_add_access_control_list(self):
+    def test_add_or_replace_access_control_list(self):
         entity = self.create_irods_entity(NAMES[0], [self.access_control])
         self.mapper.add_or_replace(entity.path, self.access_controls)
         self.assertCountEqual(self.mapper.get_all(entity.path), [self.access_control] + self.access_controls)
 
-    def test_add_access_control_list_when_one_access_control_already_exists(self):
+    def test_add_or_replace_access_control_list_when_one_access_control_already_exists(self):
         entity = self.create_irods_entity(NAMES[0], [self.access_control])
         self.mapper.add_or_replace(entity.path, self.access_controls + [self.access_control])
         self.assertEqual(self.mapper.get_all(entity.path), set(self.access_controls + [self.access_control]))
@@ -98,31 +98,28 @@ class _TestBatonAccessControlMapper(unittest.TestCase):
         self.mapper.set(entity.path, self.access_controls)
         self.assertEqual(self.mapper.get_all(entity.path), set(self.access_controls))
 
-    def test_remove_with_invalid_path(self):
-        self.assertRaises(FileNotFoundError, self.mapper.revoke, "/invalid", self.access_controls)
+    def test_revoke_with_invalid_path(self):
+        self.assertRaises(FileNotFoundError, self.mapper.revoke, "/invalid", self.access_control.owner)
 
-    def test_remove_unset_access_control(self):
+    def test_revoke_unset_access_control(self):
         entity = self.create_irods_entity(NAMES[0], ())
-        self.mapper.revoke(entity.path, self.access_control)
+        self.mapper.revoke(entity.path, self.access_control.owner)
         self.assertEqual(self.mapper.get_all(entity.path), set())
 
-    def test_remove_subset_of_access_controls(self):
+    def test_revoke_subset_of_access_controls(self):
         entity = self.create_irods_entity(NAMES[0], self.access_controls + [self.access_control])
-        print(self.mapper.get_all(entity.path))
-        self.mapper.revoke(entity.path, self.access_controls)
-        print(self.mapper.get_all(entity.path))
-        print({self.access_control})
+        self.mapper.revoke(entity.path, [access_control.owner for access_control in self.access_controls])
         self.assertEqual(self.mapper.get_all(entity.path), {self.access_control})
 
-    def test_remove_all_with_invalid_path(self):
+    def test_revoke_all_with_invalid_path(self):
         self.assertRaises(FileNotFoundError, self.mapper.revoke_all, "/invalid")
 
-    def test_remove_all_with_no_access_controls(self):
+    def test_revoke_all_with_no_access_controls(self):
         entity = self.create_irods_entity(NAMES[0], ())
         self.mapper.revoke_all(entity.path)
         self.assertEqual(self.mapper.get_all(entity.path), set())
 
-    def test_remove_all(self):
+    def test_revoke_all(self):
         entity = self.create_irods_entity(NAMES[0], self.access_controls)
         self.mapper.revoke_all(entity.path)
         self.assertEqual(self.mapper.get_all(entity.path), set())
