@@ -98,17 +98,20 @@ acl_examples = [
     AccessControl("another_owner", AccessControl.WRITE)
 ]
 
-irods.data_object.access_control.get_all("/collection/data_object") # type: Sequence[AccessControl]
-irods.collection.access_control.get_all("/collection")  # type: Sequence[AccessControl]
+irods.data_object.access_control.get_all("/collection/data_object") # type: Set[AccessControl]
+irods.collection.access_control.get_all(["/collection", "/another/collection"])  # type: List[Set[AccessControl]]
 
-irods.data_object.access_control.add("/collection/data_object", acl_examples[0])
-irods.collection.access_control.add("/collection", acl_examples, recursive=True)
+irods.data_object.access_control.add_or_replace(["/collection/data_object", "/another/data_object"], acl_examples[0])
+irods.collection.access_control.add_or_replace("/collection", acl_examples, recursive=True)
 
 irods.data_object.access_control.set("/collection/data_object", acl_examples[1])
-irods.collection.access_control.set("/collection", acl_examples[0], recursive=True)
+irods.collection.access_control.set(["/collection", "/another/collection"], acl_examples[0], recursive=False)
 
-irods.data_object.access_control.remove("/collection/data_object", acl_examples)
-irods.collection.access_control.remove("/collection", acl_examples[1], recursive=True)
+irods.data_object.access_control.revoke(["/collection/data_object", "/another/data_object"], acl_examples)
+irods.collection.access_control.revoke("/collection", acl_examples[1], recursive=True)
+
+irods.data_object.access_control.revoke_all(["/collection/data_object", "/another/data_object"])
+irods.collection.access_control.revoke_all("/collection", recursive=True)
 ```
 
 #### Custom objects via specific queries
