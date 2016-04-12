@@ -32,13 +32,10 @@ class _BatonAccessControlMapper(BatonRunner, AccessControlMapper, metaclass=ABCM
         """
 
     def get_all(self, paths: Union[str, Sequence[str]]) -> Union[Set[AccessControl], Sequence[Set[AccessControl]]]:
-        if len(paths) == 0:
-            return set()
+        single_path = False
         if isinstance(paths, str):
             single_path = True
             paths = [paths]
-        else:
-            single_path = False
 
         baton_json = []
         for path in paths:
@@ -55,7 +52,6 @@ class _BatonAccessControlMapper(BatonRunner, AccessControlMapper, metaclass=ABCM
             access_controls_for_paths.append(access_contorls)
 
         return access_controls_for_paths[0] if single_path else access_controls_for_paths
-
 
     def add_or_replace(self, paths: Union[str, Iterable[str]],
                        access_controls: Union[AccessControl, Iterable[AccessControl]]):
@@ -101,10 +97,12 @@ class _BatonAccessControlMapper(BatonRunner, AccessControlMapper, metaclass=ABCM
         if isinstance(paths, str):
             paths = [paths]
 
+        access_controls_for_paths = self.get_all(paths)
+
         baton_json = []
-        for path in paths:
-            # TODO: This is inefficient - `get_all` should accept a list then this could be done in one call, not n
-            access_controls = self.get_all(path)
+        for i in range(len(access_controls_for_paths)):
+            access_controls = access_controls_for_paths[i]
+            path = paths[i]
             for access_control in access_controls:
                 access_control.level = AccessControl.Level.NONE
             entity = self._create_entity_with_path(path)
@@ -163,8 +161,6 @@ class BatonCollectionAccessControlMapper(_BatonAccessControlMapper, CollectionAc
             raise NotImplementedError()
         else:
             super().revoke_all(paths)
-
-    # def run_baton_query(self):
 
     def _create_entity_with_path(self, path: str) -> DataObject:
         return Collection(path)

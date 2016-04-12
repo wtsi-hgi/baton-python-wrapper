@@ -69,6 +69,8 @@ class BatonRunner(metaclass=ABCMeta):
         time_taken_to_run_query = time.monotonic() - start_at
         logging.debug("baton output (took %s seconds, wall time): %s" % (time_taken_to_run_query, baton_out))
 
+        if len(baton_out) == 0:
+            return []
         if len(baton_out) > 0 and baton_out[0] != '[':
             # If information about multiple files is returned, baton does not return valid JSON - it returns a line
             # separated list of JSON, where each line corresponds to a different file
