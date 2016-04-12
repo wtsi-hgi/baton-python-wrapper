@@ -9,7 +9,8 @@ from enum import Enum
 from typing import Any, List, Dict
 
 from baton._baton._constants import BATON_ERROR_MESSAGE_KEY, BATON_ERROR_ENTITY_DOES_NOT_EXIST_ERROR_CODE, BATON_ERROR_PROPERTY,\
-    BATON_ERROR_CODE_KEY, BATON_ERROR_CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME, BATON_ERROR_CAT_SUCCESS_BUT_WITH_NO_INFO
+    BATON_ERROR_CODE_KEY, BATON_ERROR_CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME, BATON_ERROR_CAT_SUCCESS_BUT_WITH_NO_INFO, \
+    BATON_ERROR_CAT_INVALID_ARGUMENT
 
 
 class BatonBinary(Enum):
@@ -22,6 +23,7 @@ class BatonBinary(Enum):
     BATON_SPECIFIC_QUERY = "baton-specificquery"
     BATON_GET = "baton-get"
     BATON_METAMOD = "baton-metamod"
+    BATON_CHMOD = "baton-chmod"
 
 
 class BatonRunner(metaclass=ABCMeta):
@@ -67,6 +69,8 @@ class BatonRunner(metaclass=ABCMeta):
         time_taken_to_run_query = time.monotonic() - start_at
         logging.debug("baton output (took %s seconds, wall time): %s" % (time_taken_to_run_query, baton_out))
 
+        if len(baton_out) == 0:
+            return []
         if len(baton_out) > 0 and baton_out[0] != '[':
             # If information about multiple files is returned, baton does not return valid JSON - it returns a line
             # separated list of JSON, where each line corresponds to a different file
@@ -91,7 +95,7 @@ class BatonRunner(metaclass=ABCMeta):
         """
         process = subprocess.Popen(arguments, stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.PIPE)
 
-        if isinstance(input_data, list):
+        if isinstance(input_data, List):
             for to_write in input_data:
                 to_write_as_json = json.dumps(to_write)
                 process.stdin.write(str.encode(to_write_as_json))
@@ -133,7 +137,9 @@ class BatonRunner(metaclass=ABCMeta):
                 error_message = error[BATON_ERROR_MESSAGE_KEY]
                 error_code = error[BATON_ERROR_CODE_KEY]
 
-                if error_code == BATON_ERROR_ENTITY_DOES_NOT_EXIST_ERROR_CODE:
+                # Working around baton issue: https://github.com/wtsi-npg/baton/issues/155
+                if error_code == BATON_ERROR_ENTITY_DOES_NOT_EXIST_ERROR_CODE or \
+                        (error_code == BATON_ERROR_CAT_INVALID_ARGUMENT and "Failed to modify permissions" in error_message):
                     raise FileNotFoundError(error_message)
                 elif error_code == BATON_ERROR_CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME \
                         or error_code == BATON_ERROR_CAT_SUCCESS_BUT_WITH_NO_INFO:

@@ -55,7 +55,7 @@ irods.collection.get_all_in_collection("/collection", load_metadata=False)    # 
 irods.data_object.get_all_in_collection(["/collection", "/other_collection"])   # type: Sequence[DataObject]
 ```
 
-#### Metadata
+#### Metadata (AVUs)
 The API provides the ability to both retrieve and manipulate the custom metadata (AVUs) associated with data objects and
 collections.
 
@@ -86,6 +86,34 @@ irods.data_object.metadata.remove_all("/collection/data_object")
 irods.collection.metadata.remove_all("/collection")
 ```
 
+#### Access control lists (ACLs)
+The API provides the ability to both retrieve and manipulate the access control lists (ACLs) associated with data 
+objects and collections.
+```python
+from baton.models import AccessControl
+
+# ACLs. Note: it is implied that the owner is in the same zone as the entity to which the access control is applied
+acl_examples = [
+    AccessControl("owner", AccessControl.READ),
+    AccessControl("another_owner", AccessControl.WRITE)
+]
+
+irods.data_object.access_control.get_all("/collection/data_object") # type: Set[AccessControl]
+irods.collection.access_control.get_all(["/collection", "/another/collection"])  # type: List[Set[AccessControl]]
+
+irods.data_object.access_control.add_or_replace(["/collection/data_object", "/another/data_object"], acl_examples[0])
+irods.collection.access_control.add_or_replace("/collection", acl_examples, recursive=True)
+
+irods.data_object.access_control.set("/collection/data_object", acl_examples[1])
+irods.collection.access_control.set(["/collection", "/another/collection"], acl_examples[0], recursive=False)
+
+irods.data_object.access_control.revoke(["/collection/data_object", "/another/data_object"], acl_examples)
+irods.collection.access_control.revoke("/collection", acl_examples[1], recursive=True)
+
+irods.data_object.access_control.revoke_all(["/collection/data_object", "/another/data_object"])
+irods.collection.access_control.revoke_all("/collection", recursive=True)
+```
+
 #### Custom objects via specific queries
 iRODS supports specific queries which return new types of object. In order to use such custom objects in iRODS via this
 library, a custom model of the object should to be made. Then, a subclass of `BatonCustomObjectMapper` needs to be 
@@ -107,7 +135,7 @@ models to/from their baton defined JSON representations. All serializers/deseria
 can be used with [Python's built in `json` package](https://docs.python.org/3/library/json.html):
 ```python
 import json
-from baton.json import DataObjectJSONEncoder, DataObjectJSONDecoder, CollectionJSONEncoder, CollectionJSONDecoder, IrodsMetadataJSONEncoder, IrodsMetadataJSONDecoder
+from baton.json import DataObjectJSONEncoder, DataObjectJSONDecoder, CollectionJSONEncoder, CollectionJSONDecoder, IrodsMetadataJSONEncoder, IrodsMetadataJSONDecoder, AccessControlJSONEncoder, AccessControlJSONDecoder
 
 data_object_as_json_string = json.dumps(data_object, cls=DataObjectJSONEncoder)
 data_object = json.loads(data_object_as_json_string, cls=DataObjectJSONDecoder)
@@ -117,6 +145,9 @@ collection = json.loads(collection_as_json_string, cls=CollectionJSONDecoder)
 
 metadata_as_json_string = json.dumps(metadata, cls=IrodsMetadataJSONEncoder)
 metadata = json.loads(metadata_as_json_string, cls=IrodsMetadataJSONDecoder)
+
+acl_as_json_string = json.dumps(metadata, cls=AccessControlJSONEncoder)
+acl = json.loads(acl_as_json_string, cls=AccessControlJSONDecoder)
 ```
 
 

@@ -16,28 +16,6 @@ class _BatonIrodsMetadataMapper(BatonRunner, IrodsMetadataMapper, metaclass=ABCM
     """
     _IRODS_METADATA_JSON_ENCODER = IrodsMetadataJSONDecoder()
 
-    def get_all(self, path: str) -> IrodsMetadata:
-        baton_json = self._path_to_baton_json(path)
-        baton_out_as_json = self.run_baton_query(BatonBinary.BATON_LIST, ["--avu"], input_data=baton_json)
-        assert len(baton_out_as_json) == 1
-        metadata_as_baton_json = baton_out_as_json[0][BATON_AVU_PROPERTY]
-        return _BatonIrodsMetadataMapper._IRODS_METADATA_JSON_ENCODER.decode_dict(metadata_as_baton_json)
-
-    def set(self, path: str, metadata: IrodsMetadata):
-        # baton does not support "set" natively, therefore this operation is not transactional
-        existing_metadata = self.get_all(path)
-        self.remove(path, existing_metadata)
-        self.add(path, metadata)
-
-    def add(self, path: str, metadata: IrodsMetadata):
-        self._modify(path, metadata, BATON_METAMOD_ADD_OPERATION)
-
-    def remove(self, path: str, metadata: IrodsMetadata):
-        self._modify(path, metadata, BATON_METAMOD_REMOVE_OPERATION)
-
-    def remove_all(self, path: str):
-        self.set(path, IrodsMetadata())
-
     @abstractmethod
     def _create_entity_with_path(self, path: str) -> IrodsEntity:
         """
@@ -54,14 +32,27 @@ class _BatonIrodsMetadataMapper(BatonRunner, IrodsMetadataMapper, metaclass=ABCM
         :return: the JSON representation
         """
 
-    def _path_to_baton_json(self, path: str) -> Dict:
-        """
-        Converts a path to the type of iRODS entity the mapper deals with, to its JSON representation.
-        :param path: the path to convert
-        :return: the JSON representation of the path
-        """
-        entity = self._create_entity_with_path(path)
-        return self._entity_to_baton_json(entity)
+    def get_all(self, path: str) -> IrodsMetadata:
+        baton_json = self._path_to_baton_json(path)
+        baton_out_as_json = self.run_baton_query(BatonBinary.BATON_LIST, ["--avu"], input_data=baton_json)
+        assert len(baton_out_as_json) == 1
+        metadata_as_baton_json = baton_out_as_json[0][BATON_AVU_PROPERTY]
+        return _BatonIrodsMetadataMapper._IRODS_METADATA_JSON_ENCODER.decode_parsed(metadata_as_baton_json)
+
+    def set(self, path: str, metadata: IrodsMetadata):
+        # baton does not support "set" natively, therefore this operation is not transactional
+        existing_metadata = self.get_all(path)
+        self.remove(path, existing_metadata)
+        self.add(path, metadata)
+
+    def add(self, path: str, metadata: IrodsMetadata):
+        self._modify(path, metadata, BATON_METAMOD_ADD_OPERATION)
+
+    def remove(self, path: str, metadata: IrodsMetadata):
+        self._modify(path, metadata, BATON_METAMOD_REMOVE_OPERATION)
+
+    def remove_all(self, path: str):
+        self.set(path, IrodsMetadata())
 
     def _modify(self, path: str, metadata: IrodsMetadata, operation: str):
         """
@@ -75,6 +66,15 @@ class _BatonIrodsMetadataMapper(BatonRunner, IrodsMetadataMapper, metaclass=ABCM
         baton_json = self._entity_to_baton_json(entity)
         arguments = ["--operation", operation]
         self.run_baton_query(BatonBinary.BATON_METAMOD, arguments, input_data=baton_json)
+
+    def _path_to_baton_json(self, path: str) -> Dict:
+        """
+        Converts a path to the type of iRODS entity the mapper deals with, to its JSON representation.
+        :param path: the path to convert
+        :return: the JSON representation of the path
+        """
+        entity = self._create_entity_with_path(path)
+        return self._entity_to_baton_json(entity)
 
 
 class BatonDataObjectIrodsMetadataMapper(_BatonIrodsMetadataMapper):

@@ -1,9 +1,8 @@
 from abc import ABCMeta, abstractmethod, abstractproperty
-from typing import Generic, Union, Sequence, Iterable
+from typing import Generic, Union, Sequence, Iterable, Set, List
 
 from baton.collections import IrodsMetadata
-
-from baton.models import Collection, DataObject, PreparedSpecificQuery, SpecificQuery, SearchCriterion, IrodsEntity
+from baton.models import Collection, DataObject, PreparedSpecificQuery, SpecificQuery, SearchCriterion, AccessControl
 from baton.types import EntityType, CustomObjectType
 
 
@@ -68,6 +67,97 @@ class IrodsMetadataMapper(Generic[EntityType], metaclass=ABCMeta):
         """
 
 
+class AccessControlMapper(metaclass=ABCMeta):
+    """
+    Access control mapper.
+    """
+    @abstractmethod
+    # def get_all(paths: Union[str, Iterable[str]) -> Union[AccessControl, List[AccessControl]
+    def get_all(self, paths: Union[str, Sequence[str]]) -> Union[Set[AccessControl], Sequence[Set[AccessControl]]]:
+        """
+        Gets all the access controls for the entity with the given path.
+        :param path: the path of the entity to find access controls for
+        :return:
+        """
+
+    @abstractmethod
+    def add_or_replace(self, paths: Union[str, Iterable[str]],
+                       access_controls: Union[AccessControl, Iterable[AccessControl]]):
+        """
+        Adds the given access controls to those associated with the given path or collection of paths. If an acceess
+        control already exists for a user or group, the access control is replaced.
+        :param paths: the paths to add the access controls
+        :param access_controls: the access controls to add
+        """
+
+    @abstractmethod
+    def set(self, paths: Union[str, Iterable[str]], access_controls: Union[AccessControl, Iterable[AccessControl]]):
+        """
+        Sets the access controls associated to a give path or collection of paths to those given.
+        :param paths: the paths to set the access controls for
+        :param access_controls: the access controls to set
+        """
+
+    @abstractmethod
+    def revoke(self, paths: Union[str, Iterable[str]], users_or_groups: Union[str, Iterable[str]]):
+        """
+        Revokes all access controls that are associated to the given path or collection of paths.
+        :param paths: the paths to remove access controls on
+        :param users_or_groups: the users or groups to revoke access controls for
+        """
+
+    @abstractmethod
+    def revoke_all(self, paths: Union[str, Iterable[str]]):
+        """
+        Removes all access controls associated to the given path or collection of paths.
+        :param paths: the paths to remove all access controls on (i.e. they are made accessible to no-one)
+        """
+
+
+class CollectionAccessControlMapper(AccessControlMapper, metaclass=ABCMeta):
+    """
+    Access control mapper for controls relating specifically to collections.
+    """
+    @abstractmethod
+    def add_or_replace(self, paths: Union[str, Iterable[str]],
+                       access_controls: Union[AccessControl, Iterable[AccessControl]], recursive: bool=False):
+        """
+        See `AccessControlMapper.add`.
+        :param paths: see `AccessControlMapper.add`
+        :param access_controls: see `AccessControlMapper.add`
+        :param recursive: whether the access control list should be changed recursively for all nested collections
+        """
+
+    @abstractmethod
+    def set(self, paths: Union[str, Iterable[str]], access_controls: Union[AccessControl, Iterable[AccessControl]],
+            recursive: bool=False):
+        """
+        See `AccessControlMapper.set`.
+        :param paths: see `AccessControlMapper.set`
+        :param access_controls: see `AccessControlMapper.set`
+        :param recursive: whether the access control list should be changed recursively for all nested collections
+        """
+
+    @abstractmethod
+    def revoke(self, paths: Union[str, Iterable[str]], users_or_groups: Union[str, Iterable[str]],
+               recursive: bool=False):
+        """
+        See `AccessControlMapper.revoke`.
+        :param paths: see `AccessControlMapper.revoke`
+        :param access_controls: see `AccessControlMapper.revoke`
+        :param recursive: whether the access control list should be changed recursively for all nested collections
+        """
+
+    @abstractmethod
+    def revoke_all(self, paths: Union[str, Iterable[str]], recursive: bool=False):
+        """
+        See `AccessControlMapper.revoke_all`.
+        :param paths: see `AccessControlMapper.revoke_all`
+        :param access_controls: see `AccessControlMapper.revoke_all`
+        :param recursive: whether the access control list should be changed recursively for all nested collections
+        """
+
+
 class IrodsEntityMapper(Generic[EntityType], metaclass=ABCMeta):
     """
     iRODS entity mapper.
@@ -77,6 +167,13 @@ class IrodsEntityMapper(Generic[EntityType], metaclass=ABCMeta):
         """
         Property to access a mapper for metadata that can be assocaited to the iRODS entity that this mapper deals with.
         :return: mapper for metadata
+        """
+
+    @abstractproperty
+    def access_control(self) -> AccessControlMapper:
+        """
+        Property to access a mapper for access controls related the entities that this mapper deals with.
+        :return: the entity access control mapper
         """
 
     @abstractmethod
@@ -125,6 +222,12 @@ class CollectionMapper(IrodsEntityMapper[Collection], metaclass=ABCMeta):
     """
     iRODS collection mapper.
     """
+    @abstractproperty
+    def access_control(self) -> CollectionAccessControlMapper:
+        """
+        Mapper for access controls related the the collections that this mapper deals with.
+        :return: the collection access control mapper
+        """
 
 
 class CustomObjectMapper(Generic[CustomObjectType], metaclass=ABCMeta):

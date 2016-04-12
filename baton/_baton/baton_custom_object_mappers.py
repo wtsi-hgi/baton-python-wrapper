@@ -13,6 +13,15 @@ class BatonCustomObjectMapper(BatonRunner, CustomObjectMapper, metaclass=ABCMeta
     """
     Mapper for custom objects, implemented using baton.
     """
+    @abstractmethod
+    def _object_deserialiser(self, object_as_json: dict) -> CustomObjectType:
+        """
+        Function used to take the JSON representation of the custom object returned by the specific query and produce a
+        Python model.
+        :param object_as_json: JSON representation of the custom object
+        :return: Python model of the custom object
+        """
+
     def _get_with_prepared_specific_query(self, specific_query: PreparedSpecificQuery, zone: str=None) \
             -> Sequence[CustomObjectType]:
         specific_query_as_baton_json = {
@@ -31,15 +40,6 @@ class BatonCustomObjectMapper(BatonRunner, CustomObjectMapper, metaclass=ABCMeta
 
         return custom_objects
 
-    @abstractmethod
-    def _object_deserialiser(self, object_as_json: dict) -> CustomObjectType:
-        """
-        Function used to take the JSON representation of the custom object returned by the specific query and produce a
-        Python model.
-        :param object_as_json: JSON representation of the custom object
-        :return: Python model of the custom object
-        """
-
 
 class BatonSpecificQueryMapper(BatonCustomObjectMapper[SpecificQuery], SpecificQueryMapper):
     """
@@ -50,4 +50,4 @@ class BatonSpecificQueryMapper(BatonCustomObjectMapper[SpecificQuery], SpecificQ
         return self._get_with_prepared_specific_query(retrieve_query, zone)
 
     def _object_deserialiser(self, object_as_json: dict) -> SpecificQuery:
-        return SpecificQueryJSONDecoder().decode_dict(object_as_json)
+        return SpecificQueryJSONDecoder().decode_parsed(object_as_json)

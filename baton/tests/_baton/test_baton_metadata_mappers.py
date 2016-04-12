@@ -24,6 +24,9 @@ class _TestBatonIrodsEntityMetadataMapper(unittest.TestCase):
         self.mapper = self.create_mapper()
         self.metadata = IrodsMetadata({"key_1": {"value_1", "value_2"}, "key_2": {"value_3"}})
 
+    def tearDown(self):
+        self.test_with_baton.tear_down()
+
     @abstractmethod
     def create_mapper(self) -> _BatonIrodsMetadataMapper:
         """
@@ -108,9 +111,6 @@ class _TestBatonIrodsEntityMetadataMapper(unittest.TestCase):
         entity = self.create_irods_entity(NAMES[0], self.metadata)
         self.mapper.remove_all(entity.path)
         self.assertEqual(self.mapper.get_all(entity.path), IrodsMetadata())
-
-    def tearDown(self):
-        self.test_with_baton.tear_down()
 
 
 class TestBatonDataObjectMapper(_TestBatonIrodsEntityMetadataMapper):
