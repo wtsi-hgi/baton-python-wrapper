@@ -31,12 +31,31 @@ class _BatonAccessControlMapper(BatonRunner, AccessControlMapper, metaclass=ABCM
         :return: the JSON representation
         """
 
-    def get_all(self, path: str) -> Set[AccessControl]:
-        baton_json = self._path_to_baton_json(path)
+    def get_all(self, paths: Union[str, Sequence[str]]) -> Union[Set[AccessControl], Sequence[Set[AccessControl]]]:
+        if len(paths) == 0:
+            return set()
+        if isinstance(paths, str):
+            single_path = True
+            paths = [paths]
+        else:
+            single_path = False
+
+        baton_json = []
+        for path in paths:
+            baton_json.append(self._path_to_baton_json(path))
+
         baton_out_as_json = self.run_baton_query(BatonBinary.BATON_LIST, ["--acl"], input_data=baton_json)
-        assert len(baton_out_as_json) == 1
-        access_controls_as_baton_json = baton_out_as_json[0][BATON_ACL_PROPERTY]
-        return _BatonAccessControlMapper._ACCESS_CONTROL_SET_JSON_ENCODER.decode_parsed(access_controls_as_baton_json)
+        assert len(baton_out_as_json) == len(paths)
+
+        access_controls_for_paths = []
+        for entity_as_baton_json in baton_out_as_json:
+            access_controls_as_baton_json = entity_as_baton_json[BATON_ACL_PROPERTY]
+            access_contorls = _BatonAccessControlMapper._ACCESS_CONTROL_SET_JSON_ENCODER.decode_parsed(
+                access_controls_as_baton_json)
+            access_controls_for_paths.append(access_contorls)
+
+        return access_controls_for_paths[0] if single_path else access_controls_for_paths
+
 
     def add_or_replace(self, paths: Union[str, Iterable[str]],
                        access_controls: Union[AccessControl, Iterable[AccessControl]]):

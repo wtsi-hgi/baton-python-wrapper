@@ -1,5 +1,5 @@
 from abc import ABCMeta, abstractmethod, abstractproperty
-from typing import Generic, Union, Sequence, Iterable, Set
+from typing import Generic, Union, Sequence, Iterable, Set, List
 
 from baton.collections import IrodsMetadata
 from baton.models import Collection, DataObject, PreparedSpecificQuery, SpecificQuery, SearchCriterion, AccessControl
@@ -73,7 +73,7 @@ class AccessControlMapper(metaclass=ABCMeta):
     """
     @abstractmethod
     # def get_all(paths: Union[str, Iterable[str]) -> Union[AccessControl, List[AccessControl]
-    def get_all(self, path: str) -> Set[AccessControl]:
+    def get_all(self, paths: Union[str, Sequence[str]]) -> Union[Set[AccessControl], Sequence[Set[AccessControl]]]:
         """
         Gets all the access controls for the entity with the given path.
         :param path: the path of the entity to find access controls for
