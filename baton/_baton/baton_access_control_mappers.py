@@ -37,11 +37,11 @@ class _BatonAccessControlMapper(BatonRunner, AccessControlMapper, metaclass=ABCM
             single_path = True
             paths = [paths]
 
-        baton_json = []
+        baton_in_json = []
         for path in paths:
-            baton_json.append(self._path_to_baton_json(path))
+            baton_in_json.append(self._path_to_baton_json(path))
 
-        baton_out_as_json = self.run_baton_query(BatonBinary.BATON_LIST, ["--acl"], input_data=baton_json)
+        baton_out_as_json = self.run_baton_query(BatonBinary.BATON_LIST, ["--acl"], input_data=baton_in_json)
         assert len(baton_out_as_json) == len(paths)
 
         access_controls_for_paths = []
@@ -60,12 +60,12 @@ class _BatonAccessControlMapper(BatonRunner, AccessControlMapper, metaclass=ABCM
         if isinstance(access_controls, AccessControl):
             access_controls = [access_controls]
 
-        baton_json = []
+        baton_in_json = []
         for path in paths:
             entity = self._create_entity_with_path(path)
             entity.access_controls = access_controls
-            baton_json.append(self._entity_to_baton_json(entity))
-        self.run_baton_query(BatonBinary.BATON_CHMOD, input_data=baton_json)
+            baton_in_json.append(self._entity_to_baton_json(entity))
+        self.run_baton_query(BatonBinary.BATON_CHMOD, input_data=baton_in_json)
 
     def set(self, paths: Union[str, Iterable[str]], access_controls: Union[AccessControl, Iterable[AccessControl]]):
         if isinstance(paths, str):
@@ -77,12 +77,12 @@ class _BatonAccessControlMapper(BatonRunner, AccessControlMapper, metaclass=ABCM
         # Taking easiest route of starting from a blank slate
         self.revoke_all(paths)
 
-        baton_json = []
+        baton_in_json = []
         for path in paths:
             entity = self._create_entity_with_path(path)
             entity.access_controls = access_controls
-            baton_json.append(self._entity_to_baton_json(entity))
-        self.run_baton_query(BatonBinary.BATON_CHMOD, input_data=baton_json)
+            baton_in_json.append(self._entity_to_baton_json(entity))
+        self.run_baton_query(BatonBinary.BATON_CHMOD, input_data=baton_in_json)
 
     def revoke(self, paths: Union[str, Iterable[str]], users_or_groups: Union[str, Iterable[str]]):
         if isinstance(paths, str):
@@ -99,7 +99,7 @@ class _BatonAccessControlMapper(BatonRunner, AccessControlMapper, metaclass=ABCM
 
         access_controls_for_paths = self.get_all(paths)
 
-        baton_json = []
+        baton_in_json = []
         for i in range(len(access_controls_for_paths)):
             access_controls = access_controls_for_paths[i]
             path = paths[i]
@@ -107,8 +107,8 @@ class _BatonAccessControlMapper(BatonRunner, AccessControlMapper, metaclass=ABCM
                 access_control.level = AccessControl.Level.NONE
             entity = self._create_entity_with_path(path)
             entity.access_controls = access_controls
-            baton_json.append(self._entity_to_baton_json(entity))
-        self.run_baton_query(BatonBinary.BATON_CHMOD, input_data=baton_json)
+            baton_in_json.append(self._entity_to_baton_json(entity))
+        self.run_baton_query(BatonBinary.BATON_CHMOD, input_data=baton_in_json)
 
     def _path_to_baton_json(self, path: str) -> Dict:
         """

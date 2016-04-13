@@ -11,7 +11,7 @@ class IrodsMetadataMapper(Generic[EntityType], metaclass=ABCMeta):
     iRODS metadata mapper.
     """
     @abstractmethod
-    def get_all(self, path: Union[str, Sequence[str]]) -> Union[IrodsMetadata, List[IrodsMetadata]]:
+    def get_all(self, paths: Union[str, Sequence[str]]) -> Union[IrodsMetadata, List[IrodsMetadata]]:
         """
         Gets all of the metadata for the iRODS entities at the given path or paths.
 
@@ -21,7 +21,7 @@ class IrodsMetadataMapper(Generic[EntityType], metaclass=ABCMeta):
         """
 
     @abstractmethod
-    def add(self, path: Union[str, Iterable[str]], metadata: IrodsMetadata):
+    def add(self, paths: Union[str, Iterable[str]], metadata: IrodsMetadata):
         """
         Adds the given metadata to the given iRODS entities at the given path or paths.
 
@@ -31,7 +31,7 @@ class IrodsMetadataMapper(Generic[EntityType], metaclass=ABCMeta):
         """
 
     @abstractmethod
-    def set(self, path: Union[str, Iterable[str]], metadata: IrodsMetadata):
+    def set(self, paths: Union[str, Iterable[str]], metadata: IrodsMetadata):
         """
         Sets the given metadata on the iRODS entities at the given path or paths.
 
@@ -43,7 +43,7 @@ class IrodsMetadataMapper(Generic[EntityType], metaclass=ABCMeta):
         """
 
     @abstractmethod
-    def remove(self, path: Union[str, Iterable[str]], metadata: IrodsMetadata):
+    def remove(self, paths: Union[str, Iterable[str]], metadata: IrodsMetadata):
         """
         Removes the given metadata from the given iRODS entity.
 
@@ -58,7 +58,7 @@ class IrodsMetadataMapper(Generic[EntityType], metaclass=ABCMeta):
         """
 
     @abstractmethod
-    def remove_all(self, path: Union[str, Iterable[str]]):
+    def remove_all(self, paths: Union[str, Iterable[str]]):
         """
         Removes all of the metadata from the given iRODS entities at the given path or paths.
 

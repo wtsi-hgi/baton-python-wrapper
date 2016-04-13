@@ -2,6 +2,7 @@ from hgicommon.enums import ComparisonOperator
 
 from baton.models import AccessControl
 
+
 BATON_DATA_OBJECT_PROPERTY = "data_object"
 BATON_COLLECTION_PROPERTY = "collection"
 
@@ -54,5 +55,8 @@ IRODS_ERROR_CAT_INVALID_ARGUMENT = -816000
 IRODS_SPECIFIC_QUERY_LS = "ls"
 IRODS_SPECIFIC_QUERY_FIND_QUERY_BY_ALIAS = "findQueryByAlias"
 
-BATON_METAMOD_ADD_OPERATION = "add"
-BATON_METAMOD_REMOVE_OPERATION = "rem"
+BATON_METAMOD_OPERATION_FLAG = "--operation"
+BATON_METAMOD_OPERATION_ADD = "add"
+BATON_METAMOD_OPERATION_REMOVE = "rem"
+
+BATON_LIST_AVU_FLAG = "--avu"
