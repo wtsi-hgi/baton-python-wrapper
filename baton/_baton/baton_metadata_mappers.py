@@ -1,5 +1,5 @@
 from abc import ABCMeta, abstractmethod
-from typing import Dict
+from typing import Dict, Iterable, Union, List
 
 from baton._baton._baton_runner import BatonRunner, BatonBinary
 from baton._baton._constants import BATON_METAMOD_ADD_OPERATION, BATON_AVU_PROPERTY
@@ -32,26 +32,26 @@ class _BatonIrodsMetadataMapper(BatonRunner, IrodsMetadataMapper, metaclass=ABCM
         :return: the JSON representation
         """
 
-    def get_all(self, path: str) -> IrodsMetadata:
+    def get_all(self, path: Union[str, Iterable[str]]) -> Union[IrodsMetadata, List[IrodsMetadata]]:
         baton_json = self._path_to_baton_json(path)
         baton_out_as_json = self.run_baton_query(BatonBinary.BATON_LIST, ["--avu"], input_data=baton_json)
         assert len(baton_out_as_json) == 1
         metadata_as_baton_json = baton_out_as_json[0][BATON_AVU_PROPERTY]
         return _BatonIrodsMetadataMapper._IRODS_METADATA_JSON_ENCODER.decode_parsed(metadata_as_baton_json)
 
-    def set(self, path: str, metadata: IrodsMetadata):
+    def add(self, path: Union[str, Iterable[str]], metadata: IrodsMetadata):
+        self._modify(path, metadata, BATON_METAMOD_ADD_OPERATION)
+
+    def set(self, path: Union[str, Iterable[str]], metadata: IrodsMetadata):
         # baton does not support "set" natively, therefore this operation is not transactional
         existing_metadata = self.get_all(path)
         self.remove(path, existing_metadata)
         self.add(path, metadata)
 
-    def add(self, path: str, metadata: IrodsMetadata):
-        self._modify(path, metadata, BATON_METAMOD_ADD_OPERATION)
-
-    def remove(self, path: str, metadata: IrodsMetadata):
+    def remove(self, path: Union[str, Iterable[str]], metadata: IrodsMetadata):
         self._modify(path, metadata, BATON_METAMOD_REMOVE_OPERATION)
 
-    def remove_all(self, path: str):
+    def remove_all(self, path: Union[str, Iterable[str]]):
         self.set(path, IrodsMetadata())
 
     def _modify(self, path: str, metadata: IrodsMetadata, operation: str):

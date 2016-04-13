@@ -11,7 +11,7 @@ class IrodsMetadataMapper(Generic[EntityType], metaclass=ABCMeta):
     iRODS metadata mapper.
     """
     @abstractmethod
-    def get_all(self, path: Union[str, Iterable[str]]) -> IrodsMetadata:
+    def get_all(self, path: Union[str, Sequence[str]]) -> Union[IrodsMetadata, List[IrodsMetadata]]:
         """
         Gets all of the metadata for the iRODS entities at the given path or paths.
 
