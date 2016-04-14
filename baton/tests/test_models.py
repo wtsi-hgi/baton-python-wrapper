@@ -1,11 +1,40 @@
 import copy
 import unittest
 
-from baton.models import DataObject, SpecificQuery, Collection
+from baton.models import DataObject, SpecificQuery, Collection, IrodsEntity, AccessControl
+from baton.tests._stubs import StubIrodsEntity
 
 _COLLECTION = "/collection/sub_collection"
 _FILE_NAME = "file_name"
 _CHECKSUMS = ["2c558824f250de9d55c07600291f4272", "2c558824f250de9d55c07600291f4233", "2c558824f250de9d55c07600291f4257"]
+
+
+class TestIrodsEntity(unittest.TestCase):
+    """
+    Tests for `IrodsEntity`.
+    """
+    def setUp(self):
+        self.path = "/test/path"
+        self.access_controls = set([AccessControl("user_%s" % i, AccessControl.Level.READ) for i in range(10)])
+        self.irods_entity = StubIrodsEntity(self.path, self.access_controls)
+
+    def test_get_acl(self):
+        self.assertEqual(self.irods_entity.acl, self.access_controls)
+
+    def test_set_acl(self):
+        self.irods_entity.acl = set()
+        self.assertEqual(self.irods_entity.acl, set())
+
+    def test_get_access_controls(self):
+        self.assertEqual(self.irods_entity.access_controls, self.access_controls)
+
+    def test_set_access_controls(self):
+        self.irods_entity.access_controls = set()
+        self.assertEqual(self.irods_entity.access_controls, set())
+
+    def test_set_access_controls_converts_to_set(self):
+        self.irods_entity.access_controls = []
+        self.assertEqual(self.irods_entity.access_controls, set())
 
 
 class TestDataObject(unittest.TestCase):

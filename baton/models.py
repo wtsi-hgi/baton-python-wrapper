@@ -1,4 +1,5 @@
 from abc import ABCMeta
+from copy import copy
 from datetime import datetime
 from enum import Enum, unique
 from typing import Iterable, List, Set
@@ -64,11 +65,28 @@ class IrodsEntity(Model, metaclass=ABCMeta):
         self.metadata = metadata
 
     @property
+    def acl(self) -> Set[AccessControl]:
+        return self.access_controls
+
+    @acl.setter
+    def acl(self, access_controls: Iterable[AccessControl]):
+        self.access_controls = access_controls
+
+    @property
     def access_controls(self) -> Set[AccessControl]:
-        return self._access_controls
+        """
+        Gets a copy of the access controls associated to this entity.
+        :return: copy of the access controls
+        """
+        assert isinstance(self._access_controls, Set)
+        return copy(self._access_controls)
 
     @access_controls.setter
     def access_controls(self, access_controls: Iterable[AccessControl]):
+        """
+        Sets the access controls associated to this entity.
+        :param access_controls: the access controls (immutable)
+        """
         self._access_controls = set(access_controls)
 
     def get_collection_path(self) -> str:
