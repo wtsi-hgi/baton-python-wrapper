@@ -1,9 +1,9 @@
 from abc import ABCMeta, abstractmethod
-from typing import Iterable, Sequence, Union, Dict, List, Set
+from typing import Iterable, Sequence, Union, Dict, Set
 
 from baton._baton._baton_runner import BatonRunner, BatonBinary
 from baton._baton._constants import BATON_ACL_PROPERTY
-from baton._baton.json import DataObjectJSONEncoder, AccessControlJSONDecoder, CollectionJSONEncoder, \
+from baton._baton.json import DataObjectJSONEncoder, CollectionJSONEncoder, \
     AccessControlSetJSONDecoder
 from baton.mappers import AccessControlMapper, CollectionAccessControlMapper
 from baton.models import AccessControl, DataObject, IrodsEntity, Collection

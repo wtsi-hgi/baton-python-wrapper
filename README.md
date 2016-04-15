@@ -59,6 +59,8 @@ irods.data_object.get_all_in_collection(["/collection", "/other_collection"])   
 The API provides the ability to both retrieve and manipulate the custom metadata (AVUs) associated with data objects and
 collections.
 
+* Warning: there is currently no support for reading/writing the unit property of AVUs. *
+
 Although the type of metadata is the same for both data objects and collections, due to the way iRODS works, it is 
 necessary to know the type of entity that a path corresponds to in order to retrieve metadata. 
 ```python
@@ -86,7 +88,7 @@ irods.data_object.metadata.remove_all("/collection/data_object")
 irods.collection.metadata.remove_all("/collection")
 ```
 
-#### Access control lists (ACLs)
+#### Access Control Lists (ACLs)
 The API provides the ability to both retrieve and manipulate the access control lists (ACLs) associated with data 
 objects and collections.
 ```python
