@@ -11,9 +11,9 @@ class IrodsMetadataMapper(Generic[EntityType], metaclass=ABCMeta):
     iRODS metadata mapper.
     """
     @abstractmethod
-    def get_all(self, path: str) -> IrodsMetadata:
+    def get_all(self, paths: Union[str, Sequence[str]]) -> Union[IrodsMetadata, List[IrodsMetadata]]:
         """
-        Gets all of the metadata for the given entity.
+        Gets all of the metadata for the iRODS entities at the given path or paths.
 
         A `ValueError` will be raised will be raised if the path does not correspond to a valid entity.
         :param path: the path of the entity to get the metadata for
@@ -21,9 +21,9 @@ class IrodsMetadataMapper(Generic[EntityType], metaclass=ABCMeta):
         """
 
     @abstractmethod
-    def add(self, path: str, metadata: IrodsMetadata):
+    def add(self, paths: Union[str, Iterable[str]], metadata: IrodsMetadata):
         """
-        Adds the given metadata to the given iRODS entity.
+        Adds the given metadata to the given iRODS entities at the given path or paths.
 
         A `ValueError` will be raised will be raised if the path does not correspond to a valid entity.
         :param path: the path of the entity to add the metadata to
@@ -31,9 +31,9 @@ class IrodsMetadataMapper(Generic[EntityType], metaclass=ABCMeta):
         """
 
     @abstractmethod
-    def set(self, path: str, metadata: IrodsMetadata):
+    def set(self, paths: Union[str, Iterable[str]], metadata: IrodsMetadata):
         """
-        Sets the given metadata on the given iRODS entity.
+        Sets the given metadata on the iRODS entities at the given path or paths.
 
         Similar to `add` although pre-existing metadata with matching keys will be overwritten.
 
@@ -43,7 +43,7 @@ class IrodsMetadataMapper(Generic[EntityType], metaclass=ABCMeta):
         """
 
     @abstractmethod
-    def remove(self, path: str, metadata: IrodsMetadata):
+    def remove(self, paths: Union[str, Iterable[str]], metadata: IrodsMetadata):
         """
         Removes the given metadata from the given iRODS entity.
 
@@ -58,9 +58,9 @@ class IrodsMetadataMapper(Generic[EntityType], metaclass=ABCMeta):
         """
 
     @abstractmethod
-    def remove_all(self, path: str):
+    def remove_all(self, paths: Union[str, Iterable[str]]):
         """
-        Removes all of the metadata from the given iRODS entity.
+        Removes all of the metadata from the given iRODS entities at the given path or paths.
 
         A `ValueError` will be raised will be raised if the path does not correspond to a valid entity.
         :param path: the path of the entity to remove all of the metadata from

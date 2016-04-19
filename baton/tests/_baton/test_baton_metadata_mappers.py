@@ -43,48 +43,106 @@ class _TestBatonIrodsEntityMetadataMapper(unittest.TestCase):
         :return: the created entity
         """
 
-    def test_get_all_with_invalid_path(self):
+    def test_get_all_with_no_paths(self):
+        self.assertEqual(self.mapper.get_all([]), [])
+
+    def test_get_all_with_single_path_that_is_invalid(self):
         self.assertRaises(FileNotFoundError, self.mapper.get_all, "/invalid")
 
-    def test_get_all(self):
+    def test_get_all_with_single_path(self):
         entity = self.create_irods_entity(NAMES[0], self.metadata)
         self.assertEqual(self.mapper.get_all(entity.path), self.metadata)
 
-    def test_add_with_invalid_path(self):
+    def test_get_all_with_multiple_paths_including_an_invalid_path(self):
+        entity = self.create_irods_entity(NAMES[0], self.metadata)
+        self.assertRaises(FileNotFoundError, self.mapper.get_all, [entity.path, "/invalid"])
+
+    def test_get_all_with_multiple_paths(self):
+        entities = [self.create_irods_entity(name, self.metadata) for name in NAMES]
+        paths = [entity.path for entity in entities]
+        self.assertEqual(self.mapper.get_all(paths), [entity.metadata for entity in entities])
+
+    def test_add_with_single_path_that_is_invalid(self):
         self.assertRaises(FileNotFoundError, self.mapper.add, "/invalid", self.metadata)
 
-    def test_add(self):
+    def test_add_with_single_path(self):
         entity = self.create_irods_entity(NAMES[0], IrodsMetadata())
         self.mapper.add(entity.path, self.metadata)
         self.assertEqual(self.mapper.get_all(entity.path), self.metadata)
+
+    def test_add_with_multiple_paths_including_an_invalid_path(self):
+        entity = self.create_irods_entity(NAMES[0], IrodsMetadata())
+        self.assertRaises(FileNotFoundError, self.mapper.add, [entity.path, "/invalid"], self.metadata)
+
+    def test_add_with_multiple_paths(self):
+        entities = [self.create_irods_entity(name, IrodsMetadata()) for name in NAMES]
+        paths = [entity.path for entity in entities]
+        self.mapper.add(paths, self.metadata)
+        self.assertEqual(self.mapper.get_all(paths), [self.metadata for entity in entities])
+
+    def test_add_no_metadata(self):
+        entity = self.create_irods_entity(NAMES[0], IrodsMetadata())
+        self.mapper.add(entity.path, IrodsMetadata())
+        self.assertEqual(self.mapper.get_all(entity.path), IrodsMetadata())
 
     def test_add_metadata_with_same_key(self):
         entity = self.create_irods_entity(NAMES[0], self.metadata)
         del self.metadata["key_1"]
         self.assertRaises(KeyError, self.mapper.add, entity.path, self.metadata)
 
-    def test_set_with_invalid_path(self):
+    def test_set_with_no_paths(self):
+        self.mapper.set([], self.metadata)
+
+    def test_set_with_single_path_that_is_invalid(self):
         self.assertRaises(FileNotFoundError, self.mapper.set, "/invalid", self.metadata)
 
-    def test_set_when_no_existing_metadata(self):
+    def test_set_with_single_path(self):
         entity = self.create_irods_entity(NAMES[0], IrodsMetadata())
         self.mapper.set(entity.path, self.metadata)
         self.assertEqual(self.mapper.get_all(entity.path), self.metadata)
 
-    def test_set_when_existing_non_duplicate_metadata(self):
+    def test_set_with_multiple_paths_including_an_invalid_path(self):
+        entity = self.create_irods_entity(NAMES[0], IrodsMetadata())
+        self.assertRaises(FileNotFoundError, self.mapper.set, [entity.path, "/invalid"], self.metadata)
+
+    def test_set_with_multiple_paths(self):
+        entities = [self.create_irods_entity(name, IrodsMetadata()) for name in NAMES]
+        paths = [entity.path for entity in entities]
+        self.mapper.set(paths, self.metadata)
+        self.assertEqual(self.mapper.get_all(paths), [self.metadata for _ in entities])
+
+    def test_set_with_existing_non_duplicate_metadata(self):
         entity = self.create_irods_entity(NAMES[0], IrodsMetadata({"another": {"value"}}))
         self.mapper.set(entity.path, self.metadata)
         self.assertEqual(self.mapper.get_all(entity.path), self.metadata)
 
-    def test_set_when_existing_duplicate_metadata(self):
+    def test_set_with_and_when_existing_duplicate_metadata(self):
         entity = self.create_irods_entity(NAMES[0], self.metadata)
         self.mapper.set(entity.path, self.metadata)
         self.assertEqual(self.mapper.get_all(entity.path), self.metadata)
 
-    def test_remove_with_invalid_path(self):
+    def test_remove_with_no_paths(self):
+        self.mapper.remove([], self.metadata)
+
+    def test_remove_with_single_path_that_is_invalid(self):
         self.assertRaises(FileNotFoundError, self.mapper.remove, "/invalid", self.metadata)
 
-    def test_remove_unset_metadata(self):
+    def test_remove_with_single_path(self):
+        entity = self.create_irods_entity(NAMES[0], self.metadata)
+        self.mapper.remove(entity.path, self.metadata)
+        self.assertEqual(self.mapper.get_all(entity.path), IrodsMetadata())
+
+    def test_remove_with_multiple_paths_including_an_invalid_path(self):
+        entity = self.create_irods_entity(NAMES[0], self.metadata)
+        self.assertRaises(FileNotFoundError, self.mapper.remove, [entity.path, "/invalid"], self.metadata)
+
+    def test_remove_entire_metadata_with_multiple_paths(self):
+        entities = [self.create_irods_entity(name, self.metadata) for name in NAMES]
+        paths = [entity.path for entity in entities]
+        self.mapper.remove(paths, self.metadata)
+        self.assertEqual(self.mapper.get_all(paths), [IrodsMetadata() for _ in paths])
+
+    def test_remove__unset_metadata(self):
         entity = self.create_irods_entity(NAMES[0], IrodsMetadata())
         self.assertRaises(KeyError, self.mapper.remove, entity.path, self.metadata)
 
@@ -94,7 +152,7 @@ class _TestBatonIrodsEntityMetadataMapper(unittest.TestCase):
         entity = self.create_irods_entity(NAMES[0], partial_metadata)
         self.assertRaises(KeyError, self.mapper.remove, entity.path, self.metadata)
 
-    def test_remove(self):
+    def test_remove_subset_of_metadata(self):
         entity = self.create_irods_entity(NAMES[0], self.metadata)
         assert len(self.metadata) == 2
         partial_metadata_1 = deepcopy(self.metadata)
@@ -104,10 +162,22 @@ class _TestBatonIrodsEntityMetadataMapper(unittest.TestCase):
         self.mapper.remove(entity.path, partial_metadata_1)
         self.assertEqual(self.mapper.get_all(entity.path), partial_metadata_2)
 
-    def test_remove_all_with_invalid_path(self):
+    def test_remove_all_with_no_paths(self):
+        self.mapper.remove_all([])
+
+    def test_remove_all_with_single_path_that_is_invalid(self):
         self.assertRaises(FileNotFoundError, self.mapper.remove_all, "/invalid")
 
-    def test_remove_all(self):
+    def test_remove_all_with_single_path(self):
+        entity = self.create_irods_entity(NAMES[0], self.metadata)
+        self.mapper.remove_all(entity.path)
+        self.assertEqual(self.mapper.get_all(entity.path), IrodsMetadata())
+
+    def test_remove_all_with_multiple_paths_including_an_invalid_path(self):
+        entity = self.create_irods_entity(NAMES[0], self.metadata)
+        self.assertRaises(FileNotFoundError, self.mapper.remove_all, [entity.path, "/invalid"])
+
+    def test_remove_all_with_multiple_paths(self):
         entity = self.create_irods_entity(NAMES[0], self.metadata)
         self.mapper.remove_all(entity.path)
         self.assertEqual(self.mapper.get_all(entity.path), IrodsMetadata())
