@@ -90,7 +90,8 @@ class _BatonAccessControlMapper(BatonRunner, AccessControlMapper, metaclass=ABCM
         if isinstance(users_or_groups, str):
             users_or_groups = [users_or_groups]
 
-        no_access_controls = [AccessControl(users_or_group, AccessControl.Level.NONE) for users_or_group in users_or_groups]
+        no_access_controls = [AccessControl(users_or_group, AccessControl.Level.NONE)
+                              for users_or_group in users_or_groups]
         self.add_or_replace(paths, no_access_controls)
 
     def revoke_all(self, paths: Union[str, Iterable[str]]):
@@ -135,6 +136,14 @@ class BatonCollectionAccessControlMapper(_BatonAccessControlMapper, CollectionAc
     """
     Access control mapper for controls relating specifically to collections, implemented using baton.
     """
+    def __init__(self, *args, **kwargs):
+        """
+        Constructor.
+        """
+        super().__init__(*args, **kwargs)
+        self._original_run_baton_query = self.run_baton_query
+        self.run_baton_query = self._hijacked_run_baton_query
+
     def set(self, paths: Union[str, Iterable[str]], access_controls: Union[AccessControl, Iterable[AccessControl]],
             recursive: bool=False):
         if recursive:
@@ -167,3 +176,6 @@ class BatonCollectionAccessControlMapper(_BatonAccessControlMapper, CollectionAc
 
     def _entity_to_baton_json(self, entity: Collection) -> Dict:
         return CollectionJSONEncoder().default(entity)
+
+    def _hijacked_run_baton_query(self, *args, **kwargs):
+        self._original_run_baton_query(*args, **kwargs)

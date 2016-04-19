@@ -1,4 +1,5 @@
-from typing import Iterable
+from abc import ABCMeta
+from typing import Iterable, Sequence
 
 from dateutil.parser import parser
 
@@ -6,8 +7,11 @@ from baton._baton._baton_runner import BatonRunner, BatonBinary
 from baton._baton.json import DataObjectJSONEncoder, CollectionJSONEncoder
 from baton.collections import IrodsMetadata
 from baton.models import DataObject, DataObjectReplica, AccessControl, Collection, IrodsEntity
+from hgicommon.models import Model
 from testwithbaton.api import TestWithBaton
-from testwithbaton.helpers import SetupHelper, AccessLevel
+from testwithbaton.helpers import AccessLevel
+from testwithbaton.helpers import SetupHelper
+
 
 NAMES = ["name_1", "name_2", "name_3"]
 ATTRIBUTES = ["attribute_1", "attribute_2"]
@@ -163,3 +167,71 @@ def combine_metadata(metadata_collection: Iterable[IrodsMetadata]) -> IrodsMetad
             for value in values:
                 combined.add(key, value)
     return combined
+
+
+class EntityNode(Model, metaclass=ABCMeta):
+    """
+    Represents an entity in a entity tree.
+    """
+    def __init__(self, name: str):
+        self.name = name
+
+
+class CollectionNode(EntityNode):
+    """
+    Represents a collection in a entity tree.
+    """
+    def __init__(self, name: str, children: Iterable=()):
+        super().__init__(name)
+        self.children = children
+
+    def get_all_descendants(self) -> Sequence[EntityNode]:
+        """
+        Gets all descendants of the collection node.
+        """
+        descendants = []
+        for child in self.children:
+            descendants.append(child)
+            if isinstance(child, CollectionNode):
+                descendants.extend(child.get_all_descendants())
+        return descendants
+
+
+class DataObjectNode(EntityNode):
+    """
+    Represents a Data Object node in a entity tree.
+    """
+
+
+def create_entity_tree(test_with_baton: TestWithBaton, root: str, node: EntityNode,
+                       access_controls: Iterable[AccessControl]=None) -> Iterable[IrodsEntity]:
+    """
+    TODO
+    :param test_with_baton:
+    :param root:
+    :param node:
+    :param access_controls:
+    :return:
+    """
+    entities = []
+    setup_helper = SetupHelper(test_with_baton.icommands_location)
+
+    if isinstance(node, DataObjectNode):
+        entity = create_data_object(test_with_baton, node.name, access_controls=access_controls)
+    else:
+        entity = create_collection(test_with_baton, node.name, access_controls=access_controls)
+    new_path = "%s/%s" % (root, entity.get_name())
+    setup_helper.run_icommand(["imv", entity.path, new_path])
+    entity.path = new_path
+    entities.append(entity)
+
+    if isinstance(node, CollectionNode):
+        for child in node.children:
+            descendants = create_entity_tree(test_with_baton, "%s/%s" % (root, node.name), child, access_controls)
+            entities.extend(descendants)
+
+    if isinstance(node, CollectionNode):
+        assert len(entities) == len(list(node.get_all_descendants()) + [node])
+    else:
+        assert len(entities) == 1
+    return entities
