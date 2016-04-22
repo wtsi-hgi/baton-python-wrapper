@@ -1,3 +1,3 @@
 nose==1.3.7
-git+https://github.com/wtsi-hgi/test-with-baton.git@3b1d1cf3f8d67b691bca3cbf9106a1612a7b3eaa#egg=testwithbaton
+git+https://github.com/wtsi-hgi/test-with-baton.git@50b614a2ec8d787e0fb5cfd112635723030c8816#egg=testwithbaton
 frozendict==0.5
