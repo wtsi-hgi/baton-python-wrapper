@@ -1,16 +1,15 @@
 import unittest
 from abc import abstractmethod
-from typing import Iterable
+from typing import Iterable, List
 
 from baton._baton.baton_access_control_mappers import _BatonAccessControlMapper, BatonDataObjectAccessControlMapper, \
     BatonCollectionAccessControlMapper
-from baton.models import DataObject, Collection
-from baton.models import IrodsEntity, AccessControl
+from baton.models import AccessControl, DataObject, Collection
+from baton.models import IrodsEntity
+from baton.tests._baton._helpers import DataObjectNode, CollectionNode, NAMES, create_data_object, create_collection, \
+    create_entity_tree, EntityNode
 from baton.tests._baton._settings import BATON_SETUP
 from testwithbaton.api import TestWithBaton
-from baton.tests._baton._helpers import CollectionNode, create_entity_tree, EntityNode, NAMES, create_data_object, \
-    create_collection
-from baton.tests._baton._helpers import DataObjectNode
 from testwithbaton.helpers import SetupHelper
 
 _USERNAMES = ["user_1", "user_2", "user_3"]
@@ -198,7 +197,7 @@ class TestBatonCollectionAccessControlMapper(_TestBatonAccessControlMapper):
         return create_collection(self.test_with_baton, name, access_controls=access_controls)
 
     def test_set_with_recursion_for_single_path(self):
-        new_access_controls = [AccessControl(_USERNAMES[2], AccessControl.Level.WRITE)]
+        new_access_controls = {AccessControl(_USERNAMES[2], AccessControl.Level.WRITE)}
         self.mapper.set(self.root_collection.path, new_access_controls, recursive=True)
 
         access_controls_for_paths = self.mapper.get_all([entity.path for entity in self.entities])
@@ -207,7 +206,7 @@ class TestBatonCollectionAccessControlMapper(_TestBatonAccessControlMapper):
 
     def test_set_with_recursion_for_multiple_paths(self):
         other_entities, other_root_collection = self._create_entity_tree_in_container(_TEST_ENTITY_TREE)
-        new_access_controls = [AccessControl(_USERNAMES[2], AccessControl.Level.WRITE)]
+        new_access_controls = {AccessControl(_USERNAMES[2], AccessControl.Level.WRITE)}
         self.mapper.set([self.root_collection.path, other_root_collection.path], new_access_controls, recursive=True)
 
         access_controls_for_paths = self.mapper.get_all([entity.path for entity in self.entities + other_entities])
@@ -215,11 +214,11 @@ class TestBatonCollectionAccessControlMapper(_TestBatonAccessControlMapper):
             self.assertEqual(access_controls, new_access_controls)
 
     def test_add_with_recursion_for_single_path(self):
-        additional_access_controls = [AccessControl(_USERNAMES[2], AccessControl.Level.WRITE), self.access_controls[0]]
+        additional_access_controls = {AccessControl(_USERNAMES[2], AccessControl.Level.WRITE), self.access_controls[0]}
         self.mapper.add_or_replace(self.root_collection.path, additional_access_controls, recursive=True)
 
         access_controls_for_paths = self.mapper.get_all([entity.path for entity in self.entities])
-        expected_access_controls = set(additional_access_controls + self.access_controls)
+        expected_access_controls = additional_access_controls.union(self.access_controls)
         for access_controls in access_controls_for_paths:
             self.assertEqual(access_controls, expected_access_controls)
 
@@ -238,17 +237,17 @@ class TestBatonCollectionAccessControlMapper(_TestBatonAccessControlMapper):
         self.mapper.revoke(self.root_collection.path, self.access_controls[0].user_or_group, recursive=True)
 
         access_controls_for_paths = self.mapper.get_all([entity.path for entity in self.entities])
-        expected_access_controls = self.access_controls[1:]
+        expected_access_controls = set(self.access_controls[1:])
         for access_controls in access_controls_for_paths:
             self.assertEqual(access_controls, expected_access_controls)
 
     def test_revoke_with_recursion_for_multiple_paths(self):
         other_entities, other_root_collection = self._create_entity_tree_in_container(_TEST_ENTITY_TREE)
-        self.mapper.revoke([self.root_collection.path + other_root_collection.path],
+        self.mapper.revoke([self.root_collection.path, other_root_collection.path],
                            self.access_controls[0].user_or_group, recursive=True)
 
         access_controls_for_paths = self.mapper.get_all([entity.path for entity in self.entities + other_entities])
-        expected_access_controls = self.access_controls[1:]
+        expected_access_controls = set(self.access_controls[1:])
         for access_controls in access_controls_for_paths:
             self.assertEqual(access_controls, expected_access_controls)
 
@@ -261,14 +260,14 @@ class TestBatonCollectionAccessControlMapper(_TestBatonAccessControlMapper):
 
     def test_revoke_all_with_recursion_for_multiple_paths(self):
         other_entities, other_root_collection = self._create_entity_tree_in_container(_TEST_ENTITY_TREE)
-        self.mapper.revoke_all([self.root_collection.path + other_root_collection.path], recursive=True)
+        self.mapper.revoke_all([self.root_collection.path, other_root_collection.path], recursive=True)
 
         access_controls_for_paths = self.mapper.get_all([entity.path for entity in self.entities + other_entities])
         for access_controls in access_controls_for_paths:
             self.assertEqual(len(access_controls), 0)
 
     def _create_entity_tree_in_container(self, entity_tree: EntityNode) -> (List[IrodsEntity], IrodsEntity):
-        """¢
+        """
         Creates the given entity tree inside a container.
         :param entity_tree: the entity to create
         :return: tuple where the first element is a list of all the created iRODS entities (not including the container)
@@ -281,7 +280,7 @@ class TestBatonCollectionAccessControlMapper(_TestBatonAccessControlMapper):
         for entity in entities:
             if entity.get_collection_path() == container_path:
                 assert entity.get_name() == entity_tree.name
-                return (entities, entity)
+                return entities, entity
 
         assert False
 
