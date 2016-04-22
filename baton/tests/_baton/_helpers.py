@@ -217,9 +217,13 @@ def create_entity_tree(test_with_baton: TestWithBaton, root: str, node: EntityNo
     setup_helper = SetupHelper(test_with_baton.icommands_location)
 
     if isinstance(node, DataObjectNode):
-        entity = create_data_object(test_with_baton, node.name, access_controls=access_controls)
+        entity = DataObject(setup_helper.create_data_object(node.name))
     else:
-        entity = create_collection(test_with_baton, node.name, access_controls=access_controls)
+        entity = Collection(setup_helper.create_collection(node.name))
+
+    _set_access_controls(test_with_baton, entity.path, access_controls)
+    entity.access_controls = access_controls
+
     new_path = "%s/%s" % (root, entity.get_name())
     setup_helper.run_icommand(["imv", entity.path, new_path])
     entity.path = new_path

@@ -35,7 +35,7 @@ class TestBatonInstalledSpecificQueryMapper(unittest.TestCase):
     Tests for `BatonSpecificQueryMapper`.
     """
     def setUp(self):
-        self.test_with_baton = TestWithBaton(baton_image=BATON_IMAGE)
+        self.test_with_baton = TestWithBaton(baton_setup=BATON_SETUP)
         self.test_with_baton.setup()
         self.setup_helper = SetupHelper(self.test_with_baton.icommands_location)
 
