@@ -6,7 +6,7 @@ from baton._baton._baton_runner import BatonRunner, BatonBinary
 from baton._baton.json import DataObjectJSONEncoder, CollectionJSONEncoder
 from baton.collections import IrodsMetadata
 from baton.models import DataObject, DataObjectReplica, AccessControl, Collection, IrodsEntity
-from testwithbaton.api import TestWithBatonSetup
+from testwithbaton.api import TestWithBaton
 from testwithbaton.helpers import SetupHelper, AccessLevel
 
 NAMES = ["name_1", "name_2", "name_3"]
@@ -22,7 +22,7 @@ _access_level_conversion = {
 }
 
 
-def _set_access_controls(test_with_baton: TestWithBatonSetup, path: str, access_controls: Iterable[AccessControl]):
+def _set_access_controls(test_with_baton: TestWithBaton, path: str, access_controls: Iterable[AccessControl]):
     """
     Sets the given access controls on the entity at the given iRODS path.
     :param test_with_baton: framework to allow testing with baton
@@ -35,7 +35,7 @@ def _set_access_controls(test_with_baton: TestWithBatonSetup, path: str, access_
         setup_helper.set_access(access_control.user_or_group, _access_level_conversion[access_control.level], path)
 
 
-def create_data_object(test_with_baton: TestWithBatonSetup, name: str, metadata: IrodsMetadata=IrodsMetadata(),
+def create_data_object(test_with_baton: TestWithBaton, name: str, metadata: IrodsMetadata=IrodsMetadata(),
                        access_controls: Iterable[AccessControl]=None) -> DataObject:
     """
     Factory method to create an iRODS data object that has metadata, an ACL and replicas. Creates in current directory.
@@ -73,7 +73,7 @@ def create_data_object(test_with_baton: TestWithBatonSetup, name: str, metadata:
     return data_object
 
 
-def create_collection(test_with_baton: TestWithBatonSetup, name: str, metadata: IrodsMetadata=IrodsMetadata(),
+def create_collection(test_with_baton: TestWithBaton, name: str, metadata: IrodsMetadata=IrodsMetadata(),
                       access_controls: Iterable[AccessControl] = None) -> Collection:
     """
     Factory method to create an iRODS collection that has metadata and an ACL. Creates in current directory.
@@ -101,7 +101,7 @@ def create_collection(test_with_baton: TestWithBatonSetup, name: str, metadata: 
     return collection
 
 
-def synchronise_timestamps(test_with_baton: TestWithBatonSetup, irods_entity: IrodsEntity):
+def synchronise_timestamps(test_with_baton: TestWithBaton, irods_entity: IrodsEntity):
     """
     Synchronises the timestamps of the given entity to align with the timestamps recorded on iRODS.
     :param test_with_baton: framework to allow testing with baton
@@ -115,7 +115,7 @@ def synchronise_timestamps(test_with_baton: TestWithBatonSetup, irods_entity: Ir
         raise ValueError("Unsupported type: `%s`" % type(irods_entity))
 
 
-def synchronise_data_object_timestamps(test_with_baton: TestWithBatonSetup, data_object: DataObject):
+def synchronise_data_object_timestamps(test_with_baton: TestWithBaton, data_object: DataObject):
     """
     Synchronises the timestamps of the given data object to align with the timestamps recorded on iRODS.
     :param test_with_baton: framework to allow testing with baton
@@ -134,7 +134,7 @@ def synchronise_data_object_timestamps(test_with_baton: TestWithBatonSetup, data
             replica.last_modified = date_parser.parse(timestamp_as_json["modified"])
 
 
-def synchronise_collection_timestamps(test_with_baton: TestWithBatonSetup, collection: Collection):
+def synchronise_collection_timestamps(test_with_baton: TestWithBaton, collection: Collection):
     """
     Synchronises the timestamps of the given data object to align with the timestamps recorded on iRODS.
     :param test_with_baton: framework to allow testing with baton

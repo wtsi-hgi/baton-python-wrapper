@@ -5,8 +5,8 @@ from baton._baton.api import Connection, connect_to_irods_with_baton
 from baton._baton.baton_custom_object_mappers import BatonSpecificQueryMapper
 from baton._baton.baton_entity_mappers import BatonCollectionMapper
 from baton._baton.baton_entity_mappers import BatonDataObjectMapper
-from baton.tests._baton._settings import BATON_DOCKER_BUILD
-from testwithbaton.api import TestWithBatonSetup
+from baton.tests._baton._settings import BATON_IMAGE
+from testwithbaton.api import TestWithBaton
 
 
 class TestConnection(unittest.TestCase):
@@ -14,7 +14,7 @@ class TestConnection(unittest.TestCase):
     Tests for `Connection` class.
     """
     def setUp(self):
-        self.test_with_baton = TestWithBatonSetup(baton_docker_build=BATON_DOCKER_BUILD)
+        self.test_with_baton = TestWithBaton(baton_image=BATON_IMAGE)
 
     def test_correct_mapper_properties(self):
         self.test_with_baton.setup()

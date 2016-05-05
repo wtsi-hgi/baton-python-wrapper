@@ -8,7 +8,7 @@ from baton._baton._constants import BATON_DATA_OBJECT_PROPERTY
 from baton.collections import IrodsMetadata
 from baton.models import Collection, SpecificQuery, DataObject
 from baton.tests._baton._helpers import create_data_object, create_collection
-from testwithbaton.api import TestWithBatonSetup
+from testwithbaton.api import TestWithBaton
 
 _data_object = None
 _data_object_as_json = None
@@ -32,7 +32,7 @@ def create_data_object_with_baton_json_representation() -> Tuple[DataObject, Dic
 
     # Starting baton is expensive - get view of baton JSON and cache
     if _data_object is None:
-        test_with_baton = TestWithBatonSetup()
+        test_with_baton = TestWithBaton()
         test_with_baton.setup()
 
         metadata = IrodsMetadata({"attribute_a": {"value_1", "value_2"}, "attribute_b": {"value_3"}})
@@ -66,7 +66,7 @@ def create_collection_with_baton_json_representation() -> Tuple[Collection, Dict
 
     # Starting baton is expensive - get view of baton JSON and cache
     if _collection is None:
-        test_with_baton = TestWithBatonSetup()
+        test_with_baton = TestWithBaton()
         test_with_baton.setup()
 
         metadata = IrodsMetadata({"attribute_a": {"value_1", "value_2"}, "attribute_b": {"value_3"}})
@@ -95,7 +95,7 @@ def create_specific_query_with_baton_json_representation() -> Tuple[SpecificQuer
 
     # Starting baton is expensive - get view of baton JSON and cache
     if _specific_query is None:
-        test_with_baton = TestWithBatonSetup()
+        test_with_baton = TestWithBaton()
         test_with_baton.setup()
 
         baton_runner = BatonRunner(test_with_baton.baton_location, test_with_baton.irods_server.users[0].zone)

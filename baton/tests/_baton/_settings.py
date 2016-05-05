@@ -1,7 +1,8 @@
-from testwithbaton.models import BatonDockerBuild
+from testwithbaton.irods import IrodsVersion
+from testwithbaton.models import BatonImage
 
 
-BATON_DOCKER_BUILD = BatonDockerBuild(
+BATON_IMAGE = BatonImage(
     tag="wtsi-hgi/baton:specificquery",
     path="github.com/wtsi-hgi/docker-baton.git",
     docker_file="custom/irods-3.3.1/Dockerfile",
@@ -10,3 +11,5 @@ BATON_DOCKER_BUILD = BatonDockerBuild(
         "BRANCH": "feature/specificquery"
     }
 )
+
+IRODS_VERSION = IrodsVersion.v3_3_1
