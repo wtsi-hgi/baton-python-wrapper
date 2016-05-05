@@ -1,5 +1,5 @@
 [![Build Status](https://travis-ci.org/wtsi-hgi/python-common.svg)](https://travis-ci.org/wtsi-hgi/python-baton-wrapper)
-[![codecov.io](https://codecov.io/github/wtsi-hgi/python-baton-wrapper/coverage.svg?branch=develop)](https://codecov.io/github/wtsi-hgi/python-baton-wrapper?branch=develop)
+[![codecov.io](https://codecov.io/gh/wtsi-hgi/python-baton-wrapper/graph/badge.svg)](https://codecov.io/github/wtsi-hgi/python-baton-wrapper)
 # baton Python Wrapper
 
 
