@@ -8,7 +8,7 @@ from baton.collections import IrodsMetadata
 from baton.models import SearchCriterion, IrodsEntity, Collection, DataObject
 from baton.tests._baton._helpers import combine_metadata, synchronise_timestamps, create_data_object, create_collection, \
     NAMES, ATTRIBUTES, VALUES, UNUSED_VALUE
-from baton.tests._baton._settings import BATON_IMAGE, IRODS_VERSION
+from baton.tests._baton._settings import BATON_SETUP
 from hgicommon.enums import ComparisonOperator
 from testwithbaton.api import TestWithBaton
 from testwithbaton.helpers import SetupHelper
@@ -19,7 +19,7 @@ class _TestBatonIrodsEntityMapper(unittest.TestCase, metaclass=ABCMeta):
     Tests for subclasses of `_BatonIrodsEntityMapper`.
     """
     def setUp(self):
-        self.test_with_baton = TestWithBaton(BATON_IMAGE, IRODS_VERSION)
+        self.test_with_baton = TestWithBaton(baton_setup=BATON_SETUP)
         self.test_with_baton.setup()
         self.setup_helper = SetupHelper(self.test_with_baton.icommands_location)
 

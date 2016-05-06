@@ -7,7 +7,7 @@ from baton._baton.baton_access_control_mappers import _BatonAccessControlMapper,
 from baton.models import DataObject, Collection
 from baton.models import IrodsEntity, AccessControl
 from baton.tests._baton._helpers import create_data_object, create_collection, NAMES
-from baton.tests._baton._settings import BATON_IMAGE, IRODS_VERSION
+from baton.tests._baton._settings import BATON_SETUP
 from testwithbaton.api import TestWithBaton
 from testwithbaton.helpers import SetupHelper
 
@@ -35,7 +35,7 @@ class _TestBatonAccessControlMapper(unittest.TestCase):
         """
 
     def setUp(self):
-        self.test_with_baton = TestWithBaton(BATON_IMAGE, IRODS_VERSION)
+        self.test_with_baton = TestWithBaton(baton_setup=BATON_SETUP)
         self.test_with_baton.setup()
         self.setup_helper = SetupHelper(self.test_with_baton.icommands_location)
         self.mapper = self.create_mapper()

@@ -1,7 +1,7 @@
 import unittest
 
 from baton._baton._baton_runner import BatonRunner, BatonBinary
-from baton.tests._baton._settings import BATON_IMAGE, IRODS_VERSION
+from baton.tests._baton._settings import BATON_SETUP
 from baton.tests._baton._stubs import StubBatonRunner
 from testwithbaton.api import TestWithBaton
 
@@ -16,7 +16,7 @@ class TestBatonRunner(unittest.TestCase):
     Tests for `_BatonRunner`.
     """
     def setUp(self):
-        self.test_with_baton = TestWithBaton(BATON_IMAGE, IRODS_VERSION)
+        self.test_with_baton = TestWithBaton(baton_setup=BATON_SETUP)
 
     def test_validate_baton_binaries_location_with_invalid_location(self):
         self.assertFalse(BatonRunner.validate_baton_binaries_location("invalid"))
