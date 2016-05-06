@@ -8,7 +8,7 @@ from baton.collections import IrodsMetadata
 from baton.models import Collection, IrodsEntity
 from baton.models import DataObject
 from baton.tests._baton._helpers import NAMES, create_collection, create_data_object
-from baton.tests._baton._settings import BATON_IMAGE, IRODS_VERSION
+from baton.tests._baton._settings import BATON_SETUP
 from testwithbaton.api import TestWithBaton
 from testwithbaton.helpers import SetupHelper
 
@@ -18,7 +18,7 @@ class _TestBatonIrodsEntityMetadataMapper(unittest.TestCase):
     Tests for `_BatonIrodsMetadataMapper`.
     """
     def setUp(self):
-        self.test_with_baton = TestWithBaton(BATON_IMAGE, IRODS_VERSION)
+        self.test_with_baton = TestWithBaton(baton_setup=BATON_SETUP)
         self.test_with_baton.setup()
         self.setup_helper = SetupHelper(self.test_with_baton.icommands_location)
         self.mapper = self.create_mapper()

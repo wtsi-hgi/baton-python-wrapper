@@ -4,7 +4,7 @@ from unittest.mock import MagicMock
 
 from baton._baton.baton_custom_object_mappers import BatonSpecificQueryMapper
 from baton.models import PreparedSpecificQuery, SpecificQuery
-from baton.tests._baton._settings import BATON_IMAGE, IRODS_VERSION
+from baton.tests._baton._settings import BATON_SETUP
 from baton.tests._baton._stubs import StubBatonCustomObjectMapper
 from testwithbaton.api import TestWithBaton
 from testwithbaton.helpers import SetupHelper
@@ -15,7 +15,7 @@ class TestBatonCustomObjectMapper(unittest.TestCase):
     Tests for `BatonCustomObjectMapper`.
     """
     def setUp(self):
-        self.test_with_baton = TestWithBaton(BATON_IMAGE, IRODS_VERSION)
+        self.test_with_baton = TestWithBaton(baton_setup=BATON_SETUP)
         self.test_with_baton.setup()
 
         self.mapper = StubBatonCustomObjectMapper(self.test_with_baton.baton_location)

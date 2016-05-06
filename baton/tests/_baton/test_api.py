@@ -3,9 +3,8 @@ from unittest.mock import patch, MagicMock
 
 from baton._baton.api import Connection, connect_to_irods_with_baton
 from baton._baton.baton_custom_object_mappers import BatonSpecificQueryMapper
-from baton._baton.baton_entity_mappers import BatonCollectionMapper
-from baton._baton.baton_entity_mappers import BatonDataObjectMapper
-from baton.tests._baton._settings import BATON_IMAGE
+from baton._baton.baton_entity_mappers import BatonCollectionMapper, BatonDataObjectMapper
+from baton.tests._baton._settings import BATON_SETUP
 from testwithbaton.api import TestWithBaton
 
 
@@ -14,7 +13,7 @@ class TestConnection(unittest.TestCase):
     Tests for `Connection` class.
     """
     def setUp(self):
-        self.test_with_baton = TestWithBaton(baton_image=BATON_IMAGE)
+        self.test_with_baton = TestWithBaton(baton_setup=BATON_SETUP)
 
     def test_correct_mapper_properties(self):
         self.test_with_baton.setup()
