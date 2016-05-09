@@ -1,17 +1,28 @@
 import unittest
 from abc import abstractmethod
-from typing import Iterable
+from typing import Iterable, List
 
 from baton._baton.baton_access_control_mappers import _BatonAccessControlMapper, BatonDataObjectAccessControlMapper, \
     BatonCollectionAccessControlMapper
-from baton.models import DataObject, Collection
-from baton.models import IrodsEntity, AccessControl
-from baton.tests._baton._helpers import create_data_object, create_collection, NAMES
+from baton.models import AccessControl, DataObject, Collection
+from baton.models import IrodsEntity
+from baton.tests._baton._helpers import DataObjectNode, CollectionNode, NAMES, create_data_object, create_collection, \
+    create_entity_tree, EntityNode
 from baton.tests._baton._settings import BATON_SETUP
 from testwithbaton.api import TestWithBaton
 from testwithbaton.helpers import SetupHelper
 
 _USERNAMES = ["user_1", "user_2", "user_3"]
+
+_TEST_ENTITY_TREE = CollectionNode("top", [
+    CollectionNode("middle_1", [
+        DataObjectNode("bottom_1a"),
+        DataObjectNode("bottom_1b")
+    ]),
+    CollectionNode("middle_2", [
+        CollectionNode("bottom_2")
+    ])
+])
 
 
 class _TestBatonAccessControlMapper(unittest.TestCase):
@@ -168,11 +179,110 @@ class TestBatonCollectionAccessControlMapper(_TestBatonAccessControlMapper):
     """
     Tests for `BatonCollectionAccessControlMapper`.
     """
+    def setUp(self):
+        super().setUp()
+        self.mapper = self.mapper  # type: BatonCollectionAccessControlMapper
+        self.access_controls = [
+            AccessControl(self.test_with_baton.irods_server.users[0].username, AccessControl.Level.OWN),
+            AccessControl(_USERNAMES[0], AccessControl.Level.READ),
+            AccessControl(_USERNAMES[1], AccessControl.Level.WRITE)
+        ]
+        self._collection_count = 0
+        self.entities, self.root_collection = self._create_entity_tree_in_container(_TEST_ENTITY_TREE)
+
     def create_mapper(self) -> BatonCollectionAccessControlMapper:
         return BatonCollectionAccessControlMapper(self.test_with_baton.baton_location)
 
     def create_irods_entity(self, name: str, access_controls: Iterable[AccessControl]) -> Collection:
         return create_collection(self.test_with_baton, name, access_controls=access_controls)
+
+    def test_set_with_recursion_for_single_path(self):
+        new_access_controls = {AccessControl(_USERNAMES[2], AccessControl.Level.WRITE)}
+        self.mapper.set(self.root_collection.path, new_access_controls, recursive=True)
+
+        access_controls_for_paths = self.mapper.get_all([entity.path for entity in self.entities])
+        for access_controls in access_controls_for_paths:
+            self.assertEqual(access_controls, new_access_controls)
+
+    def test_set_with_recursion_for_multiple_paths(self):
+        other_entities, other_root_collection = self._create_entity_tree_in_container(_TEST_ENTITY_TREE)
+        new_access_controls = {AccessControl(_USERNAMES[2], AccessControl.Level.WRITE)}
+        self.mapper.set([self.root_collection.path, other_root_collection.path], new_access_controls, recursive=True)
+
+        access_controls_for_paths = self.mapper.get_all([entity.path for entity in self.entities + other_entities])
+        for access_controls in access_controls_for_paths:
+            self.assertEqual(access_controls, new_access_controls)
+
+    def test_add_with_recursion_for_single_path(self):
+        additional_access_controls = {AccessControl(_USERNAMES[2], AccessControl.Level.WRITE), self.access_controls[0]}
+        self.mapper.add_or_replace(self.root_collection.path, additional_access_controls, recursive=True)
+
+        access_controls_for_paths = self.mapper.get_all([entity.path for entity in self.entities])
+        expected_access_controls = additional_access_controls.union(self.access_controls)
+        for access_controls in access_controls_for_paths:
+            self.assertEqual(access_controls, expected_access_controls)
+
+    def test_add_with_recursion_for_multiple_paths(self):
+        other_entities, other_root_collection = self._create_entity_tree_in_container(_TEST_ENTITY_TREE)
+        additional_access_controls = [AccessControl(_USERNAMES[2], AccessControl.Level.WRITE), self.access_controls[0]]
+        self.mapper.add_or_replace(
+            [self.root_collection.path, other_root_collection.path], additional_access_controls, recursive=True)
+
+        access_controls_for_paths = self.mapper.get_all([entity.path for entity in self.entities + other_entities])
+        expected_access_controls = set(additional_access_controls + self.access_controls)
+        for access_controls in access_controls_for_paths:
+            self.assertEqual(access_controls, expected_access_controls)
+
+    def test_revoke_with_recursion_for_single_path(self):
+        self.mapper.revoke(self.root_collection.path, self.access_controls[0].user_or_group, recursive=True)
+
+        access_controls_for_paths = self.mapper.get_all([entity.path for entity in self.entities])
+        expected_access_controls = set(self.access_controls[1:])
+        for access_controls in access_controls_for_paths:
+            self.assertEqual(access_controls, expected_access_controls)
+
+    def test_revoke_with_recursion_for_multiple_paths(self):
+        other_entities, other_root_collection = self._create_entity_tree_in_container(_TEST_ENTITY_TREE)
+        self.mapper.revoke([self.root_collection.path, other_root_collection.path],
+                           self.access_controls[0].user_or_group, recursive=True)
+
+        access_controls_for_paths = self.mapper.get_all([entity.path for entity in self.entities + other_entities])
+        expected_access_controls = set(self.access_controls[1:])
+        for access_controls in access_controls_for_paths:
+            self.assertEqual(access_controls, expected_access_controls)
+
+    def test_revoke_all_with_recursion_for_single_path(self):
+        self.mapper.revoke_all(self.root_collection.path, recursive=True)
+
+        access_controls_for_paths = self.mapper.get_all([entity.path for entity in self.entities])
+        for access_controls in access_controls_for_paths:
+            self.assertEqual(len(access_controls), 0)
+
+    def test_revoke_all_with_recursion_for_multiple_paths(self):
+        other_entities, other_root_collection = self._create_entity_tree_in_container(_TEST_ENTITY_TREE)
+        self.mapper.revoke_all([self.root_collection.path, other_root_collection.path], recursive=True)
+
+        access_controls_for_paths = self.mapper.get_all([entity.path for entity in self.entities + other_entities])
+        for access_controls in access_controls_for_paths:
+            self.assertEqual(len(access_controls), 0)
+
+    def _create_entity_tree_in_container(self, entity_tree: EntityNode) -> (List[IrodsEntity], IrodsEntity):
+        """
+        Creates the given entity tree inside a container.
+        :param entity_tree: the entity to create
+        :return: tuple where the first element is a list of all the created iRODS entities (not including the container)
+        and the second is the top level iRODS entity (not including the container)
+        """
+        self._collection_count += 1
+        container_path = self.setup_helper.create_collection("container-%d" % self._collection_count)
+        entities = list(create_entity_tree(self.test_with_baton, container_path, entity_tree, self.access_controls))
+
+        for entity in entities:
+            if entity.get_collection_path() == container_path:
+                assert entity.get_name() == entity_tree.name
+                return entities, entity
+
+        assert False
 
 
 # Trick required to stop Python's unittest from running the abstract base classes as tests
