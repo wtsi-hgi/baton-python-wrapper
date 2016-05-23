@@ -2,7 +2,8 @@ from abc import ABCMeta, abstractmethod, abstractproperty
 from typing import Generic, Union, Sequence, Iterable, Set, List
 
 from baton.collections import IrodsMetadata
-from baton.models import Collection, DataObject, PreparedSpecificQuery, SpecificQuery, SearchCriterion, AccessControl
+from baton.models import Collection, DataObject, PreparedSpecificQuery, SpecificQuery, SearchCriterion, AccessControl, \
+    User
 from baton.types import EntityType, CustomObjectType
 
 
@@ -72,7 +73,6 @@ class AccessControlMapper(metaclass=ABCMeta):
     Access control mapper.
     """
     @abstractmethod
-    # def get_all(paths: Union[str, Iterable[str]) -> Union[AccessControl, List[AccessControl]
     def get_all(self, paths: Union[str, Sequence[str]]) -> Union[Set[AccessControl], Sequence[Set[AccessControl]]]:
         """
         Gets all the access controls for the entity with the given path.
@@ -84,8 +84,8 @@ class AccessControlMapper(metaclass=ABCMeta):
     def add_or_replace(self, paths: Union[str, Iterable[str]],
                        access_controls: Union[AccessControl, Iterable[AccessControl]]):
         """
-        Adds the given access controls to those associated with the given path or collection of paths. If an acceess
-        control already exists for a user or group, the access control is replaced.
+        Adds the given access controls to those associated with the given path or collection of paths. If an access
+        control already exists for a user, the access control is replaced.
         :param paths: the paths to add the access controls
         :param access_controls: the access controls to add
         """
@@ -99,11 +99,12 @@ class AccessControlMapper(metaclass=ABCMeta):
         """
 
     @abstractmethod
-    def revoke(self, paths: Union[str, Iterable[str]], users_or_groups: Union[str, Iterable[str]]):
+    def revoke(self, paths: Union[str, Iterable[str]], users: Union[str, Iterable[str], User, Iterable[User]]):
         """
         Revokes all access controls that are associated to the given path or collection of paths.
         :param paths: the paths to remove access controls on
-        :param users_or_groups: the users or groups to revoke access controls for
+        :param users: the users to revoke access controls for. User may be in the represented as a `User` object or in
+        the form "name#zone"
         """
 
     @abstractmethod
@@ -139,12 +140,12 @@ class CollectionAccessControlMapper(AccessControlMapper, metaclass=ABCMeta):
         """
 
     @abstractmethod
-    def revoke(self, paths: Union[str, Iterable[str]], users_or_groups: Union[str, Iterable[str]],
+    def revoke(self, paths: Union[str, Iterable[str]], users: Union[str, Iterable[str], User, Iterable[User]],
                recursive: bool=False):
         """
         See `AccessControlMapper.revoke`.
         :param paths: see `AccessControlMapper.revoke`
-        :param access_controls: see `AccessControlMapper.revoke`
+        :param users: see `AccessControlMapper.revoke`
         :param recursive: whether the access control list should be changed recursively for all nested collections
         """
 
