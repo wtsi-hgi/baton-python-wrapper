@@ -8,7 +8,7 @@ Python 3 Wrapper for [baton](https://github.com/wtsi-npg/baton), superseding a
 [previous implementation in meta-datacheck]
 (https://github.com/wtsi-hgi/metadata-check/blob/9cd5c41b0f2e254fc1d6249a14752bd428587bb7/irods_baton/baton_wrapper.py).
 
-The wrapper provides access to most, but not all, of baton's functionality.
+The wrapper provides access to most of baton's functionality.
 
 
 ## How to use in your project
@@ -96,8 +96,9 @@ from baton.models import AccessControl
 
 # ACLs. Note: it is implied that the owner is in the same zone as the entity to which the access control is applied
 acl_examples = [
-    AccessControl("owner", AccessControl.READ),
-    AccessControl("another_owner", AccessControl.WRITE)
+    AccessControl(User("user_1", "zone_user_is_in"), AccessControl.READ),
+    AccessControl(User("group_1", "zone_group_is_in"), AccessControl.WRITE),
+    AccessControl("user_1#zone_user_is_in", AccessControl.OWN)
 ]
 
 irods.data_object.access_control.get_all("/collection/data_object") # type: Set[AccessControl]
