@@ -1,12 +1,14 @@
 import copy
 import unittest
 
-from baton.models import DataObject, SpecificQuery, Collection, IrodsEntity, AccessControl
+from baton.models import DataObject, SpecificQuery, Collection, IrodsEntity, AccessControl, User
 from baton.tests._stubs import StubIrodsEntity
 
 _COLLECTION = "/collection/sub_collection"
 _FILE_NAME = "file_name"
 _CHECKSUMS = ["2c558824f250de9d55c07600291f4272", "2c558824f250de9d55c07600291f4233", "2c558824f250de9d55c07600291f4257"]
+_NAME = "user_1"
+_ZONE = "zone_1"
 
 
 class TestIrodsEntity(unittest.TestCase):
@@ -15,7 +17,8 @@ class TestIrodsEntity(unittest.TestCase):
     """
     def setUp(self):
         self.path = "/test/path"
-        self.access_controls = set([AccessControl("user_%s" % i, AccessControl.Level.READ) for i in range(10)])
+        self.access_controls = set([AccessControl(User("user_%s" % i, _ZONE), AccessControl.Level.READ)
+                                    for i in range(10)])
         self.irods_entity = StubIrodsEntity(self.path, self.access_controls)
 
     def test_get_acl(self):
@@ -94,6 +97,19 @@ class TestSpecificQuery(unittest.TestCase):
     def test_get_number_of_arguments_when_many(self):
         specific_query = SpecificQuery("alias", "SELECT * FROM Table WHERE Table.a = ? AND Table.b LIKE ?")
         self.assertEqual(specific_query.get_number_of_arguments(), 2)
+
+
+class TestUser(unittest.TestCase):
+    """
+    Tests for `User`.
+    """
+    def test_create_from_str(self):
+        user = User.create_from_str("%s#%s" % (_NAME, _ZONE))
+        self.assertEqual(user, User(_NAME, _ZONE))
+
+    def test_str(self):
+        user = User(_NAME, _ZONE)
+        self.assertEqual(str(user), "%s#%s" % (_NAME, _ZONE))
 
 
 if __name__ == "__main__":
