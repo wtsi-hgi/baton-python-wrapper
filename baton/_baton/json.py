@@ -6,15 +6,15 @@ from dateutil.parser import parser
 
 from baton._baton._constants import BATON_ACL_LEVELS, BATON_ACL_OWNER_PROPERTY, BATON_ACL_LEVEL_PROPERTY, \
     BATON_REPLICA_NUMBER_PROPERTY, BATON_REPLICA_VALID_PROPERTY, BATON_REPLICA_CHECKSUM_PROPERTY, \
-    BATON_REPLICA_LOCATION_PROPERTY, BATON_REPLICA_RESOURCE_PROPERTY,  BATON_AVU_ATTRIBUTE_PROPERTY, BATON_AVU_VALUE_PROPERTY, BATON_ACL_PROPERTY, BATON_AVU_PROPERTY, \
-    BATON_COLLECTION_PROPERTY, BATON_DATA_OBJECT_PROPERTY, BATON_REPLICA_PROPERTY, \
-    BATON_SEARCH_CRITERION_ATTRIBUTE_PROPERTY, BATON_SEARCH_CRITERION_VALUE_PROPERTY,\
-    BATON_SEARCH_CRITERION_COMPARISON_OPERATOR_PROPERTY, BATON_SEARCH_CRITERION_COMPARISON_OPERATORS, \
-    BATON_SPECIFIC_QUERY_SQL_PROPERTY, BATON_SPECIFIC_QUERY_ARGUMENTS_PROPERTY, \
-    BATON_SPECIFIC_QUERY_ALIAS_PROPERTY
+    BATON_REPLICA_LOCATION_PROPERTY, BATON_REPLICA_RESOURCE_PROPERTY,  BATON_AVU_ATTRIBUTE_PROPERTY, \
+    BATON_AVU_VALUE_PROPERTY, BATON_ACL_PROPERTY, BATON_AVU_PROPERTY, BATON_COLLECTION_PROPERTY, \
+    BATON_DATA_OBJECT_PROPERTY, BATON_REPLICA_PROPERTY, BATON_SEARCH_CRITERION_ATTRIBUTE_PROPERTY, \
+    BATON_SEARCH_CRITERION_VALUE_PROPERTY, BATON_SEARCH_CRITERION_COMPARISON_OPERATOR_PROPERTY, \
+    BATON_SEARCH_CRITERION_COMPARISON_OPERATORS, BATON_SPECIFIC_QUERY_SQL_PROPERTY, \
+    BATON_SPECIFIC_QUERY_ARGUMENTS_PROPERTY, BATON_SPECIFIC_QUERY_ALIAS_PROPERTY, BATON_ACL_ZONE_PROPERTY
 from baton.collections import IrodsMetadata, DataObjectReplicaCollection
 from baton.models import AccessControl, DataObjectReplica, DataObject, IrodsEntity, Collection, PreparedSpecificQuery, \
-    SpecificQuery, SearchCriterion
+    SpecificQuery, SearchCriterion, User
 from hgicommon.enums import ComparisonOperator
 from hgijson.json.builders import MappingJSONEncoderClassBuilder, MappingJSONDecoderClassBuilder, \
     SetJSONEncoderClassBuilder, SetJSONDecoderClassBuilder
@@ -24,19 +24,27 @@ from hgijson.types import PrimitiveJsonSerializableType
 
 
 # JSON encoder/decoder for `AccessControl`
-def access_control_level_to_string(level: AccessControl.Level):
+def _access_control_level_to_string(level: AccessControl.Level):
     assert level in BATON_ACL_LEVELS
     return BATON_ACL_LEVELS[level]
 
-def access_control_level_from_string(level_as_string: str):
+def _access_control_level_from_string(level_as_string: str):
     return [key for key, value in BATON_ACL_LEVELS.items() if value == level_as_string][0]
 
 _access_control_json_mappings = [
-    JsonPropertyMapping(BATON_ACL_OWNER_PROPERTY, "user_or_group", "user_or_group"),
+    JsonPropertyMapping(
+        None, "user", "user",
+        json_property_getter=lambda json_as_dict: "%s#%s" % (json_as_dict[BATON_ACL_OWNER_PROPERTY],
+                                                             json_as_dict[BATON_ACL_ZONE_PROPERTY])
+    ),
+    JsonPropertyMapping(BATON_ACL_OWNER_PROPERTY,
+                        object_property_getter=lambda access_control: access_control.user.name),
+    JsonPropertyMapping(BATON_ACL_ZONE_PROPERTY,
+                        object_property_getter=lambda access_control: access_control.user.zone),
     JsonPropertyMapping(BATON_ACL_LEVEL_PROPERTY, None, "level",
-                        object_property_getter=lambda access_control: access_control_level_to_string(
+                        object_property_getter=lambda access_control: _access_control_level_to_string(
                             access_control.level),
-                        object_constructor_argument_modifier=lambda level_as_string: access_control_level_from_string(
+                        object_constructor_argument_modifier=lambda level_as_string: _access_control_level_from_string(
                             level_as_string))
 ]
 AccessControlJSONEncoder = MappingJSONEncoderClassBuilder(AccessControl, _access_control_json_mappings).build()
