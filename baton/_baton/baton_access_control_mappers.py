@@ -7,7 +7,7 @@ from baton._baton._constants import BATON_ACL_PROPERTY, BATON_CHMOD_RECURSIVE_FL
 from baton._baton.json import DataObjectJSONEncoder, CollectionJSONEncoder, \
     AccessControlSetJSONDecoder
 from baton.mappers import AccessControlMapper, CollectionAccessControlMapper
-from baton.models import AccessControl, DataObject, IrodsEntity, Collection
+from baton.models import AccessControl, DataObject, IrodsEntity, Collection, User
 
 
 class _BatonAccessControlMapper(BatonRunner, AccessControlMapper, metaclass=ABCMeta):
@@ -86,14 +86,19 @@ class _BatonAccessControlMapper(BatonRunner, AccessControlMapper, metaclass=ABCM
             baton_in_json.append(self._entity_to_baton_json(entity))
         self.run_baton_query(BatonBinary.BATON_CHMOD, input_data=baton_in_json)
 
-    def revoke(self, paths: Union[str, Iterable[str]], users_or_groups: Union[str, Iterable[str]]):
+    def revoke(self, paths: Union[str, Iterable[str]], users: Union[str, Iterable[str], User, Iterable[User]]):
         if isinstance(paths, str):
             paths = [paths]
-        if isinstance(users_or_groups, str):
-            users_or_groups = [users_or_groups]
+        if isinstance(users, str) or isinstance(users, User):
+            users = [users]
 
-        no_access_controls = [AccessControl(users_or_group, AccessControl.Level.NONE)
-                              for users_or_group in users_or_groups]
+        for i in range(len(users)):
+            if type(users[i]) != User:
+                assert users[i] == str
+                user = User.create_from_str(users[i])
+                users[i] = user
+
+        no_access_controls = [AccessControl(users, AccessControl.Level.NONE) for users in users]
         self.add_or_replace(paths, no_access_controls)
 
     def revoke_all(self, paths: Union[str, Iterable[str]]):
@@ -167,12 +172,12 @@ class BatonCollectionAccessControlMapper(_BatonAccessControlMapper, CollectionAc
         else:
             super().add_or_replace(paths, access_controls)
 
-    def revoke(self, paths: Union[str, Iterable[str]], users_or_groups: Union[str, Iterable[str]],
+    def revoke(self, paths: Union[str, Iterable[str]], users: Union[str, Iterable[str], User, Iterable[User]],
                recursive: bool=False):
         if recursive:
-            self._do_recursive(super().revoke, paths, users_or_groups)
+            self._do_recursive(super().revoke, paths, users)
         else:
-            super().revoke(paths, users_or_groups)
+            super().revoke(paths, users)
 
     def revoke_all(self, paths: Union[str, Iterable[str]], recursive: bool=False):
         if recursive:
@@ -191,7 +196,7 @@ class BatonCollectionAccessControlMapper(_BatonAccessControlMapper, CollectionAc
         Adds the `--recursive` argument to all calls to `baton-chmod`.
         :param method_that_runs_baton_chmod: the method that, at a lower level, calls out to baton-chmod
         :param args: positional arguments to call given method with
-        :param kwargs: named arguments to call given methon with
+        :param kwargs: named arguments to call given method with
         """
         current_frame_id = id(inspect.currentframe())
         try:
