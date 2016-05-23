@@ -68,8 +68,8 @@ from baton.collections import IrodsMetadata
 
 # Metadata (methods available for both `data_object` and `collection`)
 metadata_examples = [
-    IrodsMetadata({"key", (value, )}),
-    IrodsMetadata({"another_key", (value_1, value_2)}),
+    IrodsMetadata({"key": (value, )}),
+    IrodsMetadata({"another_key": (value_1, value_2)}),
 ]
 
 irods.data_object.metadata.get_all("/collection/data_object")   # type: Sequence[IrodsMetadata]
