@@ -2,7 +2,6 @@ from hgicommon.enums import ComparisonOperator
 
 from baton.models import AccessControl
 
-
 BATON_DATA_OBJECT_PROPERTY = "data_object"
 BATON_COLLECTION_PROPERTY = "collection"
 
@@ -17,6 +16,7 @@ BATON_REPLICA_RESOURCE_PROPERTY = "resource"
 
 BATON_ACL_PROPERTY = "access"
 BATON_ACL_OWNER_PROPERTY = "owner"
+BATON_ACL_ZONE_PROPERTY = "zone"
 BATON_ACL_LEVEL_PROPERTY = "level"
 BATON_ACL_LEVELS = {
     AccessControl.Level.NONE: "null",

@@ -6,7 +6,7 @@ from dateutil.parser import parser
 from baton._baton._baton_runner import BatonRunner, BatonBinary
 from baton._baton.json import DataObjectJSONEncoder, CollectionJSONEncoder
 from baton.collections import IrodsMetadata
-from baton.models import DataObject, DataObjectReplica, AccessControl, Collection, IrodsEntity
+from baton.models import DataObject, DataObjectReplica, AccessControl, Collection, IrodsEntity, User
 from hgicommon.models import Model
 from testwithbaton.api import TestWithBaton
 from testwithbaton.helpers import AccessLevel
@@ -34,9 +34,11 @@ def _set_access_controls(test_with_baton: TestWithBaton, path: str, access_contr
     :param access_controls: the access control list the entity should have
     """
     setup_helper = SetupHelper(test_with_baton.icommands_location)
-    setup_helper.set_access(test_with_baton.irods_server.users[0].username, AccessLevel.NONE, path)
+    user = test_with_baton.irods_server.users[0]
+    user_with_zone = "%s#%s" % (user.username, user.zone)
+    setup_helper.set_access(user_with_zone, AccessLevel.NONE, path)
     for access_control in access_controls:
-        setup_helper.set_access(access_control.user_or_group, _access_level_conversion[access_control.level], path)
+        setup_helper.set_access(str(access_control.user), _access_level_conversion[access_control.level], path)
 
 
 def create_data_object(test_with_baton: TestWithBaton, name: str, metadata: IrodsMetadata=IrodsMetadata(),
@@ -67,7 +69,7 @@ def create_data_object(test_with_baton: TestWithBaton, name: str, metadata: Irod
     setup_helper.run_icommand(["irm", "-n", "0", path])
 
     if access_controls is None:
-        access_controls = [AccessControl(user.username, AccessControl.Level.OWN)]
+        access_controls = [AccessControl(User(user.username, user.zone), AccessControl.Level.OWN)]
     else:
         _set_access_controls(test_with_baton, path, access_controls)
 
@@ -95,7 +97,7 @@ def create_collection(test_with_baton: TestWithBaton, name: str, metadata: Irods
     setup_helper.add_metadata_to(path, metadata)
 
     if access_controls is None:
-        access_controls = [AccessControl(user.username, AccessControl.Level.OWN)]
+        access_controls = [AccessControl(User(user.username, user.zone), AccessControl.Level.OWN)]
     else:
         _set_access_controls(test_with_baton, path, access_controls)
 

@@ -2,11 +2,13 @@ from abc import ABCMeta
 from copy import copy
 from datetime import datetime
 from enum import Enum, unique
-from typing import Iterable, List, Set
+from typing import Iterable, List, Set, Union, Any
 import re
 
 import hgicommon
 from hgicommon.models import Model
+
+_NAME_ZONE_SEGREGATOR = "#"
 
 
 class Timestamped(Model, metaclass=ABCMeta):
@@ -33,6 +35,50 @@ class DataObjectReplica(Timestamped):
         self.up_to_date = up_to_date
 
 
+class User(Model):
+    """
+    Representation of a user of the iRODS system. A user may be an individual or a group. Users are considered equal to
+    their string representations: "name#zone".
+    """
+    @staticmethod
+    def create_from_str(name_and_zone: str):
+        """
+        Factory method for creating a user from a string in the form `name#zone`.
+        :param name_and_zone: the user's name followed by hash followed by the user's zone
+        :return: the created user
+        """
+        if _NAME_ZONE_SEGREGATOR not in name_and_zone:
+            raise ValueError("User's zone not set")
+        name, zone = name_and_zone.split(_NAME_ZONE_SEGREGATOR)
+        if len(name) == 0:
+            raise ValueError("User's name cannot be blank")
+        if len(zone) == 0:
+            raise ValueError("User's zone cannot be blank")
+        return User(name, zone)
+
+    def __init__(self, name: str, zone: str):
+        self.name = name
+        self.zone = zone
+
+    def __str__(self) -> str:
+        return "%s%s%s" % (self.name, _NAME_ZONE_SEGREGATOR, self.zone)
+
+    def __eq__(self, other: Any) -> bool:
+        if isinstance(other, User):
+            return self.name == other.name and self.zone == other.zone
+        elif isinstance(other, str):
+            try:
+                other = User.create_from_str(other)
+                return self == other
+            except:
+                return False
+        else:
+            return False
+
+    def __hash__(self) -> str:
+        return hash(str(self))
+
+
 class AccessControl(Model):
     """
     Model of an iRODS Access Control item (from an ACL).
@@ -44,9 +90,20 @@ class AccessControl(Model):
         WRITE = 2
         OWN = 3
 
-    def __init__(self, user_or_group: str, level: Level):
-        self.user_or_group = user_or_group
+    def __init__(self, user: Union[str, User], level: Level):
+        if isinstance(user, str):
+            user = User.create_from_str(user)
+        self._user = None
+        self.user = user
         self.level = level
+
+    @property
+    def user(self) -> User:
+        return self._user
+
+    @user.setter
+    def user(self, user: User):
+        self._user = user
 
 
 class IrodsEntity(Model, metaclass=ABCMeta):
