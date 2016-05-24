@@ -93,8 +93,8 @@ class _BatonAccessControlMapper(BatonRunner, AccessControlMapper, metaclass=ABCM
             users = [users]
 
         for i in range(len(users)):
-            if type(users[i]) != User:
-                assert users[i] == str
+            if not isinstance(users[i], User):
+                assert isinstance(users[i], str)
                 user = User.create_from_str(users[i])
                 users[i] = user
 

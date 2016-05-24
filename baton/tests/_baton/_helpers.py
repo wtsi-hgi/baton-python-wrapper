@@ -38,7 +38,7 @@ def _set_access_controls(test_with_baton: TestWithBaton, path: str, access_contr
     user_with_zone = "%s#%s" % (user.username, user.zone)
     setup_helper.set_access(user_with_zone, AccessLevel.NONE, path)
     for access_control in access_controls:
-        setup_helper.set_access(access_control.user, _access_level_conversion[access_control.level], path)
+        setup_helper.set_access(str(access_control.user), _access_level_conversion[access_control.level], path)
 
 
 def create_data_object(test_with_baton: TestWithBaton, name: str, metadata: IrodsMetadata=IrodsMetadata(),

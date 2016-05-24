@@ -12,11 +12,7 @@ from baton.tests._baton._settings import BATON_SETUP
 from testwithbaton.api import TestWithBaton
 from testwithbaton.helpers import SetupHelper
 
-_USERS = [
-    User("user_1", "zone_1"),
-    User("user_2", "zone_2"),
-    User("user_3", "zone_3")
-]
+_USERNAMES = ["user_1", "user_2", "user_3"]
 
 _TEST_ENTITY_TREE = CollectionNode("top", [
     CollectionNode("middle_1", [
@@ -55,12 +51,15 @@ class _TestBatonAccessControlMapper(unittest.TestCase):
         self.setup_helper = SetupHelper(self.test_with_baton.icommands_location)
         self.mapper = self.create_mapper()
 
-        for username in _USERS:
-            self.setup_helper.create_user(username, self.test_with_baton.irods_server.users[0].zone)
+        self.users = []
+        for username in _USERNAMES:
+            user = User(username, self.test_with_baton.irods_server.users[0].zone)
+            self.setup_helper.create_user(user.name, user.zone)
+            self.users.append(user)
 
-        self.access_controls = [AccessControl(_USERS[0], AccessControl.Level.WRITE),
-                                AccessControl(_USERS[1], AccessControl.Level.READ)]
-        self.access_control = AccessControl(_USERS[2], AccessControl.Level.OWN)
+        self.access_controls = [AccessControl(self.users[0], AccessControl.Level.WRITE),
+                                AccessControl(self.users[1], AccessControl.Level.READ)]
+        self.access_control = AccessControl(self.users[2], AccessControl.Level.OWN)
 
     def tearDown(self):
         self.test_with_baton.tear_down()
@@ -148,7 +147,7 @@ class _TestBatonAccessControlMapper(unittest.TestCase):
     def test_revoke_access_controls_using_string_representation_of_user(self):
         entity = self.create_irods_entity(NAMES[0], [self.access_control])
         self.mapper.revoke(entity.path, [str(self.access_control.user)])
-        self.assertEqual(self.mapper.get_all(entity.path), {})
+        self.assertEqual(self.mapper.get_all(entity.path), set())
 
     def test_revoke_all_with_invalid_path(self):
         self.assertRaises(FileNotFoundError, self.mapper.revoke_all, "/invalid")
@@ -191,12 +190,10 @@ class TestBatonCollectionAccessControlMapper(_TestBatonAccessControlMapper):
     def setUp(self):
         super().setUp()
         self.mapper = self.mapper  # type: BatonCollectionAccessControlMapper
-        self.access_controls = [
-            AccessControl(self.test_with_baton.irods_server.users[0].username, AccessControl.Level.OWN),
-            AccessControl(_USERS[0], AccessControl.Level.READ),
-            AccessControl(_USERS[1], AccessControl.Level.WRITE)
-        ]
         self._collection_count = 0
+        irods_user = self.test_with_baton.irods_server.users[0]
+        default_user = User(irods_user.username, irods_user.zone)
+        self.access_controls.append(AccessControl(default_user, AccessControl.Level.OWN))
         self.entities, self.root_collection = self._create_entity_tree_in_container(_TEST_ENTITY_TREE)
 
     def create_mapper(self) -> BatonCollectionAccessControlMapper:
@@ -206,7 +203,7 @@ class TestBatonCollectionAccessControlMapper(_TestBatonAccessControlMapper):
         return create_collection(self.test_with_baton, name, access_controls=access_controls)
 
     def test_set_with_recursion_for_single_path(self):
-        new_access_controls = {AccessControl(_USERS[2], AccessControl.Level.WRITE)}
+        new_access_controls = {AccessControl(self.users[2], AccessControl.Level.WRITE)}
         self.mapper.set(self.root_collection.path, new_access_controls, recursive=True)
 
         access_controls_for_paths = self.mapper.get_all([entity.path for entity in self.entities])
@@ -215,7 +212,7 @@ class TestBatonCollectionAccessControlMapper(_TestBatonAccessControlMapper):
 
     def test_set_with_recursion_for_multiple_paths(self):
         other_entities, other_root_collection = self._create_entity_tree_in_container(_TEST_ENTITY_TREE)
-        new_access_controls = {AccessControl(_USERS[2], AccessControl.Level.WRITE)}
+        new_access_controls = {AccessControl(self.users[2], AccessControl.Level.WRITE)}
         self.mapper.set([self.root_collection.path, other_root_collection.path], new_access_controls, recursive=True)
 
         access_controls_for_paths = self.mapper.get_all([entity.path for entity in self.entities + other_entities])
@@ -223,7 +220,7 @@ class TestBatonCollectionAccessControlMapper(_TestBatonAccessControlMapper):
             self.assertEqual(access_controls, new_access_controls)
 
     def test_add_with_recursion_for_single_path(self):
-        additional_access_controls = {AccessControl(_USERS[2], AccessControl.Level.WRITE), self.access_controls[0]}
+        additional_access_controls = {AccessControl(self.users[2], AccessControl.Level.WRITE), self.access_controls[0]}
         self.mapper.add_or_replace(self.root_collection.path, additional_access_controls, recursive=True)
 
         access_controls_for_paths = self.mapper.get_all([entity.path for entity in self.entities])
@@ -233,7 +230,7 @@ class TestBatonCollectionAccessControlMapper(_TestBatonAccessControlMapper):
 
     def test_add_with_recursion_for_multiple_paths(self):
         other_entities, other_root_collection = self._create_entity_tree_in_container(_TEST_ENTITY_TREE)
-        additional_access_controls = [AccessControl(_USERS[2], AccessControl.Level.WRITE), self.access_controls[0]]
+        additional_access_controls = [AccessControl(self.users[2], AccessControl.Level.WRITE), self.access_controls[0]]
         self.mapper.add_or_replace(
             [self.root_collection.path, other_root_collection.path], additional_access_controls, recursive=True)
 
