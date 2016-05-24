@@ -103,6 +103,15 @@ class TestUser(unittest.TestCase):
     """
     Tests for `User`.
     """
+    def test_create_from_str_with_no_zone_separator(self):
+        self.assertRaises(ValueError, User.create_from_str, "%s%s" % (_NAME, _ZONE))
+
+    def test_create_from_str_with_no_name(self):
+        self.assertRaises(ValueError, User.create_from_str, "#%s" % _ZONE)
+
+    def test_create_from_with_no_zone(self):
+        self.assertRaises(ValueError, User.create_from_str, "%s#" % _NAME)
+
     def test_create_from_str(self):
         user = User.create_from_str("%s#%s" % (_NAME, _ZONE))
         self.assertEqual(user, User(_NAME, _ZONE))
@@ -110,6 +119,45 @@ class TestUser(unittest.TestCase):
     def test_str(self):
         user = User(_NAME, _ZONE)
         self.assertEqual(str(user), "%s#%s" % (_NAME, _ZONE))
+
+
+    def test_not_equal_when_user_compared_to_unrelated(self):
+        user_1 = User(_NAME, _ZONE)
+        self.assertNotEqual(user_1, None)
+
+    def test_not_equal_when_different_users(self):
+        user_1 = User(_NAME, _ZONE)
+        user_2 = User(_NAME, "%s_modified" % _ZONE)
+        self.assertNotEqual(user_1, user_2)
+
+    def test_not_equal_when_different_user_and_string_representation(self):
+        user_1 = User(_NAME, _ZONE)
+        self.assertNotEqual(user_1, "other")
+
+    def test_equal_when_same_user(self):
+        user_1 = User(_NAME, _ZONE)
+        user_2 = User(_NAME, _ZONE)
+        self.assertEqual(user_1, user_2)
+
+    def test_equal_when_same_user_and_string_representation(self):
+        user_1 = User(_NAME, _ZONE)
+        user_2 = str(User(_NAME, _ZONE))
+        self.assertEqual(user_1, user_2)
+
+    def test_hash_equal_when_same_user(self):
+        user_1 = User(_NAME, _ZONE)
+        user_2 = User(_NAME, _ZONE)
+        self.assertEqual(hash(user_1), hash(user_2))
+
+    def test_hash_equal_when_same_user_and_string_representation(self):
+        user_1 = User(_NAME, _ZONE)
+        user_2 = str(User(_NAME, _ZONE))
+        self.assertEqual(hash(user_1), hash(user_2))
+
+    def test_hash_not_equal_when_different_users(self):
+        user_1 = User(_NAME, _ZONE)
+        user_2 = User(_NAME, "%s_modified" % _ZONE)
+        self.assertNotEqual(hash(user_1), hash(user_2))
 
 
 if __name__ == "__main__":

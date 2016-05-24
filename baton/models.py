@@ -2,7 +2,7 @@ from abc import ABCMeta
 from copy import copy
 from datetime import datetime
 from enum import Enum, unique
-from typing import Iterable, List, Set, Union
+from typing import Iterable, List, Set, Union, Any
 import re
 
 import hgicommon
@@ -37,7 +37,8 @@ class DataObjectReplica(Timestamped):
 
 class User(Model):
     """
-    Model of a user of the iRODS system. A user may be an individual or a group.
+    Representation of a user of the iRODS system. A user may be an individual or a group. Users are considered equal to
+    their string representations: "name#zone".
     """
     @staticmethod
     def create_from_str(name_and_zone: str):
@@ -49,6 +50,10 @@ class User(Model):
         if _NAME_ZONE_SEGREGATOR not in name_and_zone:
             raise ValueError("User's zone not set")
         name, zone = name_and_zone.split(_NAME_ZONE_SEGREGATOR)
+        if len(name) == 0:
+            raise ValueError("User's name cannot be blank")
+        if len(zone) == 0:
+            raise ValueError("User's zone cannot be blank")
         return User(name, zone)
 
     def __init__(self, name: str, zone: str):
@@ -57,6 +62,21 @@ class User(Model):
 
     def __str__(self) -> str:
         return "%s%s%s" % (self.name, _NAME_ZONE_SEGREGATOR, self.zone)
+
+    def __eq__(self, other: Any) -> bool:
+        if isinstance(other, User):
+            return self.name == other.name and self.zone == other.zone
+        elif isinstance(other, str):
+            try:
+                other = User.create_from_str(other)
+                return self == other
+            except:
+                return False
+        else:
+            return False
+
+    def __hash__(self) -> str:
+        return hash(str(self))
 
 
 class AccessControl(Model):
