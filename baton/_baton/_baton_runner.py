@@ -103,7 +103,9 @@ class BatonRunner(metaclass=ABCMeta):
         else:
             input_data = str.encode(json.dumps(input_data))
 
-        out, error = process.communicate(input=input_data, timeout=self.timeout_queries_after)
+        timeout_in_seconds = self.timeout_queries_after.total_seconds() if self.timeout_queries_after is not None \
+            else None
+        out, error = process.communicate(input=input_data, timeout=timeout_in_seconds)
         if len(out) == 0 and len(error) > 0:
             raise IOError(error)
 
@@ -112,7 +114,7 @@ class BatonRunner(metaclass=ABCMeta):
     @staticmethod
     def validate_baton_binaries_location(baton_binaries_directory: str) -> bool:
         """
-        Validates that the given directory contains the baton binaries required to use the metadata_mapper.
+        Validates that the given directory contains the baton binaries required to use the runner.
         :param baton_binaries_directory: the directory to check
         :return: whether the directory has the required binaries
         """
