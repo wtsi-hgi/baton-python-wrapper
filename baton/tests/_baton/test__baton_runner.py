@@ -1,5 +1,8 @@
 import unittest
 
+from datetime import timedelta
+from subprocess import TimeoutExpired
+
 from baton._baton._baton_runner import BatonRunner, BatonBinary
 from baton.tests._baton._settings import BATON_SETUP
 from baton.tests._baton._stubs import StubBatonRunner
@@ -37,11 +40,15 @@ class TestBatonRunner(unittest.TestCase):
 
     def test_run_baton_query(self):
         self.test_with_baton.setup()
-        baton_mapper = StubBatonRunner(self.test_with_baton.baton_location)
-
-        baton_out_as_json = baton_mapper.run_baton_query(BatonBinary.BATON)[0]
+        baton_runner = StubBatonRunner(self.test_with_baton.baton_location)
+        baton_out_as_json = baton_runner.run_baton_query(BatonBinary.BATON)[0]
         self.assertIn("avus", baton_out_as_json)
         self.assertEquals(baton_out_as_json["avus"], [])
+
+    def test_run_command_timeout(self):
+        timeout = timedelta(microseconds=1)
+        baton_runner = StubBatonRunner("", timeout_queries_after=timeout, skip_baton_binaries_validation=True)
+        self.assertRaises(TimeoutExpired, baton_runner._run_command, ["sleep", "999"])
 
     def tearDown(self):
         self.test_with_baton.tear_down()
