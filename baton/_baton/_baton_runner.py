@@ -105,7 +105,7 @@ class BatonRunner(metaclass=ABCMeta):
 
         out, error = process.communicate(input=input_data, timeout=self.timeout_queries_after)
         if len(out) == 0 and len(error) > 0:
-            raise IOError(error)
+            raise RuntimeError(error)
 
         return out.decode(output_encoding).rstrip()
 
