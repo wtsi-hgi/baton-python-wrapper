@@ -8,6 +8,9 @@
 ### Added
 - Ability to recursively change access controls.
 
+### Removed
+- Redundant helper scripts.
+
 
 ## 0.5.0 - 2016-05-05
 ### Added

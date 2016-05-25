@@ -11,14 +11,18 @@ Python 3 Wrapper for [baton](https://github.com/wtsi-npg/baton), superseding a
 The wrapper provides access to most of baton's functionality.
 
 
-## How to use in your project
-### Including required libraries
-In ``/requirements.txt`` or in your ``/setup.py`` script:
+## How to use
+### Prerequisites
+- Python >= 3.5
+- baton >= 0.16.3
+
+### Installation
+This library can be installed directly from GitHub:
+```bash
+$ pip3 install git+https://github.com/wtsi-hgi/python-baton-wrapper.git@<commit_id_or_branch_or_tag>#egg=baton
 ```
-git+https://github.com/wtsi-hgi/baton-python-wrapper.git@master#egg=baton
-```
-*See more about using libraries for git repositories in the 
-[pip documentation](https://pip.readthedocs.org/en/1.1/requirements.html#git).*
+
+To declare this library as a dependency of your project, add it to your `requirement.txt` file.
 
 
 ### API
@@ -37,7 +41,7 @@ to the JSON that baton provides, the models do not contain the payloads. They do
 information that baton can retrieve about an entity, including Access Control Lists (ACLs), custom metadata (AVUs),
 the content of collections and information about data object replicas. All methods provide the option to not load AVUs.
 ```python
-from baton.models import DataObject, Collection, SpecificQuery, SearchCriterion, ComparisonOperator
+from baton.models import DataObject, Collection, SearchCriterion, ComparisonOperator
 
 # Get models of data objects or collections at the given path(s) in iRODS
 irods.data_object.get_by_path("/collection/data_object", load_metadata=False)    # type: DataObject:
@@ -123,7 +127,8 @@ library, a custom model of the object should to be made. Then, a subclass of `Ba
 defined to specify how a specific query (or number of specific queries) can be used to retrieve from and/or modify the
 object in iRODS.
 
-The API provides the ability to retrieve the queries that are installed on an iRODS server: 
+The API provides the ability to retrieve the queries that are installed on an iRODS server (ironically, by use of a 
+specific query!):
 ```python
 from baton.models import SpecificQuery
 
@@ -154,8 +159,27 @@ acl = json.loads(acl_as_json_string, cls=AccessControlJSONDecoder)
 ```
 
 
-## How to develop
+## Development
+### Setup
+Install both library dependencies and the dependencies needed for testing:
+```bash
+$ pip3 install -q -r requirements.txt
+$ pip3 install -q -r test_requirements.txt
+```
+
 ### Testing
-#### Locally
-To run the tests, use ``./scripts/run-tests.sh`` from the project's root directory. This script will use ``pip`` to 
-install all requirements for running the tests (use `virtualenv` if necessary).
+Using nosetests, in the project directory, run:
+```bash
+$ nosetests -v --cover-inclusive --tests baton/tests, baton/tests/_baton
+```
+
+To generate a test coverage report with nosetests:
+```bash
+$ nosetests -v --with-coverage --cover-package=baton --cover-inclusive --tests baton/tests, baton/tests/_baton
+```
+
+
+## License
+[GPL 3 license](LICENSE.txt).
+
+Copyright (c) 2015, 2016 Genome Research Limited
