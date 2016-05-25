@@ -36,13 +36,10 @@ class TestDataObjectReplicaCollection(unittest.TestCase):
         self._collection = DataObjectReplicaCollection(self._replicas)
 
     def test_init_with_no_initial(self):
-        self.assertEqual(len(DataObjectReplicaCollection().get_all()), 0)
+        self.assertEqual(len(DataObjectReplicaCollection()), 0)
 
     def test_init_with_initial(self):
         self.assertCountEqual(self._collection, self._replicas)
-
-    def test_get_all(self):
-        self.assertCountEqual(self._collection.get_all(), self._replicas)
 
     def test_get_by_number_when_does_not_exist(self):
         self.assertRaises(KeyError, self._collection.get_by_number, -1)
@@ -71,14 +68,14 @@ class TestDataObjectReplicaCollection(unittest.TestCase):
     def test_remove_by_number_when_exists(self):
         self._collection.remove(self._replicas[0].number)
         self.assertRaises(KeyError, self._collection.get_by_number, self._replicas[0].number)
-        self.assertNotIn(self._replicas[0], self._collection.get_all())
+        self.assertNotIn(self._replicas[0], self._collection)
 
     def test_remove_by_object_when_not_exists(self):
         self.assertRaises(ValueError, self._collection.remove, self._other_replica)
 
     def test_remove_by_object_when_exists(self):
         self._collection.remove(self._replicas[0])
-        self.assertNotIn(self._replicas[0], self._collection.get_all())
+        self.assertNotIn(self._replicas[0], self._collection)
 
     def test_remove_by_unsupported_type(self):
         self.assertRaises(TypeError, self._collection.remove, None)

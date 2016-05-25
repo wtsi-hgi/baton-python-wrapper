@@ -75,13 +75,6 @@ class DataObjectReplicaCollection(Sized, Iterable, Container):
         for data_object_replica in data_object_replicas:
             self.add(data_object_replica)
 
-    def get_all(self) -> Sequence[DataObjectReplica]:
-        """
-        Gets all of the replica in this collection.
-        :return: the replica in this collection
-        """
-        return list(self._data.values())
-
     def get_by_number(self, number: int) -> Optional[DataObjectReplica]:
         """
         Gets the data object replica in this collection with the given number. Will return `None` if such replica does

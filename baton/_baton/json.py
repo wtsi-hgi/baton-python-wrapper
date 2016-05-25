@@ -79,7 +79,7 @@ class DataObjectReplicaCollectionJSONEncoder(JSONEncoder):
     def default(self, data_object_replica_collection: DataObjectReplicaCollection) -> PrimitiveJsonSerializableType:
         if not isinstance(data_object_replica_collection, DataObjectReplicaCollection):
             return super().default(data_object_replica_collection)
-        return [self._replica_encoder.default(replica) for replica in data_object_replica_collection.get_all()]
+        return [self._replica_encoder.default(replica) for replica in data_object_replica_collection]
 
 class DataObjectReplicaCollectionJSONDecoder(JSONDecoder, ParsedJSONDecoder):
     def __init__(self, *args, **kwargs):
