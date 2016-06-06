@@ -4,8 +4,8 @@
 
 
 ## Introduction
-Python 3 Wrapper for [baton](https://github.com/wtsi-npg/baton), superseding a 
-[previous implementation in meta-datacheck]
+Python 3 Wrapper for [baton](https://github.com/wtsi-npg/baton), superseding a [previous implementation in 
+meta-datacheck]
 (https://github.com/wtsi-hgi/metadata-check/blob/9cd5c41b0f2e254fc1d6249a14752bd428587bb7/irods_baton/baton_wrapper.py).
 
 The wrapper provides access to most of baton's functionality.
@@ -63,7 +63,7 @@ irods.data_object.get_all_in_collection(["/collection", "/other_collection"])   
 The API provides the ability to both retrieve and manipulate the custom metadata (AVUs) associated with data objects and
 collections.
 
-* Warning: there is currently no support for reading/writing the unit property of AVUs. *
+*Warning: there is currently no support for reading/writing the unit property of AVUs.*
 
 Although the type of metadata is the same for both data objects and collections, due to the way iRODS works, it is 
 necessary to know the type of entity that a path corresponds to in order to retrieve metadata. 
@@ -145,17 +145,17 @@ can be used with [Python's built in `json` package](https://docs.python.org/3/li
 import json
 from baton.json import DataObjectJSONEncoder, DataObjectJSONDecoder, CollectionJSONEncoder, CollectionJSONDecoder, IrodsMetadataJSONEncoder, IrodsMetadataJSONDecoder, AccessControlJSONEncoder, AccessControlJSONDecoder
 
-data_object_as_json_string = json.dumps(data_object, cls=DataObjectJSONEncoder)
-data_object = json.loads(data_object_as_json_string, cls=DataObjectJSONDecoder)
+data_object_as_json_string = json.dumps(data_object, cls=DataObjectJSONEncoder)     # type: str
+data_object = json.loads(data_object_as_json_string, cls=DataObjectJSONDecoder)     # type: DataObject
 
-collection_as_json_string = json.dumps(collection, cls=CollectionJSONEncoder)
-collection = json.loads(collection_as_json_string, cls=CollectionJSONDecoder)
+collection_as_json_string = json.dumps(collection, cls=CollectionJSONEncoder)   # type: str
+collection = json.loads(collection_as_json_string, cls=CollectionJSONDecoder)   # type: Collection
 
-metadata_as_json_string = json.dumps(metadata, cls=IrodsMetadataJSONEncoder)
-metadata = json.loads(metadata_as_json_string, cls=IrodsMetadataJSONDecoder)
+metadata_as_json_string = json.dumps(metadata, cls=IrodsMetadataJSONEncoder)    # type: str
+metadata = json.loads(metadata_as_json_string, cls=IrodsMetadataJSONDecoder)    # type: IrodsMetadata
 
-acl_as_json_string = json.dumps(metadata, cls=AccessControlJSONEncoder)
-acl = json.loads(acl_as_json_string, cls=AccessControlJSONDecoder)
+acl_as_json_string = json.dumps(metadata, cls=AccessControlJSONEncoder)     # type: str
+acl = json.loads(acl_as_json_string, cls=AccessControlJSONDecoder)  # type: List[AccessControl]
 ```
 
 
@@ -166,6 +166,10 @@ Install both library dependencies and the dependencies needed for testing:
 $ pip3 install -q -r requirements.txt
 $ pip3 install -q -r test_requirements.txt
 ```
+*A baton installation is not required.*
+
+Some tests use [Docker](https://www.docker.com) therefore a Docker daemon must be running on the test machine, with the 
+environment variables `DOCKER_TLS_VERIFY`, `DOCKER_HOST` and `DOCKER_CERT_PATH` set.
 
 ### Testing
 Using nosetests, in the project directory, run:

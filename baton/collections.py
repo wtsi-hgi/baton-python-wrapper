@@ -14,6 +14,18 @@ class IrodsMetadata(Metadata):
     superclass, which allows keys to be associated to any value. The current implementation is essentially
     `Dict[str, Set[Any]]` (with convenience methods).
     """
+    @staticmethod
+    def from_metadata(metadata: Metadata) -> Any:
+        """
+        Static factory method to create an equivalent instance of this type from the given `Metadata` instance.
+        :param metadata: the `Metadata` instance to create an instance of this class from
+        :return: the created instance of this class
+        """
+        irods_metadata = IrodsMetadata()
+        for key, value in metadata.items():
+            irods_metadata[key] = {value}
+        return irods_metadata
+
     def __init__(self, seq: Dict[Any, Set]=None):
         super().__init__()
         if seq is not None:
@@ -45,18 +57,6 @@ class IrodsMetadata(Metadata):
     def __setitem__(self, key: str, value: Set[str]):
         assert isinstance(value, collections.Set)
         super().__setitem__(key, value)
-
-    @staticmethod
-    def from_metadata(metadata: Metadata) -> Any:
-        """
-        Static factory method to create an equivalent instance of this type from the given `Metadata` instance.
-        :param metadata: the `Metadata` instance to create an instance of this class from
-        :return: the created instance of this class
-        """
-        irods_metadata = IrodsMetadata()
-        for key, value in metadata.items():
-            irods_metadata[key] = {value}
-        return irods_metadata
 
 
 from baton.models import DataObjectReplica
