@@ -21,20 +21,23 @@ class TestBatonRunner(unittest.TestCase):
     def setUp(self):
         self.test_with_baton = TestWithBaton(baton_setup=BATON_SETUP)
 
+    def tearDown(self):
+        self.test_with_baton.tear_down()
+
     def test_validate_baton_binaries_location_with_invalid_location(self):
-        self.assertFalse(BatonRunner.validate_baton_binaries_location("invalid"))
+        self.assertIsInstance(BatonRunner.validate_baton_binaries_location("invalid"), ValueError)
 
     def test_validate_baton_binaries_location_with_non_binaries_location(self):
-        self.assertFalse(BatonRunner.validate_baton_binaries_location("."))
+        self.assertIsInstance(BatonRunner.validate_baton_binaries_location("."), ValueError)
 
     def test_validate_baton_binaries_location_with_binaries_location(self):
         self.test_with_baton.setup()
-        self.assertTrue(BatonRunner.validate_baton_binaries_location(self.test_with_baton.baton_location))
+        self.assertIsNone(BatonRunner.validate_baton_binaries_location(self.test_with_baton.baton_location))
 
-    def test_instantiate_with_invalid_baton_directory(self):
+    def test_init_with_invalid_baton_directory(self):
         self.assertRaises(ValueError, StubBatonRunner, ".", "")
 
-    def test_instantiate_with_valid_baton_directory(self):
+    def test_init_with_valid_baton_directory(self):
         self.test_with_baton.setup()
         StubBatonRunner(self.test_with_baton.baton_location)
 
@@ -49,9 +52,6 @@ class TestBatonRunner(unittest.TestCase):
         timeout = timedelta(microseconds=1)
         baton_runner = StubBatonRunner("", timeout_queries_after=timeout, skip_baton_binaries_validation=True)
         self.assertRaises(TimeoutExpired, baton_runner._run_command, ["sleep", "999"])
-
-    def tearDown(self):
-        self.test_with_baton.tear_down()
 
 
 if __name__ == "__main__":
