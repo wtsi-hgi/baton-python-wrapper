@@ -82,7 +82,7 @@ class DataObjectReplicaCollection(Sized, Iterable, Container):
         :param number: the number of the data object replica to get
         :return: the data object replica in this collection with the given number
         """
-        return self._data[number]
+        return self._data.get(number, None)
 
     def get_out_of_date(self) -> Sequence[DataObjectReplica]:
         """

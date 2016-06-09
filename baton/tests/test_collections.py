@@ -42,7 +42,7 @@ class TestDataObjectReplicaCollection(unittest.TestCase):
         self.assertCountEqual(self._collection, self._replicas)
 
     def test_get_by_number_when_does_not_exist(self):
-        self.assertRaises(KeyError, self._collection.get_by_number, -1)
+        self.assertIsNone(self._collection.get_by_number(10))
 
     def test_get_by_number_when_exists(self):
         self.assertEqual(self._collection.get_by_number(0), self._replicas[0])
@@ -67,7 +67,7 @@ class TestDataObjectReplicaCollection(unittest.TestCase):
 
     def test_remove_by_number_when_exists(self):
         self._collection.remove(self._replicas[0].number)
-        self.assertRaises(KeyError, self._collection.get_by_number, self._replicas[0].number)
+        self.assertIsNone(self._collection.get_by_number(self._replicas[0].number))
         self.assertNotIn(self._replicas[0], self._collection)
 
     def test_remove_by_object_when_not_exists(self):
