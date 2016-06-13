@@ -19,25 +19,32 @@ class TestIrodsEntity(unittest.TestCase):
         self.path = "/test/path"
         self.access_controls = set([AccessControl(User("user_%s" % i, _ZONE), AccessControl.Level.READ)
                                     for i in range(10)])
-        self.irods_entity = StubIrodsEntity(self.path, self.access_controls)
+        self.entity = StubIrodsEntity(self.path, self.access_controls)
+
+    def test_cannot_create_entity_with_relative_path(self):
+        self.assertRaises(ValueError, type(self.entity), "../data_object")
+
+    def test_can_create_entity_with_root_path(self):
+        # This was fixed in baton 0.16.4
+        self.assertEqual(StubIrodsEntity("/").path, "/")
 
     def test_get_acl(self):
-        self.assertEqual(self.irods_entity.acl, self.access_controls)
+        self.assertEqual(self.entity.acl, self.access_controls)
 
     def test_set_acl(self):
-        self.irods_entity.acl = set()
-        self.assertEqual(self.irods_entity.acl, set())
+        self.entity.acl = set()
+        self.assertEqual(self.entity.acl, set())
 
     def test_get_access_controls(self):
-        self.assertEqual(self.irods_entity.access_controls, self.access_controls)
+        self.assertEqual(self.entity.access_controls, self.access_controls)
 
     def test_set_access_controls(self):
-        self.irods_entity.access_controls = set()
-        self.assertEqual(self.irods_entity.access_controls, set())
+        self.entity.access_controls = set()
+        self.assertEqual(self.entity.access_controls, set())
 
     def test_set_access_controls_converts_to_set(self):
-        self.irods_entity.access_controls = []
-        self.assertEqual(self.irods_entity.access_controls, set())
+        self.entity.access_controls = []
+        self.assertEqual(self.entity.access_controls, set())
 
 
 class TestDataObject(unittest.TestCase):
@@ -46,9 +53,6 @@ class TestDataObject(unittest.TestCase):
     """
     def setUp(self):
         self.entity = DataObject("%s/%s" % (_COLLECTION, _FILE_NAME))
-
-    def test_cannot_create_entity_with_relative_path(self):
-        self.assertRaises(ValueError, type(self.entity), "../data_object")
 
     def test_get_collection_path(self):
         self.assertEquals(self.entity.get_collection_path(), _COLLECTION)
@@ -67,9 +71,6 @@ class TestCollection(unittest.TestCase):
     """
     def setUp(self):
         self.entity = Collection(_COLLECTION)
-
-    def test_cannot_create_entity_with_relative_path(self):
-        self.assertRaises(ValueError, type(self.entity), "../collection")
 
     def test_get_collection_path(self):
         self.assertEquals(self.entity.get_collection_path(), "/collection")

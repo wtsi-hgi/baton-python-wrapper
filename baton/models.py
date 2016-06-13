@@ -111,10 +111,10 @@ class IrodsEntity(Model, metaclass=ABCMeta):
     Model of an entity in iRODS.
     """
     from baton.collections import IrodsMetadata
-    _ABSOLUTE_PATH_REGEX = re.compile("^/.+")
+    _ABSOLUTE_PATH_PATTERN = re.compile("^/.*")
 
     def __init__(self, path: str, access_controls: Iterable[AccessControl]=(), metadata: IrodsMetadata=None):
-        if not re.match(IrodsEntity._ABSOLUTE_PATH_REGEX, path):
+        if not re.match(IrodsEntity._ABSOLUTE_PATH_PATTERN, path):
             raise ValueError("baton does not support the given type of relative path: \"%s\"" % path)
         self.path = path
         self._access_controls = None
