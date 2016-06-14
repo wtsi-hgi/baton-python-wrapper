@@ -5,7 +5,7 @@
 
 ## Introduction
 Python 3 Wrapper for [baton](https://github.com/wtsi-npg/baton), superseding a [previous implementation in 
-meta-datacheck]
+metadata-check]
 (https://github.com/wtsi-hgi/metadata-check/blob/9cd5c41b0f2e254fc1d6249a14752bd428587bb7/irods_baton/baton_wrapper.py).
 
 The wrapper provides access to most of baton's functionality.
@@ -17,7 +17,12 @@ The wrapper provides access to most of baton's functionality.
 - baton >= 0.16.3
 
 ### Installation
-This library can be installed directly from GitHub:
+Stable releases can be installed via PyPI:
+```bash
+$ pip3 install baton
+```
+
+Bleeding edge versions can be installed directly from GitHub:
 ```bash
 $ pip3 install git+https://github.com/wtsi-hgi/python-baton-wrapper.git@<commit_id_or_branch_or_tag>#egg=baton
 ```
@@ -184,6 +189,6 @@ $ nosetests -v --with-coverage --cover-package=baton --cover-inclusive --tests b
 
 
 ## License
-[GPL 3 license](LICENSE.txt).
+[LGPL license](LICENSE.txt).
 
 Copyright (c) 2015, 2016 Genome Research Limited
