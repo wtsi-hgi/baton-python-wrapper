@@ -17,7 +17,7 @@ The wrapper provides access to most of baton's functionality.
 - baton >= 0.16.3
 
 ### Installation
-Stable releases can be installed via PyPI:
+Stable releases can be installed via [PyPI](https://pypi.python.org/pypi?name=baton&:action=display):
 ```bash
 $ pip3 install baton
 ```
