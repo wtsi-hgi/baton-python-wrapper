@@ -183,8 +183,13 @@ class DataObjectJSONEncoder(_DataObjectJSONEncoder):
 class DataObjectJSONDecoder(_DataObjectJSONDecoder):
     _DATE_PARSER = parser()
 
-    def decode_parsed(self, json_as_dict: Dict):
+    def decode_parsed(self, json_as_dict: Dict) -> DataObject:
+        if isinstance(json_as_dict, List):
+            return [self.decode_parsed(data_object_as_json) for data_object_as_json in json_as_dict]
         data_object = super().decode_parsed(json_as_dict)
+        assert isinstance(data_object, DataObject)
+        assert len(data_object.replicas) >= 1
+        assert len(data_object.replicas) == len(json_as_dict["timestamps"])
         timestamps_as_json = json_as_dict["timestamps"]
         DataObjectJSONDecoder._deserialize_timestamps_as_json(data_object, timestamps_as_json)
         return data_object
