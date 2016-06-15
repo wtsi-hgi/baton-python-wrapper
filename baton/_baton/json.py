@@ -1,6 +1,6 @@
 import json
 from json import JSONEncoder, JSONDecoder
-from typing import Dict, List
+from typing import Dict, List, Union
 
 from dateutil.parser import parser
 
@@ -11,7 +11,9 @@ from baton._baton._constants import BATON_ACL_LEVELS, BATON_ACL_OWNER_PROPERTY, 
     BATON_DATA_OBJECT_PROPERTY, BATON_REPLICA_PROPERTY, BATON_SEARCH_CRITERION_ATTRIBUTE_PROPERTY, \
     BATON_SEARCH_CRITERION_VALUE_PROPERTY, BATON_SEARCH_CRITERION_COMPARISON_OPERATOR_PROPERTY, \
     BATON_SEARCH_CRITERION_COMPARISON_OPERATORS, BATON_SPECIFIC_QUERY_SQL_PROPERTY, \
-    BATON_SPECIFIC_QUERY_ARGUMENTS_PROPERTY, BATON_SPECIFIC_QUERY_ALIAS_PROPERTY, BATON_ACL_ZONE_PROPERTY
+    BATON_SPECIFIC_QUERY_ARGUMENTS_PROPERTY, BATON_SPECIFIC_QUERY_ALIAS_PROPERTY, BATON_ACL_ZONE_PROPERTY, \
+    BATON_TIMESTAMP_LAST_MODIFIED_PROPERTY, BATON_TIMESTAMP_CREATED_PROPERTY, BATON_TIMESTAMP_PROPERTY, \
+    BATON_TIMESTAMP_REPLICA_NUMBER_LINK_PROPERTY
 from baton.collections import IrodsMetadata, DataObjectReplicaCollection
 from baton.models import AccessControl, DataObjectReplica, DataObject, IrodsEntity, Collection, PreparedSpecificQuery, \
     SpecificQuery, SearchCriterion, User
@@ -150,7 +152,8 @@ _data_object_json_mappings = [
                         object_property_getter=lambda irods_entity: irods_entity.get_name()),
     JsonPropertyMapping(BATON_REPLICA_PROPERTY, "replicas", "replicas",
                         encoder_cls=DataObjectReplicaCollectionJSONEncoder,
-                        decoder_cls=DataObjectReplicaCollectionJSONDecoder)
+                        decoder_cls=DataObjectReplicaCollectionJSONDecoder,
+                        optional=True)
 ]
 _DataObjectJSONEncoder = MappingJSONEncoderClassBuilder(
     DataObject, _data_object_json_mappings, (_IrodsEntityJSONEncoder, )).build()
@@ -159,51 +162,53 @@ _DataObjectJSONDecoder = MappingJSONDecoderClassBuilder(
 
 # Issue with baton https://github.com/wtsi-npg/baton/issues/146 makes dealing with timestamps a pain
 class DataObjectJSONEncoder(_DataObjectJSONEncoder):
-    def default(self, serializable: DataObject):
+    def default(self, serializable: DataObject) -> Dict:
         data_object_as_json = super().default(serializable)
-        DataObjectJSONEncoder._serialize_timestamps(data_object_as_json, serializable)
+        if serializable.replicas is not None:
+            DataObjectJSONEncoder._serialize_timestamps(data_object_as_json, serializable)
         return data_object_as_json
 
     @staticmethod
     def _serialize_timestamps(data_object_as_json: Dict, data_object: DataObject):
-        data_object_as_json["timestamps"] = []
-        timestamps_as_json = data_object_as_json["timestamps"]
+        data_object_as_json[BATON_TIMESTAMP_PROPERTY] = []
+        timestamps_as_json = data_object_as_json[BATON_TIMESTAMP_PROPERTY]
         for replica in data_object.replicas:
             if replica.created is not None:
                 timestamps_as_json.append({
-                    "created": replica.created.isoformat(),
-                    "replicates": replica.number
+                    BATON_TIMESTAMP_CREATED_PROPERTY: replica.created.isoformat(),
+                    BATON_TIMESTAMP_REPLICA_NUMBER_LINK_PROPERTY: replica.number
                 })
             if replica.last_modified is not None:
                 timestamps_as_json.append({
-                    "modified": replica.last_modified.isoformat(),
-                    "replicates": replica.number
+                    BATON_TIMESTAMP_LAST_MODIFIED_PROPERTY: replica.last_modified.isoformat(),
+                    BATON_TIMESTAMP_REPLICA_NUMBER_LINK_PROPERTY: replica.number
                 })
 
 class DataObjectJSONDecoder(_DataObjectJSONDecoder):
     _DATE_PARSER = parser()
 
-    def decode_parsed(self, json_as_dict: Dict) -> DataObject:
+    def decode_parsed(self, json_as_dict: Union[Dict, List[Dict]]) -> DataObject:
         if isinstance(json_as_dict, List):
             return [self.decode_parsed(data_object_as_json) for data_object_as_json in json_as_dict]
         data_object = super().decode_parsed(json_as_dict)
         assert isinstance(data_object, DataObject)
-        assert len(data_object.replicas) >= 1
-        assert len(data_object.replicas) == len(json_as_dict["timestamps"])
-        timestamps_as_json = json_as_dict["timestamps"]
-        DataObjectJSONDecoder._deserialize_timestamps_as_json(data_object, timestamps_as_json)
+        if data_object.replicas is not None:
+            timestamps_as_json = json_as_dict[BATON_TIMESTAMP_PROPERTY]
+            DataObjectJSONDecoder._deserialize_timestamps_as_json(data_object, timestamps_as_json)
         return data_object
 
     @staticmethod
     def _deserialize_timestamps_as_json(data_object: DataObject, timestamps_as_json: Dict):
         for timestamp_as_json in timestamps_as_json:
-            replica_number = timestamp_as_json["replicates"]
+            replica_number = timestamp_as_json[BATON_TIMESTAMP_REPLICA_NUMBER_LINK_PROPERTY]
             replica = data_object.replicas.get_by_number(replica_number)
             assert replica is not None
-            if "created" in timestamp_as_json:
-                replica.created = DataObjectJSONDecoder._DATE_PARSER.parse(timestamp_as_json["created"])
-            elif "modified" in timestamp_as_json:
-                replica.last_modified = DataObjectJSONDecoder._DATE_PARSER.parse(timestamp_as_json["modified"])
+            if BATON_TIMESTAMP_CREATED_PROPERTY in timestamp_as_json:
+                created_date_as_json = timestamp_as_json[BATON_TIMESTAMP_CREATED_PROPERTY]
+                replica.created = DataObjectJSONDecoder._DATE_PARSER.parse(created_date_as_json)
+            elif BATON_TIMESTAMP_LAST_MODIFIED_PROPERTY in timestamp_as_json:
+                last_modified_date_as_json = timestamp_as_json[BATON_TIMESTAMP_LAST_MODIFIED_PROPERTY]
+                replica.last_modified = DataObjectJSONDecoder._DATE_PARSER.parse(last_modified_date_as_json)
 
 
 # JSON encoder/decoder for `Collection`

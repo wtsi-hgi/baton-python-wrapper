@@ -47,11 +47,6 @@ def create_data_object_with_baton_json_representation() -> Tuple[DataObject, Dic
         _data_object_as_json = baton_runner.run_baton_query(
                 BatonBinary.BATON_LIST, ["--acl", "--avu", "--replicate", "--timestamp"], input_data=baton_query)[0]
 
-        # TODO: Required?ß
-        # Not interested in redundant information
-        # for access_control in _data_object_as_json[BATON_ACL_PROPERTY]:
-        #     del access_control["zone"]
-
     return deepcopy(_data_object), deepcopy(_data_object_as_json)
 
 

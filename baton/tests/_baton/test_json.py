@@ -3,6 +3,7 @@ import unittest
 
 from frozendict import frozendict
 
+from baton._baton._constants import BATON_AVU_PROPERTY, BATON_ACL_PROPERTY, BATON_REPLICA_PROPERTY
 from baton._baton.json import DataObjectReplicaJSONEncoder, AccessControlJSONEncoder, DataObjectJSONEncoder, \
     IrodsMetadataJSONEncoder, AccessControlJSONDecoder, DataObjectReplicaJSONDecoder, IrodsMetadataJSONDecoder, \
     DataObjectJSONDecoder, DataObjectReplicaCollectionJSONEncoder, DataObjectReplicaCollectionJSONDecoder, \
@@ -78,7 +79,6 @@ class TestDataObjectReplicaJSONDecoder(unittest.TestCase):
         # Hack to cope with https://github.com/wtsi-npg/baton/issues/146
         self.replica.created = None
         self.replica.last_modified = None
-
 
     def test_decode(self):
         decoded = DataObjectReplicaJSONDecoder().decode(self.replica_as_json_string)
@@ -219,6 +219,24 @@ class TestDataObjectJSONDecoder(unittest.TestCase):
         self.data_object, self.data_object_as_json = create_data_object_with_baton_json_representation()
         self.data_object_as_json_string = json.dumps(self.data_object_as_json)
 
+    def test_decode_when_no_metadata(self):
+        del self.data_object_as_json[BATON_AVU_PROPERTY]
+        self.data_object.metadata = None
+        decoded = DataObjectJSONDecoder().decode(json.dumps(self.data_object_as_json))
+        self.assertEqual(decoded, self.data_object)
+
+    def test_decode_when_no_access_controls(self):
+        del self.data_object_as_json[BATON_ACL_PROPERTY]
+        self.data_object.access_controls = None
+        decoded = DataObjectJSONDecoder().decode(json.dumps(self.data_object_as_json))
+        self.assertEqual(decoded, self.data_object)
+
+    def test_decode_when_no_replicas(self):
+        del self.data_object_as_json[BATON_REPLICA_PROPERTY]
+        self.data_object.replicas = None
+        decoded = DataObjectJSONDecoder().decode(json.dumps(self.data_object_as_json))
+        self.assertEqual(decoded, self.data_object)
+
     def test_decode(self):
         decoded = DataObjectJSONDecoder().decode(self.data_object_as_json_string)
         self.assertEqual(decoded, self.data_object)
@@ -251,6 +269,18 @@ class TestCollectionJSONDecoder(unittest.TestCase):
     def setUp(self):
         self.collection, self.collection_as_json = create_collection_with_baton_json_representation()
         self.collection_as_json_string = json.dumps(self.collection_as_json)
+
+    def test_decode_when_no_metadata(self):
+        del self.collection_as_json[BATON_AVU_PROPERTY]
+        self.collection.metadata = None
+        decoded = CollectionJSONDecoder().decode(json.dumps(self.collection_as_json))
+        self.assertEqual(decoded, self.collection)
+
+    def test_decode_when_no_access_controls(self):
+        del self.collection_as_json[BATON_ACL_PROPERTY]
+        self.collection.access_controls = None
+        decoded = CollectionJSONDecoder().decode(json.dumps(self.collection_as_json))
+        self.assertEqual(decoded, self.collection)
 
     def test_decode(self):
         decoded = CollectionJSONDecoder().decode(self.collection_as_json_string)

@@ -2,7 +2,7 @@ from abc import ABCMeta
 from copy import copy
 from datetime import datetime
 from enum import Enum, unique
-from typing import Iterable, List, Set, Union, Any
+from typing import Iterable, List, Set, Union, Any, Optional
 import re
 
 import hgicommon
@@ -26,8 +26,8 @@ class DataObjectReplica(Timestamped):
     Model of a file replicate in iRODS.
     """
     def __init__(self, number: int, checksum: str, host: str=None, resource_name: str=None, up_to_date: bool=None,
-                 *args, **kwargs):
-        super().__init__(*args, **kwargs)
+                 created: datetime = None, last_modified: datetime = None):
+        super().__init__(created, last_modified)
         self.number = number
         self.checksum = checksum
         self.host = host
@@ -113,7 +113,7 @@ class IrodsEntity(Model, metaclass=ABCMeta):
     from baton.collections import IrodsMetadata
     _ABSOLUTE_PATH_PATTERN = re.compile("^/.*")
 
-    def __init__(self, path: str, access_controls: Iterable[AccessControl]=(), metadata: IrodsMetadata=None):
+    def __init__(self, path: str, access_controls: Iterable[AccessControl]=None, metadata: IrodsMetadata=None):
         if not re.match(IrodsEntity._ABSOLUTE_PATH_PATTERN, path):
             raise ValueError("baton does not support the given type of relative path: \"%s\"" % path)
         self.path = path
@@ -122,7 +122,7 @@ class IrodsEntity(Model, metaclass=ABCMeta):
         self.metadata = metadata
 
     @property
-    def acl(self) -> Set[AccessControl]:
+    def acl(self) -> Optional[Set[AccessControl]]:
         return self.access_controls
 
     @acl.setter
@@ -130,21 +130,22 @@ class IrodsEntity(Model, metaclass=ABCMeta):
         self.access_controls = access_controls
 
     @property
-    def access_controls(self) -> Set[AccessControl]:
+    def access_controls(self) -> Optional[Set[AccessControl]]:
         """
         Gets a copy of the access controls associated to this entity.
         :return: copy of the access controls
         """
-        assert isinstance(self._access_controls, Set)
         return copy(self._access_controls)
 
     @access_controls.setter
-    def access_controls(self, access_controls: Iterable[AccessControl]):
+    def access_controls(self, access_controls: Optional[Iterable[AccessControl]]):
         """
         Sets the access controls associated to this entity.
-        :param access_controls: the access controls (immutable)
+        :param access_controls: the access controls (immutable) or `None`
         """
-        self._access_controls = set(access_controls)
+        if access_controls is not None:
+            access_controls = set(access_controls)
+        self._access_controls = access_controls
 
     def get_collection_path(self) -> str:
         """
@@ -167,11 +168,18 @@ class DataObject(IrodsEntity):
     """
     from baton.collections import IrodsMetadata
 
-    def __init__(self, path: str, access_controls: Iterable[AccessControl]=(), metadata: IrodsMetadata=None,
-                 replicas: Iterable[DataObjectReplica]=()):
+    def __init__(self, path: str, access_controls: Iterable[AccessControl]=None,
+                 metadata: IrodsMetadata=None, replicas: Iterable[DataObjectReplica]=None):
+        """
+        Constructor.
+        :param path: path of data object in iRODS
+        :param access_controls: access controls or `None` if not known
+        :param metadata: iRODS metadata or `None` if not known
+        :param replicas: replicas or `None` if not known
+        """
         from baton.collections import DataObjectReplicaCollection
         super().__init__(path, access_controls, metadata)
-        self.replicas = DataObjectReplicaCollection(replicas)
+        self.replicas = DataObjectReplicaCollection(replicas) if replicas is not None else None
 
 
 class Collection(IrodsEntity, Timestamped):

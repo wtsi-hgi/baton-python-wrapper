@@ -1,4 +1,9 @@
 # Change Log
+## [Unreleased]
+### Changed
+- Replicas and access controls are now optional properties in entities' JSON representation.
+
+
 ## 1.0.0 - 2016-06-14
 ### Changed
 - Representation of user used in access control ([#32](https://github.com/wtsi-hgi/python-baton-wrapper/issues/32)).
