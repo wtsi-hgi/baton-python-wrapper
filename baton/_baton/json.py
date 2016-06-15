@@ -162,7 +162,9 @@ _DataObjectJSONDecoder = MappingJSONDecoderClassBuilder(
 
 # Issue with baton https://github.com/wtsi-npg/baton/issues/146 makes dealing with timestamps a pain
 class DataObjectJSONEncoder(_DataObjectJSONEncoder):
-    def default(self, serializable: DataObject) -> Dict:
+    def default(self, serializable: Union[DataObject, List[DataObject]]) -> Dict:
+        if isinstance(serializable, List):
+            return [self.default(data_object) for data_object in serializable]
         data_object_as_json = super().default(serializable)
         if serializable.replicas is not None:
             DataObjectJSONEncoder._serialize_timestamps(data_object_as_json, serializable)

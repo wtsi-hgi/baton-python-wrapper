@@ -175,13 +175,29 @@ class TestDataObjectJSONEncoder(unittest.TestCase):
     """
     Tests for `DataObjectJSONEncoder`.
     """
+    @staticmethod
+    def _fix_set_as_list_in_json_issue(data_object_as_json: dict):
+        """
+        Work around issue that (unordered) set is represented as (ordered) list in JSON
+        :param data_object_as_json: a JSON representation of a `DataObject` instance
+        """
+        avus = set()
+        for avu in data_object_as_json[BATON_AVU_PROPERTY]:
+            # Using `frozendict` as a hashable dict
+            avus.add(frozendict(avu))
+        data_object_as_json[BATON_AVU_PROPERTY] = avus
+
     def setUp(self):
         self.data_object, self.data_object_as_json = create_data_object_with_baton_json_representation()
-        self.maxDiff = None
 
     def test_default(self):
         encoded = DataObjectJSONEncoder().default(self.data_object)
         self._assert_data_object_as_json_equal(encoded, self.data_object_as_json)
+
+    def test_default_with_multiple(self):
+        encoded = DataObjectJSONEncoder().default([self.data_object, self.data_object])
+        for data_object in encoded:
+            self._assert_data_object_as_json_equal(self.data_object_as_json, data_object)
 
     def test_with_json_dumps(self):
         encoded = json.dumps(self.data_object, cls=DataObjectJSONEncoder)
@@ -196,19 +212,6 @@ class TestDataObjectJSONEncoder(unittest.TestCase):
         TestDataObjectJSONEncoder._fix_set_as_list_in_json_issue(target)
         TestDataObjectJSONEncoder._fix_set_as_list_in_json_issue(actual)
         self.assertEqual(target, actual)
-
-    @staticmethod
-    def _fix_set_as_list_in_json_issue(data_object_as_json: dict):
-        """
-        Work around issue that (unordered) set is represented as (ordered) list in JSON
-        :param data_object_as_json: a JSON representation of a `DataObject` instance
-        """
-        avus = set()
-        for avu in data_object_as_json["avus"]:
-            # Using `frozendict` as a hashable dict
-            avus.add(frozendict(avu))
-
-        data_object_as_json["avus"] = avus
 
 
 class TestDataObjectJSONDecoder(unittest.TestCase):
@@ -241,6 +244,11 @@ class TestDataObjectJSONDecoder(unittest.TestCase):
         decoded = DataObjectJSONDecoder().decode(self.data_object_as_json_string)
         self.assertEqual(decoded, self.data_object)
 
+    def test_decode_multiple(self):
+        decoded = DataObjectJSONDecoder().decode(
+            "[%s, %s]" % (self.data_object_as_json_string, self.data_object_as_json_string))
+        self.assertEqual(decoded, [self.data_object, self.data_object])
+
     def test_with_json_loads(self):
         decoded = json.loads(self.data_object_as_json_string, cls=DataObjectJSONDecoder)
         self.assertEqual(decoded, self.data_object)
@@ -256,6 +264,11 @@ class TestCollectionJSONEncoder(unittest.TestCase):
     def test_default(self):
         encoded = CollectionJSONEncoder().default(self.collection)
         self.assertCountEqual(encoded, self.collection_as_json)
+
+    def test_default_with_multiple(self):
+        encoded = CollectionJSONEncoder().default([self.collection, self.collection])
+        for collection_as_json in encoded:
+            self.assertCountEqual(collection_as_json, self.collection_as_json)
 
     def test_with_json_dumps(self):
         encoded = json.dumps(self.collection_as_json, cls=CollectionJSONEncoder)
@@ -285,6 +298,11 @@ class TestCollectionJSONDecoder(unittest.TestCase):
     def test_decode(self):
         decoded = CollectionJSONDecoder().decode(self.collection_as_json_string)
         self.assertEqual(decoded, self.collection)
+
+    def test_decode_multiple(self):
+        decoded = CollectionJSONDecoder().decode(
+            "[%s, %s]" % (self.collection_as_json_string, self.collection_as_json_string))
+        self.assertEqual(decoded, [self.collection, self.collection])
 
     def test_with_json_loads(self):
         decoded = json.loads(self.collection_as_json_string, cls=CollectionJSONDecoder)
