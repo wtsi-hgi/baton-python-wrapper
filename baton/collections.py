@@ -34,7 +34,8 @@ class IrodsMetadata(Metadata):
 
     def get(self, key: str, default=None) -> Set[str]:
         value = super().get(key, default)
-        assert isinstance(value, collections.Set)
+        if value != default:
+            assert isinstance(value, collections.Set)
         return value
 
     def add(self, key: str, value: str):
