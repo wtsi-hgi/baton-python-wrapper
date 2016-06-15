@@ -24,6 +24,11 @@ class TestIrodsMetadata(unittest.TestCase):
         self.metadata.add("key", "value_2")
         self.assertEqual(self.metadata["key"], {"value_1", "value_2"})
 
+    def test_get_when_default(self):
+        default = object()
+        value = self.metadata.get("not_set", default=default)
+        self.assertEqual(value, default)
+
 
 class TestDataObjectReplicaCollection(unittest.TestCase):
     """
