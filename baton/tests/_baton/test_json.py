@@ -3,7 +3,8 @@ import unittest
 
 from frozendict import frozendict
 
-from baton._baton._constants import BATON_AVU_PROPERTY, BATON_ACL_PROPERTY, BATON_REPLICA_PROPERTY
+from baton._baton._constants import BATON_AVU_PROPERTY, BATON_ACL_PROPERTY, BATON_REPLICA_PROPERTY, \
+    BATON_TIMESTAMP_PROPERTY
 from baton._baton.json import DataObjectReplicaJSONEncoder, AccessControlJSONEncoder, DataObjectJSONEncoder, \
     IrodsMetadataJSONEncoder, AccessControlJSONDecoder, DataObjectReplicaJSONDecoder, IrodsMetadataJSONDecoder, \
     DataObjectJSONDecoder, DataObjectReplicaCollectionJSONEncoder, DataObjectReplicaCollectionJSONDecoder, \
@@ -237,6 +238,14 @@ class TestDataObjectJSONDecoder(unittest.TestCase):
     def test_decode_when_no_replicas(self):
         del self.data_object_as_json[BATON_REPLICA_PROPERTY]
         self.data_object.replicas = None
+        decoded = DataObjectJSONDecoder().decode(json.dumps(self.data_object_as_json))
+        self.assertEqual(decoded, self.data_object)
+
+    def test_decode_when_replicas_but_no_timestamp(self):
+        del self.data_object_as_json[BATON_TIMESTAMP_PROPERTY]
+        for replica in self.data_object.replicas:
+            replica.created = None
+            replica.last_modified = None
         decoded = DataObjectJSONDecoder().decode(json.dumps(self.data_object_as_json))
         self.assertEqual(decoded, self.data_object)
 
