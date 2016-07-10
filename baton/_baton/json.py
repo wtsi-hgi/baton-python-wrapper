@@ -16,7 +16,7 @@ from baton._baton._constants import BATON_ACL_LEVELS, BATON_ACL_OWNER_PROPERTY, 
     BATON_TIMESTAMP_REPLICA_NUMBER_LINK_PROPERTY
 from baton.collections import IrodsMetadata, DataObjectReplicaCollection
 from baton.models import AccessControl, DataObjectReplica, DataObject, IrodsEntity, Collection, PreparedSpecificQuery, \
-    SpecificQuery, SearchCriterion, User
+    SpecificQuery, SearchCriterion
 from hgicommon.enums import ComparisonOperator
 from hgijson.json.builders import MappingJSONEncoderClassBuilder, MappingJSONDecoderClassBuilder, \
     SetJSONEncoderClassBuilder, SetJSONDecoderClassBuilder
@@ -194,7 +194,7 @@ class DataObjectJSONDecoder(_DataObjectJSONDecoder):
             return [self.decode_parsed(data_object_as_json) for data_object_as_json in json_as_dict]
         data_object = super().decode_parsed(json_as_dict)
         assert isinstance(data_object, DataObject)
-        if data_object.replicas is not None:
+        if data_object.replicas is not None and BATON_TIMESTAMP_PROPERTY in json_as_dict:
             timestamps_as_json = json_as_dict[BATON_TIMESTAMP_PROPERTY]
             DataObjectJSONDecoder._deserialize_timestamps_as_json(data_object, timestamps_as_json)
         return data_object
