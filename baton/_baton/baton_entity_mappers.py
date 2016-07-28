@@ -157,9 +157,11 @@ class BatonDataObjectMapper(_BatonIrodsEntityMapper, DataObjectMapper):
         self._metadata_mapper = BatonDataObjectIrodsMetadataMapper(*args, **kwargs)
         self._access_control_mapper = BatonDataObjectAccessControlMapper(*args, **kwargs)
 
+    @property
     def metadata(self) -> IrodsMetadataMapper[EntityType]:
         return self._metadata_mapper
 
+    @property
     def access_control(self) -> AccessControlMapper:
         return self._access_control_mapper
 
@@ -187,9 +189,11 @@ class BatonCollectionMapper(_BatonIrodsEntityMapper, CollectionMapper):
         self._metadata_mapper = BatonCollectionIrodsMetadataMapper(*args, **kwargs)
         self._access_control_mapper = BatonDataObjectAccessControlMapper(*args, **kwargs)
 
+    @property
     def metadata(self) -> IrodsMetadataMapper[EntityType]:
         return self._metadata_mapper
 
+    @property
     def access_control(self) -> AccessControlMapper:
         return self._access_control_mapper
 
