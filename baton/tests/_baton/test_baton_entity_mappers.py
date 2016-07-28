@@ -2,6 +2,8 @@ import unittest
 from abc import ABCMeta, abstractmethod
 from copy import deepcopy
 
+from baton.mappers import AccessControlMapper
+
 from baton._baton.baton_entity_mappers import _BatonIrodsEntityMapper, BatonDataObjectMapper, BatonCollectionMapper
 from baton._baton.baton_metadata_mappers import BatonDataObjectIrodsMetadataMapper, BatonCollectionIrodsMetadataMapper
 from baton.collections import IrodsMetadata
@@ -212,12 +214,15 @@ class _TestBatonIrodsEntityMapper(unittest.TestCase, metaclass=ABCMeta):
 
     def test_get_all_in_collection_when_collection_contains_data_objects_and_collections(self):
         data_object = create_data_object(self.test_with_baton, NAMES[0], self.metadata_1)
-        collection = create_collection(self.test_with_baton, NAMES[1], self.metadata_2)
+        create_collection(self.test_with_baton, NAMES[1], self.metadata_2)
 
         retrieved_entities = self.create_mapper().get_all_in_collection(data_object.get_collection_path())
 
         self.assertEqual(len(retrieved_entities), 1)
         self.assertIsInstance(retrieved_entities[0], type(self.create_irods_entity(NAMES[2])))
+
+    def test_access_control_property(self):
+        self.assertIsInstance(self.create_mapper().access_control, AccessControlMapper)
 
 
 class TestBatonDataObjectMapper(_TestBatonIrodsEntityMapper):
@@ -238,7 +243,7 @@ class TestBatonDataObjectMapper(_TestBatonIrodsEntityMapper):
         self.assertEqual(retrieved_entities, [data_object])
 
     def test_metadata_property(self):
-        self.assertIsInstance(self.create_mapper().metadata(), BatonDataObjectIrodsMetadataMapper)
+        self.assertIsInstance(self.create_mapper().metadata, BatonDataObjectIrodsMetadataMapper)
 
 
 class TestBatonCollectionMapper(_TestBatonIrodsEntityMapper):
@@ -259,7 +264,7 @@ class TestBatonCollectionMapper(_TestBatonIrodsEntityMapper):
         self.assertEqual(retrieved_entities, [collection])
 
     def test_metadata_property(self):
-        self.assertIsInstance(self.create_mapper().metadata(), BatonCollectionIrodsMetadataMapper)
+        self.assertIsInstance(self.create_mapper().metadata, BatonCollectionIrodsMetadataMapper)
 
 
 # Trick required to stop Python's unittest from running the abstract base classes as tests

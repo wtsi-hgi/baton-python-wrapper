@@ -45,7 +45,7 @@ class _BatonIrodsEntityMapper(BatonRunner, IrodsEntityMapper, metaclass=ABCMeta)
     def __init__(self, additional_metadata_query_arguments: List[str], *args, **kwargs):
         """
         Constructor.
-        :param metadata_mapper: TODO
+        :param additional_metadata_query_arguments: TODO
         """
         super().__init__(*args, **kwargs)
         self._additional_metadata_query_arguments = additional_metadata_query_arguments
