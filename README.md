@@ -105,9 +105,9 @@ from baton.models import AccessControl
 
 # ACLs. Note: it is implied that the owner is in the same zone as the entity to which the access control is applied
 acl_examples = [
-    AccessControl(User("user_1", "zone_user_is_in"), AccessControl.READ),
-    AccessControl(User("group_1", "zone_group_is_in"), AccessControl.WRITE),
-    AccessControl("user_1#zone_user_is_in", AccessControl.OWN)
+    AccessControl(User("user_1", "zone_user_is_in"), AccessControl.Level.READ),
+    AccessControl(User("group_1", "zone_group_is_in"), AccessControl.Level.WRITE),
+    AccessControl("user_1#zone_user_is_in", AccessControl.Level.OWN)
 ]
 
 irods.data_object.access_control.get_all("/collection/data_object") # type: Set[AccessControl]
