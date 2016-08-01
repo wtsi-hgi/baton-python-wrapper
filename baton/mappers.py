@@ -24,9 +24,12 @@ class IrodsMetadataMapper(Generic[EntityType], metaclass=ABCMeta):
     @abstractmethod
     def add(self, paths: Union[str, Iterable[str]], metadata: IrodsMetadata):
         """
-        Adds the given metadata to the given iRODS entities at the given path or paths.
+        Adds the given metadata to the given iRODS entities at the given path or paths. If values already exist for any
+        other keys, the given metadata is appended to the existing sets.
 
-        A `ValueError` will be raised will be raised if the path does not correspond to a valid entity.
+        A `ValueError` will be raised will be raised a path does not correspond to a valid entity. If this happens mid-
+        way through updating multiple entries, it will be undefined if a given entry has been updated previous to the
+        error.
         :param path: the path of the entity to add the metadata to
         :param metadata: the metadata to write
         """
@@ -93,7 +96,8 @@ class AccessControlMapper(metaclass=ABCMeta):
     @abstractmethod
     def set(self, paths: Union[str, Iterable[str]], access_controls: Union[AccessControl, Iterable[AccessControl]]):
         """
-        Sets the access controls associated to a give path or collection of paths to those given.
+        Sets the access controls associated to a give path or collection of paths to those given. Any existing controls
+        will be overriden.
         :param paths: the paths to set the access controls for
         :param access_controls: the access controls to set
         """
