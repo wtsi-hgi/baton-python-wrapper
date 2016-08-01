@@ -1,5 +1,5 @@
 from abc import ABCMeta, abstractmethod
-from typing import Dict, Iterable, Union, List
+from typing import Dict, Iterable, Union, List, Sequence
 
 from baton._baton._baton_runner import BatonRunner, BatonBinary
 from baton._baton._constants import BATON_METAMOD_OPERATION_ADD, BATON_AVU_PROPERTY, BATON_METAMOD_OPERATION_FLAG, \
@@ -33,7 +33,7 @@ class _BatonIrodsMetadataMapper(BatonRunner, IrodsMetadataMapper, metaclass=ABCM
         :return: the JSON representation
         """
 
-    def get_all(self, paths: Union[str, Iterable[str]]) -> Union[IrodsMetadata, List[IrodsMetadata]]:
+    def get_all(self, paths: Union[str, Sequence[str]]) -> Union[IrodsMetadata, List[IrodsMetadata]]:
         single_path = False
         if isinstance(paths, str):
             paths = [paths]
@@ -59,7 +59,23 @@ class _BatonIrodsMetadataMapper(BatonRunner, IrodsMetadataMapper, metaclass=ABCM
 
     def set(self, paths: Union[str, Iterable[str]], metadata: IrodsMetadata):
         # baton does not support "set" natively, therefore this operation is not transactional
-        self.remove_all(paths)
+        if isinstance(paths, str):
+            paths = [paths]
+
+        # Removes any existing values associated to the keys to set - annoyingly, this requires the values to be known
+        metadatas_to_remove = []     # type: List[IrodsMetadata]
+        paths_with_metadata_to_remove = []  # type: List[str]
+        existing_metadatas = self.get_all(paths)
+        for i in range(len(existing_metadatas)):
+            existing_metadata = existing_metadatas[i]
+            keys_to_remove = set(existing_metadata.keys()).intersection(metadata.keys())
+            metadata_to_remove = IrodsMetadata({key: existing_metadata[key] for key in keys_to_remove})
+            metadatas_to_remove.append(metadata_to_remove)
+            paths_with_metadata_to_remove.append(paths[i])
+
+        assert len(metadatas_to_remove) == len(paths_with_metadata_to_remove)
+        self._modify(paths_with_metadata_to_remove, metadatas_to_remove, BATON_METAMOD_OPERATION_REMOVE)
+
         self.add(paths, metadata)
 
     def remove(self, paths: Union[str, Iterable[str]], metadata: IrodsMetadata):
