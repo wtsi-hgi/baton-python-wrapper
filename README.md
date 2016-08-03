@@ -119,8 +119,9 @@ irods.collection.access_control.add_or_replace("/collection", acl_examples, recu
 irods.data_object.access_control.set("/collection/data_object", acl_examples[1])
 irods.collection.access_control.set(["/collection", "/another/collection"], acl_examples[0], recursive=False)
 
-irods.data_object.access_control.revoke(["/collection/data_object", "/another/data_object"], acl_examples)
-irods.collection.access_control.revoke("/collection", acl_examples[1], recursive=True)
+# A user or sets of users can be defined by both domain models or their string representations
+irods.data_object.access_control.revoke(["/collection/data_object", "/another/data_object"], ["user_1#zone_user_is_in", "user_2#zone_user_is_in"])
+irods.collection.access_control.revoke("/collection", User("user_1", "zone_user_is_in"), recursive=True)
 
 irods.data_object.access_control.revoke_all(["/collection/data_object", "/another/data_object"])
 irods.collection.access_control.revoke_all("/collection", recursive=True)
