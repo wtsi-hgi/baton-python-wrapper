@@ -5,4 +5,3 @@ class StubIrodsEntity(IrodsEntity):
     """
     Stub implement of `IrodsEntity`.
     """
-    pass

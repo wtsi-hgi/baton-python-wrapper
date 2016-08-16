@@ -10,7 +10,7 @@ from baton.models import DataObject
 from baton.tests._baton._helpers import NAMES, create_collection, create_data_object
 from baton.tests._baton._settings import BATON_SETUP
 from testwithbaton.api import TestWithBaton
-from testwithbaton.helpers import SetupHelper
+from testwithirods.helpers import SetupHelper
 
 
 class _TestBatonIrodsEntityMetadataMapper(unittest.TestCase):

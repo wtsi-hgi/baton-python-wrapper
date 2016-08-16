@@ -2,12 +2,13 @@ import unittest
 from typing import Sequence
 from unittest.mock import MagicMock
 
+from testwithirods.helpers import SetupHelper
+
 from baton._baton.baton_custom_object_mappers import BatonSpecificQueryMapper
 from baton.models import PreparedSpecificQuery, SpecificQuery
 from baton.tests._baton._settings import BATON_SETUP
 from baton.tests._baton._stubs import StubBatonCustomObjectMapper
 from testwithbaton.api import TestWithBaton
-from testwithbaton.helpers import SetupHelper
 
 
 class TestBatonCustomObjectMapper(unittest.TestCase):

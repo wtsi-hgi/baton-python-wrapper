@@ -9,9 +9,8 @@ from baton.collections import IrodsMetadata
 from baton.models import DataObject, DataObjectReplica, AccessControl, Collection, IrodsEntity, User
 from hgicommon.models import Model
 from testwithbaton.api import TestWithBaton
-from testwithbaton.helpers import AccessLevel
-from testwithbaton.helpers import SetupHelper
-
+from testwithirods.helpers import AccessLevel
+from testwithirods.helpers import SetupHelper
 
 NAMES = ["name_1", "name_2", "name_3"]
 ATTRIBUTES = ["attribute_1", "attribute_2"]

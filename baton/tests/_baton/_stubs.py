@@ -6,7 +6,6 @@ class StubBatonRunner(BatonRunner):
     """
     Stub `BatonRunner`.
     """
-    pass
 
 
 class StubBatonCustomObjectMapper(BatonCustomObjectMapper[dict]):

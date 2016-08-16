@@ -1,9 +1,9 @@
+import re
 from abc import ABCMeta
 from copy import copy
 from datetime import datetime
 from enum import Enum, unique
 from typing import Iterable, List, Set, Union, Any, Optional
-import re
 
 import hgicommon
 from hgicommon.models import Model

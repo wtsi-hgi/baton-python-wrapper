@@ -2,6 +2,8 @@ import unittest
 from abc import abstractmethod
 from typing import Iterable, List
 
+from testwithirods.helpers import SetupHelper
+
 from baton._baton.baton_access_control_mappers import _BatonAccessControlMapper, BatonDataObjectAccessControlMapper, \
     BatonCollectionAccessControlMapper
 from baton.models import AccessControl, DataObject, Collection, User
@@ -10,7 +12,6 @@ from baton.tests._baton._helpers import DataObjectNode, CollectionNode, NAMES, c
     create_entity_tree, EntityNode
 from baton.tests._baton._settings import BATON_SETUP
 from testwithbaton.api import TestWithBaton
-from testwithbaton.helpers import SetupHelper
 
 _USERNAMES = ["user_1", "user_2", "user_3"]
 

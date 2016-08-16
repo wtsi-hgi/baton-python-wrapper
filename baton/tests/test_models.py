@@ -1,7 +1,7 @@
 import copy
 import unittest
 
-from baton.models import DataObject, SpecificQuery, Collection, IrodsEntity, AccessControl, User
+from baton.models import DataObject, SpecificQuery, Collection, AccessControl, User
 from baton.tests._stubs import StubIrodsEntity
 
 _COLLECTION = "/collection/sub_collection"
