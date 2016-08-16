@@ -9,7 +9,7 @@ from baton.models import PreparedSpecificQuery, SpecificQuery
 from baton.types import CustomObjectType
 
 
-class BatonCustomObjectMapper(BatonRunner, CustomObjectMapper, metaclass=ABCMeta):
+class BatonCustomObjectMapper(BatonRunner, CustomObjectMapper[CustomObjectType], metaclass=ABCMeta):
     """
     Mapper for custom objects, implemented using baton.
     """
