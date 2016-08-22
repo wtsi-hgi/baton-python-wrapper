@@ -12,6 +12,8 @@ from baton._baton._constants import BATON_ERROR_MESSAGE_KEY, IRODS_ERROR_USER_FI
     BATON_ERROR_CODE_KEY, IRODS_ERROR_CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME, IRODS_ERROR_CAT_SUCCESS_BUT_WITH_NO_INFO, \
     IRODS_ERROR_CAT_INVALID_ARGUMENT
 
+_logger = logging.getLogger(__name__)
+
 
 class BatonBinary(Enum):
     """
@@ -106,11 +108,11 @@ class BatonRunner(metaclass=ABCMeta):
         baton_binary_location = os.path.join(self._baton_binaries_directory, baton_binary.value)
         program_arguments = [baton_binary_location] + program_arguments
 
-        logging.info("Running baton command: '%s' with data '%s'" % (program_arguments, input_data))
+        _logger.info("Running baton command: '%s' with data '%s'" % (program_arguments, input_data))
         start_at = time.monotonic()
         baton_out = self._run_command(program_arguments, input_data=input_data)
         time_taken_to_run_query = time.monotonic() - start_at
-        logging.debug("baton output (took %s seconds, wall time): %s" % (time_taken_to_run_query, baton_out))
+        _logger.debug("baton output (took %s seconds, wall time): %s" % (time_taken_to_run_query, baton_out))
 
         if len(baton_out) == 0:
             return []
