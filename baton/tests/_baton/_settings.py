@@ -1,3 +1,3 @@
 from testwithbaton.api import BatonSetup
 
-BATON_SETUP = BatonSetup.v0_16_3_WITH_IRODS_3_3_1
+BATON_SETUP = BatonSetup.v0_16_4_WITH_IRODS_4_1_9

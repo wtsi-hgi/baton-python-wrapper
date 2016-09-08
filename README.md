@@ -13,8 +13,12 @@ The wrapper provides access to most of baton's functionality.
 
 ## How to use
 ### Prerequisites
-- Python >= 3.5
-- baton >= 0.16.3
+- Python >= 3.5.2
+- baton >= 0.16.4
+- iRODS >= 4.1.9
+
+*Note: Although older version of baton/iRODS will probably work, the library is only aimed at the versions specified
+above.*
 
 ### Installation
 Stable releases can be installed via [PyPI](https://pypi.python.org/pypi?name=baton&:action=display):
