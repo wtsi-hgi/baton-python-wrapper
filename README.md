@@ -75,20 +75,23 @@ necessary to know the type of entity that a path corresponds to in order to retr
 ```python
 from baton.collections import IrodsMetadata
 
-# Metadata (methods available for both `data_object` and `collection`)
-metadata = IrodsMetadata({"another_key": {"value_1", "value_2"}})
+metadata_1 = IrodsMetadata({"key": {"value_1"}})
+metadata_2 = IrodsMetadata({"another_key": {"value_1", "value_2"}})
 
+# Metadata (methods available for both `data_object` and `collection`)
 irods.data_object.metadata.get_all("/collection/data_object")   # type: IrodsMetadata
 irods.collection.metadata.get_all(["/collection", "/other_collection"])   # type: Sequence[IrodsMetadata]
 
-irods.data_object.metadata.add(["/collection/data_object", "/other_data_object"], metadata)
-irods.collection.metadata.add("/collection", metadata)
+# `metadata_1` is added to the data object with the first path in the list and `metadata_2` is added to the second
+irods.data_object.metadata.add(["/collection/data_object", "/other_data_object"], [metadata_1, metadata_2])
+irods.collection.metadata.add("/collection", metadata_1)
 
-irods.data_object.metadata.set("/collection/data_object", metadata)
-irods.collection.metadata.set(["/collection", "/other_collection"], metadata)
+irods.data_object.metadata.set("/collection/data_object", metadata_1)
+# `metadata_1` is added to both collections in the list
+irods.collection.metadata.set(["/collection", "/other_collection"], metadata_1)
 
-irods.data_object.metadata.remove(["/collection/data_object", "/other_data_object"], metadata)
-irods.collection.metadata.remove("/collection", metadata)
+irods.data_object.metadata.remove(["/collection/data_object", "/other_data_object"], [metadata_1, metadata_2])
+irods.collection.metadata.remove("/collection", metadata_1)
 
 irods.data_object.metadata.remove_all("/collection/data_object")
 irods.collection.metadata.remove_all(["/collection", "/other_collection"])
@@ -116,9 +119,8 @@ irods.collection.access_control.add_or_replace("/collection", acl_examples, recu
 irods.data_object.access_control.set("/collection/data_object", acl_examples[1])
 irods.collection.access_control.set(["/collection", "/another/collection"], acl_examples[0], recursive=False)
 
-# A user or sets of users can be defined by both domain models or their string representations
-irods.data_object.access_control.revoke(["/collection/data_object", "/another/data_object"], ["user_1#zone_user_is_in", "user_2#zone_user_is_in"])
-irods.collection.access_control.revoke("/collection", User("user_1", "zone_user_is_in"), recursive=True)
+irods.data_object.access_control.revoke(["/collection/data_object", "/another/data_object"], acl_examples)
+irods.collection.access_control.revoke("/collection", acl_examples[1], recursive=True)
 
 irods.data_object.access_control.revoke_all(["/collection/data_object", "/another/data_object"])
 irods.collection.access_control.revoke_all("/collection", recursive=True)
