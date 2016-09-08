@@ -54,31 +54,34 @@ class _BatonIrodsMetadataMapper(BatonRunner, IrodsMetadataMapper, metaclass=ABCM
 
         return metadata_for_paths[0] if single_path else metadata_for_paths
 
-    def add(self, paths: Union[str, Iterable[str]], metadata: IrodsMetadata):
+    def add(self, paths: Union[str, Iterable[str]], metadata: Union[IrodsMetadata, List[IrodsMetadata]]):
         self._modify(paths, metadata, BATON_METAMOD_OPERATION_ADD)
 
-    def set(self, paths: Union[str, Iterable[str]], metadata: IrodsMetadata):
-        # baton does not support "set" natively, therefore this operation is not transactional
+    def set(self, paths: Union[str, Iterable[str]], metadata: Union[IrodsMetadata, List[IrodsMetadata]]):
+        # baton does not support "set" natively, therefore this operation is not transactional. For discussion, see:
+        # https://github.com/wtsi-npg/baton/issues/160
         if isinstance(paths, str):
             paths = [paths]
+        if isinstance(metadata, IrodsMetadata):
+            metadata = [metadata for _ in paths]
 
-        # Removes any existing values associated to the keys to set - annoyingly, this requires the values to be known
+        # Need to remove any existing values associated to the keys to set - annoyingly, this requires the values to be
+        # known
         metadatas_to_remove = []     # type: List[IrodsMetadata]
         paths_with_metadata_to_remove = []  # type: List[str]
         existing_metadatas = self.get_all(paths)
         for i in range(len(existing_metadatas)):
             existing_metadata = existing_metadatas[i]
-            keys_to_remove = set(existing_metadata.keys()).intersection(metadata.keys())
+            keys_to_remove = set(existing_metadata.keys()).intersection(metadata[i].keys())
             metadata_to_remove = IrodsMetadata({key: existing_metadata[key] for key in keys_to_remove})
             metadatas_to_remove.append(metadata_to_remove)
             paths_with_metadata_to_remove.append(paths[i])
 
         assert len(metadatas_to_remove) == len(paths_with_metadata_to_remove)
-        self._modify(paths_with_metadata_to_remove, metadatas_to_remove, BATON_METAMOD_OPERATION_REMOVE)
-
+        self.remove(paths_with_metadata_to_remove, metadatas_to_remove)
         self.add(paths, metadata)
 
-    def remove(self, paths: Union[str, Iterable[str]], metadata: IrodsMetadata):
+    def remove(self, paths: Union[str, Iterable[str]], metadata: Union[IrodsMetadata, List[IrodsMetadata]]):
         self._modify(paths, metadata, BATON_METAMOD_OPERATION_REMOVE)
 
     def remove_all(self, paths: Union[str, Iterable[str]]):
@@ -98,7 +101,11 @@ class _BatonIrodsMetadataMapper(BatonRunner, IrodsMetadataMapper, metaclass=ABCM
             paths = [paths]
         if isinstance(metadata_for_paths, IrodsMetadata):
             metadata_for_paths = [metadata_for_paths for _ in paths]
+        elif len(paths) != len(metadata_for_paths):
+            raise ValueError("Metadata not supplied for all paths - either supply a single IrodsMetadata collection "
+                             "to apply for all paths or supply a collection for each path")
 
+        assert len(paths) == len(metadata_for_paths)
         baton_in_json = []
         for i in range(len(metadata_for_paths)):
             entity = self._create_entity_with_path(paths[i])

@@ -16,30 +16,40 @@ class IrodsMetadataMapper(Generic[EntityType], metaclass=ABCMeta):
         """
         Gets all of the metadata for the iRODS entities at the given path or paths.
 
+        If multiple paths are given, the metadata collection at index `i` on the output corresponds to the path at index
+        `i` on the input. i.e.
+        ```
+        output = mapper.get_all(["path_1", "path_2"])
+        metadata_for_path_1 = output[0]
+        metadata_for_path_2 = output[1]
+        ```
+
         A `ValueError` will be raised will be raised if the path does not correspond to a valid entity.
-        :param path: the path of the entity to get the metadata for
-        :return: metadata for the given entity
+        :param path: the path of the entity or entities to get the metadata for
+        :return: metadata for the given entity or entities
         """
 
     @abstractmethod
-    def add(self, paths: Union[str, Iterable[str]], metadata: IrodsMetadata):
+    def add(self, paths: Union[str, Iterable[str]], metadata: Union[IrodsMetadata, List[IrodsMetadata]]):
         """
-        Adds the given metadata to the given iRODS entities at the given path or paths. If values already exist for any
-        other keys, the given metadata is appended to the existing sets.
+        Adds the given metadata to the given iRODS entities at the given path or paths.
 
-        A `ValueError` will be raised will be raised a path does not correspond to a valid entity. If this happens mid-
-        way through updating multiple entries, it will be undefined if a given entry has been updated previous to the
-        error.
-        :param path: the path of the entity to add the metadata to
+        If a single metadata collection is given, that metadata is added to all paths. If a list of metadata are given,
+        each collection is added to the path with the corresponding index.
+
+        A `ValueError` will be raised will be raised if the path does not correspond to a valid entity.
+        :param path: the path of the entity or entities to add the metadata to
         :param metadata: the metadata to write
         """
 
     @abstractmethod
-    def set(self, paths: Union[str, Iterable[str]], metadata: IrodsMetadata):
+    def set(self, paths: Union[str, Iterable[str]], metadata: Union[IrodsMetadata, List[IrodsMetadata]]):
         """
-        Sets the given metadata on the iRODS entities at the given path or paths.
+        Sets the given metadata on the iRODS entities at the given path or paths. Similar to `add` excpet pre-existing
+        metadata with matching keys will be overwritten.
 
-        Similar to `add` although pre-existing metadata with matching keys will be overwritten.
+        If a single metadata collection is given, that metadata is set for all paths. If a list of metadata are given,
+        each collection is set for the path with the corresponding index.
 
         A `ValueError` will be raised will be raised if the path does not correspond to a valid entity.
         :param path: the path of the entity to set the metadata for
@@ -47,9 +57,12 @@ class IrodsMetadataMapper(Generic[EntityType], metaclass=ABCMeta):
         """
 
     @abstractmethod
-    def remove(self, paths: Union[str, Iterable[str]], metadata: IrodsMetadata):
+    def remove(self, paths: Union[str, Iterable[str]], metadata: Union[IrodsMetadata, List[IrodsMetadata]]):
         """
         Removes the given metadata from the given iRODS entity.
+
+        If a single metadata collection is given, that metadata is removed from all paths. If a list of metadata are
+        given, each collection is removed for the path with the corresponding index.
 
         A `KeyError` will be raised if the entity does not have metadata with the given key and value. If this exception
         is raised part-way through the removal of multiple pieces of metadata, a rollback will not occur - it would be
@@ -96,8 +109,7 @@ class AccessControlMapper(metaclass=ABCMeta):
     @abstractmethod
     def set(self, paths: Union[str, Iterable[str]], access_controls: Union[AccessControl, Iterable[AccessControl]]):
         """
-        Sets the access controls associated to a give path or collection of paths to those given. Any existing controls
-        will be overriden.
+        Sets the access controls associated to a give path or collection of paths to those given.
         :param paths: the paths to set the access controls for
         :param access_controls: the access controls to set
         """
