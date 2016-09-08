@@ -120,6 +120,13 @@ class _TestBatonIrodsEntityMetadataMapper(unittest.TestCase):
         assert len(self.metadata) == 1
         self.assertRaises(KeyError, self.mapper.add, entity.path, self.metadata)
 
+    def test_add_adds_metadata(self):
+        entity = self.create_irods_entity(NAMES[0], self.metadata)
+        additional_metadata = IrodsMetadata({"other": {"values"}})
+        self.mapper.add(entity.path, additional_metadata)
+        self.assertEqual(self.mapper.get_all(entity.path),
+                         IrodsMetadata({**dict(entity.metadata), **dict(additional_metadata)}))
+
     def test_add_appends_if_key_exists_and_not_same_value(self):
         values = ["value_1", "value_2"]
         key = "key"
