@@ -75,7 +75,7 @@ class _BatonAccessControlMapper(BatonRunner, AccessControlMapper, metaclass=ABCM
         if isinstance(access_controls, AccessControl):
             access_controls = [access_controls]
 
-        # baton-chmod does a mix of set and add: if no level has been defined for a user, else sets if it has
+        # baton-chmod does a mix of set and add: adds if no level has been defined for a user, else sets if it has.
         # Taking easiest route of starting from a blank slate
         self.revoke_all(paths)
 

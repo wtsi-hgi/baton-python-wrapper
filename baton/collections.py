@@ -26,7 +26,7 @@ class IrodsMetadata(Metadata):
             irods_metadata[key] = {value}
         return irods_metadata
 
-    def __init__(self, seq: Dict[Any, Set]=None):
+    def __init__(self, seq: Dict[Any, Set[str]]=None):
         super().__init__()
         if seq is not None:
             for key, value in seq.items():

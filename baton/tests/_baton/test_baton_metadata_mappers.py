@@ -2,8 +2,8 @@ import unittest
 from abc import abstractmethod
 from copy import deepcopy
 
-from baton._baton.baton_metadata_mappers import BatonDataObjectIrodsMetadataMapper, BatonCollectionIrodsMetadataMapper, \
-    _BatonIrodsMetadataMapper
+from baton._baton.baton_metadata_mappers import BatonDataObjectIrodsMetadataMapper, \
+    BatonCollectionIrodsMetadataMapper, _BatonIrodsMetadataMapper
 from baton.collections import IrodsMetadata
 from baton.models import Collection, IrodsEntity
 from baton.models import DataObject
@@ -78,17 +78,23 @@ class _TestBatonIrodsEntityMetadataMapper(unittest.TestCase):
         entities = [self.create_irods_entity(name, IrodsMetadata()) for name in NAMES]
         paths = [entity.path for entity in entities]
         self.mapper.add(paths, self.metadata)
-        self.assertEqual(self.mapper.get_all(paths), [self.metadata for entity in entities])
+        self.assertEqual(self.mapper.get_all(paths), [self.metadata for _ in entities])
 
     def test_add_no_metadata(self):
         entity = self.create_irods_entity(NAMES[0], IrodsMetadata())
         self.mapper.add(entity.path, IrodsMetadata())
         self.assertEqual(self.mapper.get_all(entity.path), IrodsMetadata())
 
-    def test_add_metadata_with_same_key(self):
+    def test_add_same_value(self):
         entity = self.create_irods_entity(NAMES[0], self.metadata)
-        del self.metadata["key_1"]
         self.assertRaises(KeyError, self.mapper.add, entity.path, self.metadata)
+
+    def test_add_appends_if_key_exists_and_not_same_value(self):
+        values = ["value_1", "value_2"]
+        key = "key"
+        entity = self.create_irods_entity(NAMES[0], IrodsMetadata({key: {values[0]}}))
+        self.mapper.add(entity.path, IrodsMetadata({key: {values[1]}}))
+        self.assertEqual(IrodsMetadata({key: {values[0], values[1]}}), self.mapper.get_all(entity.path))
 
     def test_set_with_no_paths(self):
         self.mapper.set([], self.metadata)
@@ -111,15 +117,16 @@ class _TestBatonIrodsEntityMetadataMapper(unittest.TestCase):
         self.mapper.set(paths, self.metadata)
         self.assertEqual(self.mapper.get_all(paths), [self.metadata for _ in entities])
 
-    def test_set_with_existing_non_duplicate_metadata(self):
-        entity = self.create_irods_entity(NAMES[0], IrodsMetadata({"another": {"value"}}))
-        self.mapper.set(entity.path, self.metadata)
-        self.assertEqual(self.mapper.get_all(entity.path), self.metadata)
-
-    def test_set_with_and_when_existing_duplicate_metadata(self):
-        entity = self.create_irods_entity(NAMES[0], self.metadata)
-        self.mapper.set(entity.path, self.metadata)
-        self.assertEqual(self.mapper.get_all(entity.path), self.metadata)
+    def test_set_overrides_existing_metadata(self):
+        overriden_key = list(self.metadata.keys())[0]
+        value = {"new_value"}
+        entity_1 = self.create_irods_entity(NAMES[0], self.metadata)
+        del self.metadata[overriden_key]
+        entity_2 = self.create_irods_entity(NAMES[1], self.metadata)
+        self.mapper.set([entity_1.path, entity_2.path], IrodsMetadata({overriden_key: value}))
+        self.metadata[overriden_key] = value
+        self.assertEqual(self.mapper.get_all(entity_1.path), self.metadata)
+        self.assertEqual(self.mapper.get_all(entity_2.path), self.metadata)
 
     def test_remove_with_no_paths(self):
         self.mapper.remove([], self.metadata)
