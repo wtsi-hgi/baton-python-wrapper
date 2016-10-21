@@ -1,5 +1,5 @@
 # Change Log
-## [Unreleased]
+## 1.0.1 - 2016/10/21
 ### Changed
 - Replicas and access controls are now optional properties in entities' JSON representation.
 - Ensured decode and encode work with lists of `DataObject` and `Collection`.
