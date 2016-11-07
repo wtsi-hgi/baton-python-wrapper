@@ -131,7 +131,7 @@ class BatonRunner(metaclass=ABCMeta):
         Run a command as a subprocess.
 
         Ignores errors given over stderr if there is output on stdout (this is the case where baton has been run
-        correctly and has expressed the error in it's JSON out, which can be handled more appropriately upstream to this
+        correctly and has expressed the error in its JSON out, which can be handled more appropriately upstream to this
         method.)
         :param arguments: the arguments to run
         :param input_data: the input data to pass to the subprocess
